@@ -116,39 +116,34 @@
   <!-- 회원가입 폼 (POST 전송) -->
   <form action="/member/join" method="post" class="join-form">
 
-    <!-- 1. 이름 -->
-    <div class="form-group">
-      <label for="name">이름</label>
-      <input type="text" id="name" name="name" required placeholder="이름을 입력하세요">
-    </div>
-
-    <!-- 2. 아이디 -->
+    <!-- 아이디 -->
     <div class="form-group">
       <label for="username">아이디</label>
-      <input type="text" id="username" name="username" required placeholder="아이디를 입력하세요">
+      <input type="text" id="username" name="username" required placeholder="아이디">
     </div>
 
-    <!-- 3. 비밀번호 -->
+    <!-- 비밀번호 -->
     <div class="form-group">
       <label for="password">비밀번호</label>
-      <input type="password" id="password" name="password" required placeholder="비밀번호를 입력하세요">
+      <input type="password" id="password" name="password" required placeholder="비밀번호">
     </div>
 
+    <!-- 이름 -->
     <div class="form-group">
-        <label for="passwordConfirm">비밀번호 확인</label>
-        <input type="password" id="passwordConfirm" name="passwordConfirm" required placeholder="비밀번호를 한번 더 입력하세요">
+      <label for="name">이름</label>
+      <input type="text" id="name" name="name" required placeholder="이름">
     </div>
 
-    <!-- 4. 이메일 -->
+    <!-- 이메일 -->
     <div class="form-group">
       <label for="email">이메일</label>
-      <input type="email" id="email" name="email" required placeholder="이메일을 입력하세요">
+      <input type="email" id="email" name="email" required placeholder="이메일">
     </div>
 
-    <!-- 5. 전화번호 -->
+    <!-- 전화번호 -->
     <div class="form-group">
-      <label for="phone">전화번호</label>
-      <input type="tel" id="phone" name="phone" required placeholder="전화번호를 입력하세요">
+      <label for="phone">휴대전화번호</label>
+      <input type="tel" id="phone" name="phone" required placeholder="휴대전화번호">
     </div>
 
     <!-- 다음 버튼 -->

@@ -4,6 +4,7 @@ CREATE TABLE member (
                         nickname VARCHAR(50) NOT NULL COMMENT '사용자 닉네임',
                         member_phone VARCHAR(20) NULL COMMENT '휴대폰 번호',
                         member_email VARCHAR(100) NOT NULL UNIQUE COMMENT '로그인 이메일',
+                        profile_image VARCHAR(255) NULL COMMENT '프로필 이미지 저장 경로',
                         member_role VARCHAR(20) NOT NULL DEFAULT 'USER' COMMENT '권한 (USER, ADMIN 등)',
                         member_status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE' COMMENT '상태 (ACTIVE, DORMANT, BANNED, DELETED)',
                         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '가입일',

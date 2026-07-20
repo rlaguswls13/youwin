@@ -46,8 +46,7 @@
         <div class="site-header-inner">
             <nav class="nav">
                 <a href="/member/index">메인화면</a>
-                <a href="/member/login">로그인</a>
-                <a href="/member/join">회원가입</a>
+                <a href="/member/settings">회원 설정</a>
             </nav>
         </div>
     </header>

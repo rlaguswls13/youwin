@@ -1,6 +1,6 @@
-package com.youwin.member.controller;
+package com.youwin.khs.member.controller;
 
-import com.youwin.member.dto.MemberDto;
+import com.youwin.khs.member.dto.MemberDto;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,18 +20,13 @@ public class MemberController {
         System.out.println("가입 시도한 이메일: " + memberdto.getMemberEmail());
         System.out.println("가입 시도한 닉네임: " + memberdto.getNickname());
 
-        return "redirect:/member/login";
+        return "redirect:/member/settings";
     }
 
     // view 이동
     @GetMapping("/join")
     public String joinFrom() {
         return "member/join";
-    }
-
-    @GetMapping("/join1")
-    public String joinFrom1() {
-        return "member/join1";
     }
 
     @GetMapping("/login")
@@ -41,6 +36,16 @@ public class MemberController {
 
     @GetMapping("/index")
     public String mainForm() {
-        return "/member/index";
+        return "member/index";
+    }
+
+    @GetMapping("/settings")
+    public String settingsForm() {
+        return "member/settings";
+    }
+
+    @GetMapping("/mypage")
+    public String mypageForm() {
+        return "member/mypage";
     }
 }
