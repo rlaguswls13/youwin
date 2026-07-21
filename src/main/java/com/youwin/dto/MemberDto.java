@@ -1,14 +1,7 @@
-package com.youwin.dto;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 @Getter
 @Setter
-@ToString(exclude = "memberPassword")
+@ToString(exclude = "password")
 @NoArgsConstructor
 @AllArgsConstructor
 public class MemberDto {
@@ -17,4 +10,5 @@ public class MemberDto {
     private String nickname;
     private String memberEmail;
     private String memberPhone;
+
 }
