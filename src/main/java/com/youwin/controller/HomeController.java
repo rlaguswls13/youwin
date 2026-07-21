@@ -12,5 +12,7 @@ public class HomeController {
     public String home(Model model) {
         model.addAttribute("message", HomeMessage.of("Youwin", "Spring Boot JSP application is ready."));
         return "index";
+
+
     }
 }
