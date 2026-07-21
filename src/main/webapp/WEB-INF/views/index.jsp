@@ -42,10 +42,19 @@
 </head>
 <body>
 <main>
+    <header class="site-header">
+        <div class="site-header-inner">
+            <nav class="nav">
+                <a href="/member/index">메인화면</a>
+                <a href="/member/settings">회원 설정</a>
+            </nav>
+        </div>
+    </header>
     <section>
         <h1>${message.title}</h1>
         <p>${message.content}</p>
     </section>
 </main>
+<script>console.log("현재 주소 : ${pageContext.request.contextPath}/");</script>
 </body>
 </html>
