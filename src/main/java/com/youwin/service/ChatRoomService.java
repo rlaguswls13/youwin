@@ -16,7 +16,7 @@ public class ChatRoomService {
         this.chatRoomRepository = chatRoomRepository;
 
         }
-    public static List<ChatRoomDto> findAllRooms() {
+    public List<ChatRoomDto> findAllRooms() {
         return chatRoomRepository.findAllRooms();
 
     }
