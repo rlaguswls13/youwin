@@ -1,8 +1,7 @@
 package com.youwin.controller;
 
-import com.youwin.controller.dto.NoticeDto;
-import com.youwin.mapper.NoticeMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.youwin.dto.NoticeDto;
+import com.youwin.service.BoardService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,13 +13,16 @@ import java.util.List;
 @Controller
 public class BoardController {
 
-    @Autowired
-    private NoticeMapper noticeMapper;
+    private final BoardService boardService;
+
+    public BoardController(BoardService boardService) {
+        this.boardService = boardService;
+    }
 
     // 1. 공지사항 목록 조회
     @GetMapping("/board")
     public String boardPage(Model model) {
-        List<NoticeDto> noticeList = noticeMapper.selectNoticeList();
+        List<NoticeDto> noticeList = boardService.getNotices();
         model.addAttribute("list", noticeList);
         return "board";
     }
@@ -51,7 +53,7 @@ public class BoardController {
         }
 
         // DB 저장 수행
-        noticeMapper.insertNotice(noticeDto);
+        boardService.writeNotice(noticeDto);
 
         // 완료 후 리스트로 리다이렉트
         return "redirect:/board";

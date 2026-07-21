@@ -1,4 +1,4 @@
-package com.youwin.controller.dto;
+package com.youwin.dto;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

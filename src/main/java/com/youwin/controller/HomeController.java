@@ -1,6 +1,6 @@
 package com.youwin.controller;
 
-import com.youwin.controller.dto.HomeMessage;
+import com.youwin.dto.HomeMessage;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
