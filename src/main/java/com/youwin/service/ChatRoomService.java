@@ -14,8 +14,7 @@ public class ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
 
-    public List<ChatRoomDto> findAllRooms() {
-        return chatRoomRepository.findAllRooms();
-
+    public List<ChatRoomDto> findMyRooms(Integer memberId) {
+        return chatRoomRepository.findMyRooms(memberId);
     }
 }
