@@ -42,4 +42,15 @@
         WHERE notice_id = #{noticeId}
     </delete>
 
+    <!-- 💡 4. [추가] 공지사항 데이터 수정 UPDATE 쿼리 -->
+    <update id="update" parameterType="com.youwin.dto.NoticeDto">
+        UPDATE notice_board
+        SET category = #{category},
+            title = #{title},
+            content = #{content},
+            is_pinned = #{isPinned},
+            update_at = CURRENT_TIMESTAMP
+        WHERE notice_id = #{noticeId}
+    </update>
+
 </mapper>

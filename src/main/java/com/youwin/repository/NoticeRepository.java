@@ -15,4 +15,7 @@ public interface NoticeRepository {
 
     // 💡 3. [추가] XML에 작성한 delete 쿼리를 호출하기 위한 추상 메서드 선언
     void deleteById(Long noticeId);
+
+    // 💡 [추가] DB 데이터 수정을 위한 매퍼 추상 메서드 선언
+    void update(NoticeDto notice);
 }

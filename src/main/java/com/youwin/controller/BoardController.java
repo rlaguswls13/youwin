@@ -65,4 +65,24 @@ public class BoardController {
         // 삭제 처리가 완료되면 다시 목록(/board)으로 돌아갑니다.
         return "redirect:/board";
     }
+    // 💡 [추가] 공지사항 수정 처리 메서드
+    @PostMapping("/board/modify")
+    public String modifyNotice(
+            @RequestParam("noticeId") Long noticeId,
+            @RequestParam("category") String category,
+            @RequestParam("title") String title,
+            @RequestParam("content") String content,
+            @RequestParam(value = "isPinned", required = false) String isPinned) {
+
+        NoticeDto noticeDto = new NoticeDto();
+        noticeDto.setNoticeId(noticeId);
+        noticeDto.setCategory(category);
+        noticeDto.setTitle(title);
+        noticeDto.setContent(content);
+        noticeDto.setIsPinned(isPinned == null ? 0 : 1);
+
+        // 서비스단의 수정 기능 호출
+        boardService.modifyNotice(noticeDto);
+        return "redirect:/board";
+    }
 }
