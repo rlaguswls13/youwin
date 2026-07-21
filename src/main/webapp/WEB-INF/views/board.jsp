@@ -57,11 +57,32 @@
                     <div class="surface board-table-wrap">
                         <table class="board-table">
                             <caption class="sr-only">공지사항 목록</caption>
-                            <colgroup><col class="board-col-number"><col class="board-col-category"><col><col class="board-col-author"><col class="board-col-date"><col class="board-col-count"></colgroup>
-                            <thead><tr><th>번호</th><th>분류</th><th>제목</th><th>작성자</th><th>작성일</th><th>조회</th></tr></thead>
+                            <colgroup>
+                                <col class="board-col-number">
+                                <col class="board-col-category">
+                                <col>
+                                <col class="board-col-author">
+                                <col class="board-col-date">
+                                <col class="board-col-count">
+                                <col style="width: 8%;"> <!-- [변경] 관리 열 너비 세팅 추가 -->
+                            </colgroup>
+                            <thead>
+                            <tr>
+                                <th>번호</th>
+                                <th>분류</th>
+                                <th>제목</th>
+                                <th>작성자</th>
+                                <th>작성일</th>
+                                <th>조회</th>
+                                <th>관리</th> <!-- [변경] 관리 헤더 추가 -->
+                            </tr>
+                            </thead>
                             <tbody>
                             <c:choose>
-                                <c:when test="${empty list}"><tr><td class="board-empty" colspan="6">등록된 공지사항이 없습니다.</td></tr></c:when>
+                                <c:when test="${empty list}">
+                                    <!-- [변경] colspan을 6에서 7로 변경 -->
+                                    <tr><td class="board-empty" colspan="7">등록된 공지사항이 없습니다.</td></tr>
+                                </c:when>
                                 <c:otherwise>
                                     <c:forEach var="notice" items="${list}">
                                         <tr data-board-row data-category="${notice.category}">
@@ -71,6 +92,13 @@
                                             <td class="board-table__meta">${empty notice.memberId ? '운영팀' : notice.memberId}</td>
                                             <td class="board-table__meta">${notice.createAt}</td>
                                             <td class="board-table__meta">${notice.count}</td>
+                                            <!-- [변경] 💡 삭제 기능 연동 폼 칸 추가 -->
+                                            <td>
+                                                <form action="${pageContext.request.contextPath}/board/delete" method="post" class="delete-form" style="margin:0;">
+                                                    <input type="hidden" name="noticeId" value="${notice.noticeId}">
+                                                    <button type="submit" class="board-filter" style="min-height:28px; padding:0 10px; margin:0; border-color:#ff4d4f; color:#ff4d4f; background:none; font-size:11px;">삭제</button>
+                                                </form>
+                                            </td>
                                         </tr>
                                     </c:forEach>
                                 </c:otherwise>
