@@ -58,4 +58,15 @@
     if (searchInput) {
         searchInput.addEventListener('input', filterRows);
     }
+
+    // 💡 [추가] 삭제 버튼 클릭 시 확인 알림창(Confirm) 띄우기
+    const deleteForms = document.querySelectorAll('.delete-form');
+    deleteForms.forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            // 브라우저 기본 알림창을 띄우고 사용자가 '취소'를 누르면 실행
+            if (!confirm('정말로 이 공지사항을 삭제하시겠습니까?')) {
+                event.preventDefault(); // Form이 서버로 전송(submit)되는 것을 취소시킵니다.
+            }
+        });
+    });
 })();
