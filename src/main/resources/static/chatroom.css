@@ -87,6 +87,13 @@
     padding: 0 9px 14px;
 }
 
+.room-list__empty {
+    margin: 20px 10px;
+    color: var(--color-muted);
+    font-size: 12px;
+    text-align: center;
+}
+
 .room-item {
     width: 100%;
     display: grid;

@@ -51,7 +51,7 @@ create table if not exists chat_rooms(
 
 create table if not exists chat_room_members(
     room_id         int         not null comment '채팅방 번호',
-    member_id       int         not null comment '회원 번호',
+    member_id       bigint        not null comment '회원 번호',
     join_at         datetime    not null default now() comment '입장 시간',
     primary key(room_id, member_id),
 
@@ -59,14 +59,14 @@ create table if not exists chat_room_members(
     references chat_rooms(room_id),
 
     constraint fk_room_member_member foreign key(member_id)
-    references members(member_id)
+    references member(id)
 
     ) comment='채팅방 참여자';
 
 create table if not exists chat_messages(
     message_id      int             not null auto_increment comment '메시지 번호',
-    room_id         int             not null comment '채팅방 번호 FK(암묵적) -> chat_rooms.room_id ',
-    member_id 		int 			not null comment '보낸 회원 번호 FK(암묵적) -> member.member_id',
+    room_id         int             not null comment '채팅방 번호 ',
+    member_id 		bigint 			not null comment '보낸 회원 번호',
     message         varchar(1000)   not null comment '메시지 내용',
     sent_at      	datetime        not null default now() comment '보낸 시간',
     primary key(message_id),
@@ -75,7 +75,7 @@ create table if not exists chat_messages(
     references chat_rooms(room_id),
 
     constraint fk_message_member foreign key(member_id)
-    references members(member_id)
+    references member(id)
     ) comment='채팅 메시지';
 
 
@@ -97,7 +97,7 @@ SELECT s.song_id,
 FROM songs s
          JOIN artists a
               ON   s.artist_id = a.artist_id
-         JOIN theme t
+         JOIN themes t
               ON   s.theme_id = t.theme_id
 ORDER BY s.release_date
 
@@ -124,7 +124,7 @@ FROM songs s
          JOIN artists a
               ON   s.artist_id = a.artist_id
          JOIN themes t
-              ON   s.theme_id = t.theme_id;
+              ON   s.theme_id = t.theme_id
 WHERE t.theme_id = ?;
 
 
@@ -144,5 +144,5 @@ FROM   songs s
            JOIN   artists a
                   ON     s.artist_id = a.artist_id
            JOIN   themes t
-                  ON     s.theme_id = t.theme_id;
+                  ON     s.theme_id = t.theme_id
 WHERE  s.song_title LIKE concat('%', ? ,'%');

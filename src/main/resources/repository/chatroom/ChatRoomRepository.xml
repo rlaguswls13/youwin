@@ -4,17 +4,20 @@
 
 <mapper namespace="com.youwin.repository.ChatRoomRepository">
 
-    <select id="findAllRooms" resultType="com.youwin.dto.ChatRoomDto">
+    <select id="findMyRooms"
+            parameterType="int"
+            resultType="com.youwin.dto.ChatRoomDto">
 
-            SELECT
-                room_id,
-                room_name,
-                target_id,
-                theme_id,
-                created_at,
-            FROM chat_rooms
-            ORDER BY created_at DESC;
-
+    SELECT
+        cr.room_id,
+        cr.room_name,
+        cr.target_id,
+        cr.theme_id,
+        cr.created_at
+    FROM chat_rooms cr
+    INNER JOIN chat_room_members crm
+    ON cr.room_id = crm.room_id
+    WHERE crm.member_id = #{memberId}
+    ORDER BY cr.created_at DESC
     </select>
-
 </mapper>
