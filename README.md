@@ -52,19 +52,43 @@ MySQL ◀── Flyway (스키마 버전 관리)
    │  ├─ application.yml             # 서버, DB, MyBatis 설정
    │  ├─ db/migration/               # Flyway 스키마
    │  ├─ repository/                 # MyBatis XML
-   │  └─ static/                     # CSS 및 JavaScript
-   └─ webapp/WEB-INF/views/          # JSP
+   │  └─ static/
+   │     ├─ app.css / app.js          # 공통 디자인 토큰, 헤더, 버튼, 모바일 메뉴
+   │     ├─ home.css / home.js        # 메인 화면
+   │     ├─ board.css / board.js      # 게시판
+   │     ├─ mypage.css                # 마이페이지
+   │     └─ chatroom.css / chatroom.js # 채팅방
+   └─ webapp/WEB-INF/views/
+      ├─ index.jsp                    # 메인 화면
+      ├─ board.jsp                    # 게시판
+      ├─ home/chatroom.jsp            # 채팅방
+      └─ member/mypage.jsp            # 마이페이지
 ```
 
 ## 현재 기능
 
-- `/` 홈 JSP 렌더링
-- `/board` 공지사항 목록 조회
+- `/` 추천 채팅방, 인기 게시글, 라이브 세션을 보여 주는 메인 화면
+- `/board` 공지사항 목록, 분류 필터, 검색, FAQ, 1:1 문의 화면
 - `/board/write` 공지사항 등록
+- `/chatroom` 채팅방 목록, 메시지 영역, 참여자 패널과 로컬 메시지 입력
+- `/member/mypage` 프로필, 활동 통계, 플레이리스트, 최근 활동 화면
 - `/member/join` 회원가입 화면 및 회원가입 처리 골격
 - 회원 아이디 중복 확인과 BCrypt 비밀번호 암호화
 - 아티스트, 음악, 테마, 채팅 도메인의 DTO 및 Repository 골격
 - `localhost:9999`를 사용하는 단일 클라이언트 TCP 채팅 예제
+
+## 화면 및 CSS 구성
+
+네 개의 핵심 화면은 같은 디자인 시스템을 공유합니다. `app.css`에서 색상, 간격, 모서리, 그림자, 공통 헤더, 버튼, 카드와 반응형 내비게이션을 관리하고 화면별 CSS에는 해당 화면의 레이아웃만 둡니다. JSP에는 인라인 스타일을 넣지 않습니다.
+
+| 화면 | JSP | 전용 스타일 | 주요 구성 |
+| --- | --- | --- | --- |
+| 메인 | `views/index.jsp` | `home.css` | 히어로, 현재 재생 카드, 오픈 톡, 인기글, 라이브 일정 |
+| 게시판 | `views/board.jsp` | `board.css` | 게시판 메뉴, 필터/검색, 목록, 작성 폼, FAQ, 문의 폼 |
+| 마이페이지 | `views/member/mypage.jsp` | `mypage.css` | 프로필, 통계, 플레이리스트, 최근 활동, 관심 장르 |
+| 채팅방 | `views/home/chatroom.jsp` | `chatroom.css` | 채팅방 목록, 대화, 입력창, 참여자 목록 |
+
+모든 핵심 화면은 데스크톱, 태블릿, 모바일 레이아웃을 지원합니다. 채팅 메시지 전송과 채팅방 전환은 현재 브라우저 안에서 UI 동작만 확인할 수 있으며 서버 저장은 아직 연결되지 않았습니다.
 
 ## 기술 스택
 
@@ -119,6 +143,8 @@ mvn spring-boot:run
 
 - 홈: <http://localhost:8080/>
 - 공지사항: <http://localhost:8080/board>
+- 채팅방: <http://localhost:8080/chatroom>
+- 마이페이지: <http://localhost:8080/member/mypage>
 - 회원가입: <http://localhost:8080/member/join>
 - 로그인: <http://localhost:8080/member/login>
 
@@ -161,11 +187,12 @@ mvn clean package
 
 ## 알려진 제약 사항
 
-- 회원용 JSP(`member/join`, `member/login`, `member/index`)는 컨트롤러 경로만 있고 현재 저장소에 뷰 파일이 없습니다.
 - 아티스트·음악·테마·채팅 Repository는 아직 구현 골격입니다.
-- FAQ와 1:1 문의는 정적 UI이며 서버 저장 기능이 없습니다.
+- FAQ와 1:1 문의는 화면 뼈대만 있으며 서버 저장 기능이 없습니다.
+- 채팅방 메시지 입력과 방 전환은 프론트엔드 데모이며 WebSocket 및 DB와 연결되지 않았습니다.
+- 마이페이지의 프로필과 활동 데이터는 현재 예시 데이터입니다.
 - 음악·채팅용 `sql/01_create_table.sql`은 Flyway로 이전되지 않았습니다.
-- 일부 기존 JSP와 SQL 초안에는 인코딩이 깨진 문구가 남아 있습니다.
+- 회원가입·로그인·설정 화면은 핵심 네 화면의 공통 디자인 시스템으로 아직 이전되지 않았습니다.
 - 현재 보안 설정은 개발 편의를 위해 모든 요청을 허용합니다.
 
 ## 라이선스

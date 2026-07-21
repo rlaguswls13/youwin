@@ -36,6 +36,16 @@ public class MemberController {
 
     @GetMapping("/index")
     public String mainForm() {
-        return "member/index";
+        return "redirect:/";
+    }
+
+    @GetMapping("/mypage")
+    public String mypage() {
+        return "member/mypage";
+    }
+
+    @GetMapping("/settings")
+    public String settings() {
+        return "member/settings";
     }
 }
