@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.youwin.repository.ChatRoomRepository">
+
+    <select id="findAllRooms" resultType="com.youwin.dto.ChatRoomDto">
+
+            SELECT
+                room_id,
+                room_name,
+                target_id,
+                theme_id,
+                created_at,
+            FROM chat_rooms
+            ORDER BY created_at DESC;
+
+    </select>
+
+</mapper>
