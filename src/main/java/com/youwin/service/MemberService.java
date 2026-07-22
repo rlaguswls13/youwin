@@ -1,5 +1,6 @@
 package com.youwin.service;
 
+import com.youwin.dto.LoginRequestDto;
 import com.youwin.dto.MemberDto;
 import com.youwin.repository.MemberRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -86,5 +87,26 @@ public class MemberService {
     public boolean isNicknameDuplicate(String nickname) {
         int count = memberRepository.countByNickname(nickname);
         return count > 0;
+    }
+
+    public MemberDto login(LoginRequestDto loginDto) {
+        // 1. DB에서 아이디로 회원 정보 전체 조회 (MemberDto)
+        MemberDto memberDto = memberRepository.findByMemberId(loginDto.getMemberId());
+
+        // 2. 입력한 아이디에 해당하는 회원이 없는 경우
+        if (memberDto == null) {
+            throw new IllegalArgumentException("아이디 또는 비밀번호가 일치하지 않습니다.");
+        }
+
+        // 3. 비밀번호 검증
+        if (!passwordEncoder.matches(loginDto.getMemberPassword(), memberDto.getMemberPassword())) {
+            throw new IllegalArgumentException("아이디 또는 비밀번호가 일치하지 않습니다.");
+        }
+
+        // 4. 보안을 위해 세션 저장 직전 비밀번호 필드만 null 처리
+        memberDto.setMemberPassword(null);
+
+        // 5. 세션에 담아둘 회원 프로필 정보 리턴
+        return memberDto;
     }
 }
