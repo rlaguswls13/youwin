@@ -14,10 +14,13 @@
   </div>
 </div>
 
-<!-- 닉네임 섹션 -->
+<!-- 닉네임 섹션 (중복확인 버튼 포함) -->
 <div class="form-group">
   <label for="nickname">닉네임</label>
-  <input type="text" id="nickname" name="nickname" placeholder="닉네임을 입력해주세요 (2~10자)">
+  <div class="input-with-btn">
+    <input type="text" id="nickname" name="nickname" placeholder="닉네임을 입력해주세요 (2~10자)">
+    <button type="button" class="btn-check" id="btn-check-nickname" onclick="checkDuplicateNickname()">중복확인</button>
+  </div>
   <span class="error-msg" id="err-nickname"></span>
 </div>
 
@@ -27,7 +30,9 @@
 </div>
 
 <script>
-  // 이미지 파일 선택 시 미리보기 처리
+  let isNicknameChecked = false;
+
+  // 프로필 이미지 미리보기
   function previewImage(input) {
     const previewContainer = document.getElementById('image-preview');
     if (input.files && input.files[0]) {
@@ -39,7 +44,7 @@
     }
   }
 
-  // 닉네임 유효성 검사 함수
+  // 닉네임 유효성 검사
   function validateNickname(nicknameValue) {
     if (!nicknameValue || nicknameValue.trim() === '') return '닉네임을 입력해 주세요.';
     if (/\s/.test(nicknameValue)) return '닉네임에는 공백(띄어쓰기)을 포함할 수 없습니다.';
@@ -47,19 +52,65 @@
     return '';
   }
 
-  // 최종 회원가입 폼 제출 처리 함수
+  // 닉네임 중복 체크 (Ajax 연동)
+  function checkDuplicateNickname() {
+    const nicknameInput = document.getElementById('nickname');
+    const errNickname = document.getElementById('err-nickname');
+    const nicknameValue = nicknameInput.value;
+
+    const msg = validateNickname(nicknameValue);
+    if (msg) {
+      showError(nicknameInput, errNickname, msg);
+      isNicknameChecked = false;
+      return;
+    }
+
+    fetch('/api/member/check-nickname?nickname=' + encodeURIComponent(nicknameValue))
+            .then(response => {
+              if (!response.ok) throw new Error('서버 응답 오류');
+              return response.json();
+            })
+            .then(isDuplicate => {
+              if (isDuplicate) {
+                showError(nicknameInput, errNickname, '이미 사용 중인 닉네임입니다.');
+                isNicknameChecked = false;
+              } else {
+                showSuccess(nicknameInput, errNickname, '사용 가능한 닉네임입니다.');
+                isNicknameChecked = true;
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              showError(nicknameInput, errNickname, '중복 확인 중 오류가 발생했습니다.');
+              isNicknameChecked = false;
+            });
+  }
+
+  // 닉네임 변경 시 초기화
+  document.getElementById('nickname').addEventListener('input', function() {
+    isNicknameChecked = false;
+    clearError(this, document.getElementById('err-nickname'));
+  });
+
+  // 최종 폼 제출 처리
   function submitForm() {
     const nicknameInput = document.getElementById('nickname');
     const errNickname = document.getElementById('err-nickname');
-    const nicknameMsg = validateNickname(nicknameInput.value);
 
-    if (nicknameMsg) {
-      showError(nicknameInput, errNickname, nicknameMsg);
+    const isNicknameValid = checkField(nicknameInput, errNickname, validateNickname);
+
+    if (!isNicknameValid) {
       nicknameInput.focus();
-    } else {
-      clearError(nicknameInput, errNickname);
-      // 최종 유효성 검사 통과 시 서브밋 실행
-      document.getElementById('joinForm').submit();
+      return;
     }
+
+    if (!isNicknameChecked) {
+      showError(nicknameInput, errNickname, '닉네임 중복확인을 진행해 주세요.');
+      nicknameInput.focus();
+      return;
+    }
+
+    // 모든 검사 통과 시 서브밋 실행
+    document.getElementById('joinForm').submit();
   }
 </script>

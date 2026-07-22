@@ -57,6 +57,16 @@
       color: #333;
     }
 
+    /* Input + Button 가로 정렬 컨테이너 */
+    .input-with-btn {
+      display: flex;
+      gap: 8px;
+    }
+
+    .input-with-btn input[type="text"] {
+      flex: 1;
+    }
+
     .form-group input[type="text"],
     .form-group input[type="password"],
     .form-group input[type="email"],
@@ -77,6 +87,11 @@
       background-color: #fdeded;
     }
 
+    .form-group input.input-success {
+      border-color: #2ecc71;
+      background-color: #eafaf1;
+    }
+
     .form-group input:focus {
       background-color: #cfcfcf;
     }
@@ -92,6 +107,10 @@
 
     .error-msg.show {
       opacity: 1;
+    }
+
+    .error-msg.success-msg {
+      color: #27ae60;
     }
 
     /* Step 2 스타일 */
@@ -128,7 +147,21 @@
       transition: all 0.2s ease;
     }
 
-    .btn:hover {
+    .btn-check {
+      width: 90px;
+      height: 45px;
+      background-color: #dbdbdb;
+      border: none;
+      outline: none;
+      font-size: 13px;
+      font-weight: bold;
+      color: #333;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover, .btn-check:hover {
       background-color: #c5c5c5;
       color: #000;
     }
@@ -146,7 +179,10 @@
 
       <div class="form-group">
         <label for="member-id">아이디</label>
-        <input type="text" id="member-id" name="memberId" placeholder="영문 시작, 영문+숫자 4~16자">
+        <div class="input-with-btn">
+          <input type="text" id="member-id" name="memberId" placeholder="영문 시작, 영문+숫자 4~16자">
+          <button type="button" class="btn-check" id="btn-check-id" onclick="checkDuplicateId()">중복확인</button>
+        </div>
         <span class="error-msg" id="err-id"></span>
       </div>
 
@@ -188,19 +224,44 @@
 </div>
 
 <script>
+  let isIdChecked = false;
+
+  // 공통 메시지 표시 함수
   function showError(inputElem, errElem, message) {
+    inputElem.classList.remove('input-success');
     inputElem.classList.add('input-error');
+    errElem.classList.remove('success-msg');
+    errElem.innerText = message;
+    errElem.classList.add('show');
+  }
+
+  function showSuccess(inputElem, errElem, message) {
+    inputElem.classList.remove('input-error');
+    inputElem.classList.add('input-success');
+    errElem.classList.add('success-msg');
     errElem.innerText = message;
     errElem.classList.add('show');
   }
 
   function clearError(inputElem, errElem) {
-    inputElem.classList.remove('input-error');
+    inputElem.classList.remove('input-error', 'input-success');
     errElem.innerText = '';
-    errElem.classList.remove('show');
+    errElem.classList.remove('show', 'success-msg');
   }
 
-  // 1. 아이디 유효성 검사
+  // 🎯 [공통 헬퍼] 입력 요소 1개를 검사하고 화면 에러 처리를 전담하는 함수
+  function checkField(inputElem, errElem, validateFn) {
+    const msg = validateFn(inputElem.value);
+    if (msg) {
+      showError(inputElem, errElem, msg);
+      return false;
+    } else {
+      clearError(inputElem, errElem);
+      return true;
+    }
+  }
+
+  // 유효성 검사 규칙들
   function validateId(idValue) {
     if (!idValue || idValue.trim() === '') return '아이디를 입력해 주세요.';
     if (/\s/.test(idValue)) return '아이디에는 공백(띄어쓰기)을 포함할 수 없습니다.';
@@ -210,14 +271,10 @@
     return '';
   }
 
-  // 2. 비밀번호 유효성 검사 (영문 + 숫자 + 특수문자 조합)
   function validatePassword(pwValue) {
     if (!pwValue || pwValue.trim() === '') return '비밀번호를 입력해 주세요.';
     if (/\s/.test(pwValue)) return '비밀번호에는 공백(띄어쓰기)을 포함할 수 없습니다.';
-
-    if (pwValue.length < 8 || pwValue.length > 20) {
-      return '비밀번호는 8자 이상 20자 이하로 입력해 주세요.';
-    }
+    if (pwValue.length < 8 || pwValue.length > 20) return '비밀번호는 8자 이상 20자 이하로 입력해 주세요.';
 
     const hasLetter = /[a-zA-Z]/.test(pwValue);
     const hasNumber = /[0-9]/.test(pwValue);
@@ -226,11 +283,9 @@
     if (!hasLetter || !hasNumber || !hasSpecial) {
       return '영문, 숫자, 특수문자(!@#$%^&*)를 모두 포함해야 합니다.';
     }
-
     return '';
   }
 
-  // 3. 이름 유효성 검사
   function validateName(nameValue) {
     if (!nameValue || nameValue.trim() === '') return '이름을 입력해 주세요.';
     if (/\s/.test(nameValue)) return '이름에는 공백(띄어쓰기)을 포함할 수 없습니다.';
@@ -238,7 +293,6 @@
     return '';
   }
 
-  // 4. 이메일 유효성 검사
   function validateEmail(emailValue) {
     if (!emailValue || emailValue.trim() === '') return '이메일을 입력해 주세요.';
     if (/\s/.test(emailValue)) return '이메일에는 공백(띄어쓰기)을 포함할 수 없습니다.';
@@ -247,7 +301,6 @@
     return '';
   }
 
-  // 5. 전화번호 유효성 검사 (010 고정)
   function validatePhone(phoneValue) {
     if (!phoneValue || phoneValue.trim() === '') return '휴대전화번호를 입력해 주세요.';
     if (/\s/.test(phoneValue)) return '휴대전화번호에는 공백(띄어쓰기)을 포함할 수 없습니다.';
@@ -258,7 +311,47 @@
     return '';
   }
 
-  // 단계 이동 및 전체 유효성 검사
+  // 아이디 중복 체크 (Ajax 연동)
+  function checkDuplicateId() {
+    const idInput = document.getElementById('member-id');
+    const errId = document.getElementById('err-id');
+    const idValue = idInput.value;
+
+    const msg = validateId(idValue);
+    if (msg) {
+      showError(idInput, errId, msg);
+      isIdChecked = false;
+      return;
+    }
+
+    fetch('/api/member/check-id?memberId=' + encodeURIComponent(idValue))
+            .then(response => {
+              if (!response.ok) throw new Error('서버 응답 오류');
+              return response.json();
+            })
+            .then(isDuplicate => {
+              if (isDuplicate) {
+                showError(idInput, errId, '이미 사용 중인 아이디입니다.');
+                isIdChecked = false;
+              } else {
+                showSuccess(idInput, errId, '사용 가능한 아이디입니다.');
+                isIdChecked = true;
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              showError(idInput, errId, '중복 확인 중 오류가 발생했습니다.');
+              isIdChecked = false;
+            });
+  }
+
+  // 아이디 값이 바뀌면 중복검사 상태 초기화
+  document.getElementById('member-id').addEventListener('input', function() {
+    isIdChecked = false;
+    clearError(this, document.getElementById('err-id'));
+  });
+
+  // 다음 단계 이동 및 전체 유효성 검사
   function goToNextStep() {
     const idInput = document.getElementById('member-id');
     const pwInput = document.getElementById('member-password');
@@ -272,135 +365,90 @@
     const errEmail = document.getElementById('err-email');
     const errPhone = document.getElementById('err-phone');
 
-    let isValid = true;
-
-    // 1. 아이디
-    const idMsg = validateId(idInput.value);
-    if (idMsg) {
-      showError(idInput, errId, idMsg);
-      if (isValid) idInput.focus();
-      isValid = false;
-    } else {
-      clearError(idInput, errId);
+    // 각 필드 일괄 검사
+    let isIdValid = checkField(idInput, errId, validateId);
+    if (isIdValid && !isIdChecked) {
+      showError(idInput, errId, '아이디 중복확인을 진행해 주세요.');
+      isIdValid = false;
     }
 
-    // 2. 비밀번호
-    const pwMsg = validatePassword(pwInput.value);
-    if (pwMsg) {
-      showError(pwInput, errPw, pwMsg);
-      if (isValid) pwInput.focus();
-      isValid = false;
-    } else {
-      clearError(pwInput, errPw);
-    }
+    const isPwValid = checkField(pwInput, errPw, validatePassword);
+    const isNameValid = checkField(nameInput, errName, validateName);
+    const isEmailValid = checkField(emailInput, errEmail, validateEmail);
+    const isPhoneValid = checkField(phoneInput, errPhone, validatePhone);
 
-    // 3. 이름
-    const nameMsg = validateName(nameInput.value);
-    if (nameMsg) {
-      showError(nameInput, errName, nameMsg);
-      if (isValid) nameInput.focus();
-      isValid = false;
-    } else {
-      clearError(nameInput, errName);
-    }
+    // 첫 번째로 실패한 항목으로 포커스 이동
+    if (!isIdValid) idInput.focus();
+    else if (!isPwValid) pwInput.focus();
+    else if (!isNameValid) nameInput.focus();
+    else if (!isEmailValid) emailInput.focus();
+    else if (!isPhoneValid) phoneInput.focus();
 
-    // 4. 이메일
-    const emailMsg = validateEmail(emailInput.value);
-    if (emailMsg) {
-      showError(emailInput, errEmail, emailMsg);
-      if (isValid) emailInput.focus();
-      isValid = false;
-    } else {
-      clearError(emailInput, errEmail);
-    }
-
-    // 5. 휴대전화번호
-    const phoneMsg = validatePhone(phoneInput.value);
-    if (phoneMsg) {
-      showError(phoneInput, errPhone, phoneMsg);
-      if (isValid) phoneInput.focus();
-      isValid = false;
-    } else {
-      clearError(phoneInput, errPhone);
-    }
-
-    // 모든 검사 통과 시 Step 2 전환
-    if (isValid) {
+    // 모두 통과 시 Step 2 전환
+    if (isIdValid && isPwValid && isNameValid && isEmailValid && isPhoneValid) {
       document.getElementById('step1').classList.add('hidden');
       document.getElementById('step2').classList.remove('hidden');
       document.getElementById('pageTitle').innerText = '회원 설정';
     }
   }
 
-  // 엔터키 입력 순차 포커스 이동 처리
+  // 엔터키 순차 포커스 이동 처리
   document.getElementById('joinForm').addEventListener('keydown', function(event) {
     if (event.key === 'Enter') {
       event.preventDefault();
 
+      // 🎯 [수정 1] target 변수를 최상단으로 이동 (Step 1, Step 2 공용)
+      const target = event.target;
       const step1 = document.getElementById('step1');
 
+      // ----------------------------------------------------
+      // [Step 1] 회원정보 입력 단계
+      // ----------------------------------------------------
       if (!step1.classList.contains('hidden')) {
-        const target = event.target;
 
-        const idInput = document.getElementById('member-id');
         const pwInput = document.getElementById('member-password');
         const nameInput = document.getElementById('member-name');
         const emailInput = document.getElementById('member-email');
         const phoneInput = document.getElementById('member-phone');
 
-        const errId = document.getElementById('err-id');
-        const errPw = document.getElementById('err-password');
-        const errName = document.getElementById('err-name');
-        const errEmail = document.getElementById('err-email');
-        const errPhone = document.getElementById('err-phone');
-
-        // 아이디
         if (target.id === 'member-id') {
-          const idMsg = validateId(idInput.value);
-          if (idMsg) {
-            showError(idInput, errId, idMsg);
+          if (isIdChecked) {
+            pwInput.focus(); // 이미 중복확인 통과했으면 다음 칸 이동
           } else {
-            clearError(idInput, errId);
-            pwInput.focus();
+            checkDuplicateId(); // 안 했으면 중복확인 실행!
           }
         }
-        // 비밀번호
         else if (target.id === 'member-password') {
-          const pwMsg = validatePassword(pwInput.value);
-          if (pwMsg) {
-            showError(pwInput, errPw, pwMsg);
-          } else {
-            clearError(pwInput, errPw);
+          if (checkField(pwInput, document.getElementById('err-password'), validatePassword)) {
             nameInput.focus();
           }
         }
-        // 이름
         else if (target.id === 'member-name') {
-          const nameMsg = validateName(nameInput.value);
-          if (nameMsg) {
-            showError(nameInput, errName, nameMsg);
-          } else {
-            clearError(nameInput, errName);
+          if (checkField(nameInput, document.getElementById('err-name'), validateName)) {
             emailInput.focus();
           }
         }
-        // 이메일
         else if (target.id === 'member-email') {
-          const emailMsg = validateEmail(emailInput.value);
-          if (emailMsg) {
-            showError(emailInput, errEmail, emailMsg);
-          } else {
-            clearError(emailInput, errEmail);
+          if (checkField(emailInput, document.getElementById('err-email'), validateEmail)) {
             phoneInput.focus();
           }
         }
-        // 휴대전화번호
         else if (target.id === 'member-phone') {
-          goToNextStep();
+          if (checkField(phoneInput, document.getElementById('err-phone'), validatePhone)) {
+            goToNextStep();
+          }
         }
-      } else {
-        // Step 2 활성화 상태에서 엔터키 입력 시
-        submitForm();
+      }
+      else {
+        if (target.id === 'nickname') {
+          if (isNicknameChecked) {
+            submitForm(); // 이미 중복확인 통과했으면 가입 제출
+          } else {
+            checkDuplicateNickname(); // 안 했으면 중복확인 실행!
+          }
+        } else {
+          submitForm();
+        }
       }
     }
   });

@@ -76,4 +76,15 @@ public class MemberService {
         // 3. DB INSERT (여기서 에러가 나면 트랜잭션이 롤백되면서 위에서 등록한 파일 삭제 이벤트가 자동으로 실행됨)
         memberRepository.insertMember(memberDto);
     }
+
+    // 아이디 중복 여부 확인 비즈니스 로직
+    public boolean isIdDuplicate(String memberId) {
+        int count = memberRepository.countByMemberId(memberId);
+        return count > 0; // 1 이상이면 true(중복), 0이면 false(사용가능)
+    }
+    // 닉네임 중복 여부 확인 비즈니스 로직
+    public boolean isNicknameDuplicate(String nickname) {
+        int count = memberRepository.countByNickname(nickname);
+        return count > 0;
+    }
 }
