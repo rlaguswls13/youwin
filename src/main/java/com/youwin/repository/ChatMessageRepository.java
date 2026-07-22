@@ -10,4 +10,5 @@ public interface ChatMessageRepository {
 
     List<ChatMessageDto> findMessages(Integer roomId);
 
+    void saveMessage(ChatMessageDto dto);
 }
