@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class BoardController {
@@ -23,24 +25,66 @@ public class BoardController {
         this.boardService = boardService;
     }
 
-    // 1. 공지사항 목록 조회 (기존 유지)
+    // 1. 공지사항 목록 조회 (페이징, 카테고리 필터, 키워드 검색 연동 수정)
     @GetMapping("/board")
-    public String boardPage(Model model) {
-        List<NoticeDto> noticeList = boardService.getNotices();
+    public String boardPage(
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "category", defaultValue = "all") String category,
+            @RequestParam(value = "keyword", defaultValue = "") String keyword,
+            Model model) {
+
+        // [수정] 한 화면에 보여줄 작성글 개수 고정 세팅
+        int limit = 10;
+        int offset = (page - 1) * limit;
+
+        // [수정] MyBatis 쿼리에 전달할 파라미터 맵 구성
+        Map<String, Object> params = new HashMap<>();
+        params.put("offset", offset);
+        params.put("limit", limit);
+        params.put("category", category);
+        params.put("keyword", keyword.trim());
+
+        // [수정] 페이징 조건에 맞는 글 목록 및 검색 결과 총 개수 조회
+        List<NoticeDto> noticeList = boardService.getNoticesWithPaging(params);
+        int totalCount = boardService.getTotalCount(params);
+
+        // [추가] JSP에 동적 렌더링 데이터를 넘겨주기 위한 pageMaker 객체 생성 및 수학적 연산 수행
+        Map<String, Object> pageMaker = new HashMap<>();
+        Map<String, Object> cri = new HashMap<>();
+        cri.put("page", page);
+        cri.put("category", category);
+        cri.put("keyword", keyword);
+        pageMaker.put("cri", cri);
+
+        // 하단 페이지네이션 블록 연산 (10번까지 보이고 좌우 화살표로 이동하는 산식)
+        int endPage = (int) (Math.ceil(page / 10.0) * 10);
+        int startPage = (endPage - 9);
+        int realEnd = (int) (Math.ceil((totalCount * 1.0) / limit));
+
+        if (realEnd < endPage) {
+            endPage = realEnd;
+        }
+        if (endPage == 0) {
+            endPage = 1;
+        }
+
+        pageMaker.put("startPage", startPage);
+        pageMaker.put("endPage", endPage);
+        pageMaker.put("prev", startPage > 1);
+        pageMaker.put("next", endPage < realEnd);
+
+        // 모델 바인딩 후 JSP 뷰 리턴
         model.addAttribute("list", noticeList);
+        model.addAttribute("pageMaker", pageMaker);
+
         return "board";
     }
 
-    // [추가] 공지사항 단건 상세 조회 (더블클릭 화면 연동)
+    // 공지사항 단건 상세 조회 (더블클릭 화면 연동 - 기존 유지)
     @GetMapping("/board/{noticeId}")
     public String detailNotice(@PathVariable("noticeId") Long noticeId, Model model) {
-        // 서비스단에서 글 번호로 해당 공지사항 상세 데이터 한 건을 가져옵니다.
         NoticeDto notice = boardService.getNoticeById(noticeId);
-
-        // 가져온 데이터를 폼 영역이나 화면에 렌더링할 수 있도록 모델에 담아 보냅니다.
         model.addAttribute("notice", notice);
-
-        // 단건 상세보기를 처리할 뷰 이름이나 혹은 기존 board 뷰 내에서 탭 제어를 유도합니다.
         return "board";
     }
 
@@ -70,17 +114,14 @@ public class BoardController {
         return "redirect:/board";
     }
 
-    // 3. [추가] 공지사항 삭제 처리 메서드
+    // 3. 공지사항 삭제 처리 메서드 (기존 유지)
     @PostMapping("/board/delete")
     public String deleteNotice(@RequestParam("noticeId") Long noticeId) {
-        // 서비스단에 글 번호(noticeId)를 전달하여 삭제 로직 수행
         boardService.deleteNotice(noticeId);
-
-        // 삭제 처리가 완료되면 다시 목록(/board)으로 돌아갑니다.
         return "redirect:/board";
     }
 
-    // [추가] 공지사항 수정 처리 메서드
+    // 공지사항 수정 처리 메서드 (기존 유지)
     @PostMapping("/board/modify")
     public String modifyNotice(
             @RequestParam("noticeId") Long noticeId,
@@ -96,7 +137,6 @@ public class BoardController {
         noticeDto.setContent(content);
         noticeDto.setIsPinned(isPinned == null ? 0 : 1);
 
-        // 서비스단의 수정 기능 호출
         boardService.modifyNotice(noticeDto);
         return "redirect:/board";
     }
