@@ -19,4 +19,8 @@ public class ChatMessageService {
 
     }
 
+    public void saveMessage(ChatMessageDto dto){
+        chatMessageRepository.saveMessage(dto);
+    }
+
 }

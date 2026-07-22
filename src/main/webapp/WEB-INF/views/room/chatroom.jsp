@@ -26,33 +26,50 @@
                     <button class="menu-toggle" type="button" data-menu-toggle aria-label="메뉴 열기" aria-expanded="false"></button>
                 </div>
             </header>
-
             <main class="chat-page">
                 <div class="chat-shell">
                     <aside class="chat-rooms" data-rooms-panel aria-label="채팅방 목록">
-                        <div class="chat-panel__head"><div><h2>오픈 톡</h2><span>참여 중인 대화 ${fn:length(roomList)}</span></div><button class="icon-button" type="button" aria-label="새 채팅방 만들기">＋</button></div>
+                        <div class="chat-panel__head"><div><h2>오픈 톡</h2><span>참여 중인 대화 ${fn:length(roomList)}</span></div><button class="icon-button" type="button" id="open-room-modal"aria-label="새 채팅방 만들기">＋</button></div>
                         <div class="room-search"><label class="sr-only" for="room-search">채팅방 검색</label><input id="room-search" type="search" placeholder="채팅방 검색"></div>
                         <div class="room-list">
-                            <c:forEach var="room" items="${roomList}" varStatus="status">
-                                <button class="room-item${status.first ? ' is-active' : ''}" type="button" data-room-item data-room-name="<c:out value='${room.roomName}'/>">
+                         <c:choose>
+
+                             <c:when test="${empty roomList}">
+                                 <p class="room-list__empty">가입한 채팅방이 없습니다.</p>
+                             </c:when>
+
+                           <c:otherwise>
+
+                            <c:forEach var="room" items="${roomList}">
+
+                                <a href="${pageContext.request.contextPath}/chatroom?roomId=${room.roomId}"
+                                   class="room-item" data-room-item data-room-name="${room.roomName}">
+
                                     <span class="room-item__art">🎵</span>
+
                                     <span>
-                        <strong class="room-item__name">
-                                ${room.roomName}
-                        </strong>
 
-                        <span class="room-item__preview">
-                            음악 채팅방
-                        </span>
-                    </span>
-                        </button>
-                            </c:forEach>
-                            <c:if test="${empty roomList}">
-                                <p class="room-list__empty">참여 중인 채팅방이 없습니다.</p>
-                            </c:if>
-                        </div>
+                                    <strong class="room-item__name">
+                                            ${room.roomName}
+                                    </strong>
+
+                                    <span class="room-item__preview">
+                                        음악 채팅방
+                                    </span>
+
+                                </span>
+
+                                </a>
+
+                        </c:forEach>
+
+                      </c:otherwise>
+
+                    </c:choose>
+                    <div id="empty-room-message" class="room-list__empty" style="display:none;">검색 결과가 없습니다.
+                       </div>
+                     </div>
                     </aside>
-
                     <section class="chat-conversation" aria-labelledby="conversation-title">
                         <header class="conversation-head">
                             <button class="icon-button mobile-panel-button" type="button" data-rooms-toggle aria-label="채팅방 목록 열기" aria-expanded="false">☰</button>
@@ -99,6 +116,49 @@
                     </aside>
                 </div>
             </main>
+            <div class="modal" id="room-modal">
+
+                <div class="modal-content">
+
+                    <div class="modal-header">
+
+                        <h2>채팅방 만들기</h2>
+
+                        <button type="button" id="close-room-modal">✕</button>
+
+                    </div>
+
+                    <div class="modal-body">
+
+                        <label>채팅방 이름</label>
+
+                        <input type="text" id="room-name" placeholder="예) 아이유 팬톡">
+
+                        <label>장르</label>
+
+                        <select id="theme-id">
+                            <option value="1">발라드</option>
+                            <option value="2">댄스</option>
+                            <option value="3">힙합</option>
+                            <option value="4">인디</option>
+                            <option value="5">록</option>
+                            <option value="6">POP</option>
+
+                        </select>
+
+                        <label>대상 번호</label>
+                        <input type="number" id="target-id" placeholder="아티스트 번호">
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" id="cancel-room">취소</button>
+                        <button type="button" id="create-room">생성하기</button>
+                    </div>
+
+                </div>
+
+            </div>
         </div>
         <script src="${pageContext.request.contextPath}/app.js"></script>
         <script src="${pageContext.request.contextPath}/chatroom.js"></script>

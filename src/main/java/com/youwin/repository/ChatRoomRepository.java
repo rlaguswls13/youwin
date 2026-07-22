@@ -1,5 +1,6 @@
 package com.youwin.repository;
 
+import com.youwin.dto.ChatMessageDto;
 import com.youwin.dto.ChatRoomDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -10,5 +11,10 @@ import java.util.List;
 public interface ChatRoomRepository {
 
     List<ChatRoomDto> findMyRooms(@Param("memberId") Integer memberId);
+
+    void createRoom(ChatRoomDto dto);
+
+    void joinRoom(@Param("roomId") Integer roomId,
+                  @Param("memberId") Integer memberId);
 }
 

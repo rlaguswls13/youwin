@@ -2,42 +2,37 @@ package com.youwin.controller;
 
 import com.youwin.dto.MemberDto;
 import com.youwin.service.MemberService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 @RequestMapping("/member")
+@RequiredArgsConstructor
 public class MemberController {
 
     private final MemberService memberService;
 
-    public MemberController(MemberService memberService) {
-        this.memberService = memberService;
-    }
-
     @PostMapping("/join")
-    public String registerProcess(
-            @RequestParam String username,
-            @RequestParam String password,
-            @RequestParam String name,
-            @RequestParam String email,
-            @RequestParam String phone) {
-        MemberDto memberDto = new MemberDto();
-        memberDto.setMemberId(username);
-        memberDto.setMemberPassword(password);
-        memberDto.setNickname(name);
-        memberDto.setMemberEmail(email);
-        memberDto.setMemberPhone(phone);
-        memberService.join(memberDto);
+    public String join(MemberDto memberDto, MultipartFile profile) {
+        // INSERT 서비스 호출
+        memberService.joinMember(memberDto);
+
         return "redirect:/member/login";
     }
 
-    @GetMapping("/join")
-    public String joinForm() {
-        return "member/join";
+    // view 이동
+    @GetMapping("/joinStep1")
+    public String joinStep1() {
+        return "member/joinStep1";
+    }
+
+    @GetMapping("/joinStep2")
+    public String joinStep2() {
+        return "member/joinStep2";
     }
 
     @GetMapping("/login")
@@ -45,18 +40,8 @@ public class MemberController {
         return "member/login";
     }
 
-    @GetMapping("/index")
-    public String mainForm() {
-        return "redirect:/";
-    }
-
     @GetMapping("/mypage")
-    public String mypage() {
+    public String mypageForm() {
         return "member/mypage";
-    }
-
-    @GetMapping("/settings")
-    public String settings() {
-        return "member/settings";
     }
 }

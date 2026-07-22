@@ -20,4 +20,22 @@
 
     </select>
 
+    <insert id="saveMessage"
+            parameterType="com.youwin.dto.ChatMessageDto">
+
+        INSERT INTO chat_messages
+        (
+            room_id,
+            member_id,
+            message
+        )
+        VALUES
+            (
+                #{roomId},
+                #{memberId},
+                #{message}
+            )
+
+    </insert>
+
 </mapper>

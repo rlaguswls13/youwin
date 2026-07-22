@@ -14,10 +14,50 @@
         cr.target_id,
         cr.theme_id,
         cr.created_at
-    FROM chat_rooms cr
+    FROM member m
+
     INNER JOIN chat_room_members crm
-    ON cr.room_id = crm.room_id
-    WHERE crm.member_id = #{memberId}
+    ON m.id = crm.member_id
+
+    INNER JOIN chat_rooms cr
+    ON crm.room_id = cr.room_id
+
+    WHERE m.id = #{memberId}
     ORDER BY cr.created_at DESC
     </select>
+
+    <insert id="createRoom"
+            parameterType="com.youwin.dto.ChatRoomDto"
+            useGeneratedKeys="true"
+            keyProperty="roomId">
+
+        INSERT INTO chat_rooms
+        (
+            room_name,
+            target_id,
+            theme_id
+        )
+        VALUES
+            (
+                #{roomName},
+                #{targetId},
+                #{themeId}
+            )
+
+    </insert>
+
+    <insert id="joinRoom">
+
+        INSERT INTO chat_room_members
+        (
+            room_id,
+            member_id
+        )
+        VALUES
+            (
+                #{roomId},
+                #{memberId}
+            )
+
+    </insert>
 </mapper>
