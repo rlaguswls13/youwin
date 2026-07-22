@@ -3,12 +3,12 @@ package com.youwin.controller;
 import com.youwin.dto.MemberDto;
 import com.youwin.service.MemberService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.multipart.MultipartFile;
 
-@Slf4j
 @Controller
 @RequestMapping("/member")
 @RequiredArgsConstructor
@@ -18,8 +18,6 @@ public class MemberController {
 
     @PostMapping("/join")
     public String join(MemberDto memberDto, MultipartFile profile) {
-        log.info("회원가입 요청 데이터: {}", memberDto);
-
         // INSERT 서비스 호출
         memberService.joinMember(memberDto);
 
@@ -30,6 +28,11 @@ public class MemberController {
     @GetMapping("/joinStep1")
     public String joinStep1() {
         return "member/joinStep1";
+    }
+
+    @GetMapping("/joinStep2")
+    public String joinStep2() {
+        return "member/joinStep2";
     }
 
     @GetMapping("/login")

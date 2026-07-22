@@ -24,7 +24,7 @@ create table if not exists songs (
     artist_id	    int				not null comment '아티스트 번호 FK(암묵적) -> artists.artist_id',
     theme_id		int				not null comment '장르 번호 FK(암묵적) -> themes.theme_id',
     album_image_url varchar(300)	null	 comment '최신 노래 앨범/이미지 경로',
-    release_date    date			null 	 comment '최신 발매일'	,
+    release_date    date			null 	 comment '최신 발매일',
     primary key(song_id)
     ) comment = '노래';
 
