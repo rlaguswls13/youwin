@@ -25,4 +25,16 @@ public class BoardService {
     public void writeNotice(NoticeDto notice) {
         noticeRepository.save(notice);
     }
+
+    // 💡 3. [추가] 컨트롤러에서 호출할 공지사항 삭제 로직
+    @Transactional
+    public void deleteNotice(Long noticeId) {
+        // 위에서 선언한 레포지토리의 deleteById 메서드를 실행합니다.
+        noticeRepository.deleteById(noticeId);
+    }
+    // 💡 [추가] 공지사항 데이터를 변경하는 비즈니스 서비스 로직
+    @Transactional
+    public void modifyNotice(NoticeDto notice) {
+        noticeRepository.update(notice);
+    }
 }

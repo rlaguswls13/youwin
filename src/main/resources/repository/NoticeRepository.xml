@@ -4,6 +4,7 @@
 
 <mapper namespace="com.youwin.repository.NoticeRepository">
 
+    <!-- 1. 공지사항 전체 조회 (기존 유지) -->
     <select id="findAll" resultType="com.youwin.dto.NoticeDto">
         SELECT notice_id AS noticeId,
                member_id AS memberId,
@@ -18,6 +19,7 @@
         ORDER BY is_pinned DESC, notice_id DESC
     </select>
 
+    <!-- 2. 공지사항 등록 (기존 유지) -->
     <insert id="save" parameterType="com.youwin.dto.NoticeDto">
         INSERT INTO notice_board (
             member_id,
@@ -26,12 +28,29 @@
             content,
             is_pinned
         ) VALUES (
-            #{memberId},
-            #{category},
-            #{title},
-            #{content},
-            #{isPinned}
-        )
+                     #{memberId},
+                     #{category},
+                     #{title},
+                     #{content},
+                     #{isPinned}
+                 )
     </insert>
+
+    <!-- 💡 3. [추가] 공지사항 삭제 SQL 쿼리 -->
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM notice_board
+        WHERE notice_id = #{noticeId}
+    </delete>
+
+    <!-- 💡 4. [추가] 공지사항 데이터 수정 UPDATE 쿼리 -->
+    <update id="update" parameterType="com.youwin.dto.NoticeDto">
+        UPDATE notice_board
+        SET category = #{category},
+            title = #{title},
+            content = #{content},
+            is_pinned = #{isPinned},
+            update_at = CURRENT_TIMESTAMP
+        WHERE notice_id = #{noticeId}
+    </update>
 
 </mapper>

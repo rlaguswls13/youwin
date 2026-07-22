@@ -57,20 +57,59 @@
                     <div class="surface board-table-wrap">
                         <table class="board-table">
                             <caption class="sr-only">공지사항 목록</caption>
-                            <colgroup><col class="board-col-number"><col class="board-col-category"><col><col class="board-col-author"><col class="board-col-date"><col class="board-col-count"></colgroup>
-                            <thead><tr><th>번호</th><th>분류</th><th>제목</th><th>작성자</th><th>작성일</th><th>조회</th></tr></thead>
+                            <colgroup>
+                                <col class="board-col-number">
+                                <col class="board-col-category">
+                                <col>
+                                <col class="board-col-author">
+                                <col class="board-col-date">
+                                <col class="board-col-count">
+                                <col style="width: 14%;"> <!-- [변경] 버튼 2개 가로 배치를 위해 8% -> 14% 확장 세팅 추가 -->
+                            </colgroup>
+                            <thead>
+                            <tr>
+                                <th>번호</th>
+                                <th>분류</th>
+                                <th>제목</th>
+                                <th>작성자</th>
+                                <th>작성일</th>
+                                <th>조회</th>
+                                <th>관리</th> <!-- [변경] 관리 헤더 추가 -->
+                            </tr>
+                            </thead>
                             <tbody>
                             <c:choose>
-                                <c:when test="${empty list}"><tr><td class="board-empty" colspan="6">등록된 공지사항이 없습니다.</td></tr></c:when>
+                                <c:when test="${empty list}">
+                                    <!-- [변경] colspan을 6에서 7로 변경 -->
+                                    <tr><td class="board-empty" colspan="7">등록된 공지사항이 없습니다.</td></tr>
+                                </c:when>
                                 <c:otherwise>
                                     <c:forEach var="notice" items="${list}">
-                                        <tr data-board-row data-category="${notice.category}">
+                                        <!-- [변경] 💡 기존 정보 로드를 위한 data 속성 추가 -->
+                                        <tr data-board-row
+                                            data-category="${notice.category}"
+                                            data-id="${notice.noticeId}"
+                                            data-title="<c:out value='${notice.title}'/>"
+                                            data-content="<c:out value='${notice.content}'/>"
+                                            data-pinned="${notice.isPinned}">
                                             <td class="board-table__number">${notice.noticeId}</td>
                                             <td><span class="chip">${notice.category}</span></td>
                                             <td class="board-table__title"><c:if test="${notice.isPinned == 1}"><span class="chip chip--live">고정</span>&nbsp;</c:if>${notice.title}</td>
                                             <td class="board-table__meta">${empty notice.memberId ? '운영팀' : notice.memberId}</td>
                                             <td class="board-table__meta">${notice.createAt}</td>
                                             <td class="board-table__meta">${notice.count}</td>
+                                            <!-- [변경] 💡 삭제 기능 연동 폼 칸 추가 (수정 버튼 포함) -->
+                                            <td>
+                                                <div style="display: flex; gap: 4px; justify-content: center; align-items: center;">
+                                                    <!-- [변경] 💡 파란색 수정 버튼 추가 -->
+                                                    <button type="button" class="board-filter btn-edit" style="min-height:28px; padding:0 10px; margin:0; border-color:#2f54eb; color:#2f54eb; background:none; font-size:11px; cursor:pointer;">수정</button>
+
+                                                    <form action="${pageContext.request.contextPath}/board/delete" method="post" class="delete-form" style="margin:0;">
+                                                        <input type="hidden" name="noticeId" value="${notice.noticeId}">
+                                                        <button type="submit" class="board-filter" style="min-height:28px; padding:0 10px; margin:0; border-color:#ff4d4f; color:#ff4d4f; background:none; font-size:11px; cursor:pointer;">삭제</button>
+                                                    </form>
+                                                </div>
+                                            </td>
                                         </tr>
                                     </c:forEach>
                                 </c:otherwise>
@@ -83,12 +122,18 @@
 
                 <section class="board-view" data-board-view="write" aria-labelledby="write-title">
                     <div class="page-heading"><p class="page-eyebrow">Write a post</p><h1 class="page-title" id="write-title">새 공지 작성</h1><p class="page-description">회원에게 필요한 내용을 간결하고 정확하게 작성해 주세요.</p></div>
-                    <form class="surface editor-card form-grid" action="${pageContext.request.contextPath}/board/write" method="post">
+                    <!-- [변경] 💡 스크립트 제어를 위해 id="editor-form" 속성 추가 -->
+                    <form id="editor-form" class="surface editor-card form-grid" action="${pageContext.request.contextPath}/board/write" method="post">
+                        <!-- [변경] 💡 수정 시 글 번호를 전송할 hidden input 필드 추가 -->
+                        <input type="hidden" id="post-noticeId" name="noticeId" value="">
+
                         <div class="form-field"><label for="category">분류</label><select id="category" name="category" required><option value="안내">안내</option><option value="업데이트">업데이트</option><option value="이벤트">이벤트</option></select></div>
-                        <div class="form-options"><label><input type="checkbox" name="isPinned" value="1"> 상단 고정</label><label><input type="checkbox" name="allowComments" value="1"> 댓글 허용</label></div>
+                        <!-- [변경] 💡 스크립트 연동을 위한 id="post-isPinned" 속성 추가 -->
+                        <div class="form-options"><label><input type="checkbox" id="post-isPinned" name="isPinned" value="1"> 상단 고정</label><label><input type="checkbox" name="allowComments" value="1"> 댓글 허용</label></div>
                         <div class="form-field"><label for="post-title">제목</label><input id="post-title" type="text" name="title" maxlength="200" placeholder="제목을 입력해 주세요" required></div>
                         <div class="form-field"><label for="post-content">내용</label><textarea id="post-content" name="content" placeholder="내용을 입력해 주세요" required></textarea></div>
-                        <div class="form-actions"><button class="button button--secondary" type="button" data-cancel-editor>취소</button><button class="button" type="submit">등록하기</button></div>
+                        <!-- [변경] 💡 취소 버튼 식별을 위한 data-cancel-editor 및 등록 버튼 id="submit-btn" 추가 -->
+                        <div class="form-actions"><button class="button button--secondary" type="button" data-cancel-editor>취소</button><button id="submit-btn" class="button" type="submit">등록하기</button></div>
                     </form>
                 </section>
 
