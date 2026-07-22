@@ -4,26 +4,35 @@
 
 <mapper namespace="com.youwin.repository.MemberRepository">
 
-    <insert id="save" parameterType="com.youwin.dto.MemberDto">
+    <!-- 회원 가입 쿼리-->
+    <insert id="insertMember" parameterType="com.youwin.dto.MemberDto">
         INSERT INTO member (
             member_id,
             member_password,
             nickname,
+            member_name,
             member_phone,
-            member_email
+            member_email,
+            profile_image
         ) VALUES (
             #{memberId},
             #{memberPassword},
             #{nickname},
+            #{memberName},
             #{memberPhone},
-            #{memberEmail}
+            #{memberEmail},
+            #{profileImage}
         )
     </insert>
 
-    <select id="countById" parameterType="string" resultType="int">
-        SELECT COUNT(*)
-        FROM member
-        WHERE member_id = #{memberId}
+    <!-- 아이디 중복 확인 쿼리 -->
+    <select id="countByMemberId" parameterType="string" resultType="int">
+        SELECT COUNT(*) FROM member WHERE member_id = #{memberId}
+    </select>
+
+    <!-- 닉네임 중복 확인 쿼리 -->
+    <select id="countByNickname" parameterType="string" resultType="int">
+        SELECT COUNT(*) FROM member WHERE nickname = #{nickname}
     </select>
 
 </mapper>

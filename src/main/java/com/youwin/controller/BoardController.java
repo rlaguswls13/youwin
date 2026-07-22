@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
@@ -27,6 +28,19 @@ public class BoardController {
     public String boardPage(Model model) {
         List<NoticeDto> noticeList = boardService.getNotices();
         model.addAttribute("list", noticeList);
+        return "board";
+    }
+
+    // [추가] 공지사항 단건 상세 조회 (더블클릭 화면 연동)
+    @GetMapping("/board/{noticeId}")
+    public String detailNotice(@PathVariable("noticeId") Long noticeId, Model model) {
+        // 서비스단에서 글 번호로 해당 공지사항 상세 데이터 한 건을 가져옵니다.
+        NoticeDto notice = boardService.getNoticeById(noticeId);
+
+        // 가져온 데이터를 폼 영역이나 화면에 렌더링할 수 있도록 모델에 담아 보냅니다.
+        model.addAttribute("notice", notice);
+
+        // 단건 상세보기를 처리할 뷰 이름이나 혹은 기존 board 뷰 내에서 탭 제어를 유도합니다.
         return "board";
     }
 
@@ -56,7 +70,7 @@ public class BoardController {
         return "redirect:/board";
     }
 
-    // 💡 3. [추가] 공지사항 삭제 처리 메서드
+    // 3. [추가] 공지사항 삭제 처리 메서드
     @PostMapping("/board/delete")
     public String deleteNotice(@RequestParam("noticeId") Long noticeId) {
         // 서비스단에 글 번호(noticeId)를 전달하여 삭제 로직 수행
@@ -65,7 +79,8 @@ public class BoardController {
         // 삭제 처리가 완료되면 다시 목록(/board)으로 돌아갑니다.
         return "redirect:/board";
     }
-    // 💡 [추가] 공지사항 수정 처리 메서드
+
+    // [추가] 공지사항 수정 처리 메서드
     @PostMapping("/board/modify")
     public String modifyNotice(
             @RequestParam("noticeId") Long noticeId,
