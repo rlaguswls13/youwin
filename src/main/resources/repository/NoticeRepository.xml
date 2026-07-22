@@ -19,6 +19,21 @@
         ORDER BY is_pinned DESC, notice_id DESC
     </select>
 
+    <!-- [추가] 공지사항 단건 상세 조회 (더블클릭 조회 연동) -->
+    <select id="findById" parameterType="long" resultType="com.youwin.dto.NoticeDto">
+        SELECT notice_id AS noticeId,
+               member_id AS memberId,
+               category,
+               title,
+               content,
+               `count`,
+               is_pinned AS isPinned,
+               create_at AS createAt,
+               update_at AS updateAt
+        FROM notice_board
+        WHERE notice_id = #{noticeId}
+    </select>
+
     <!-- 2. 공지사항 등록 (기존 유지) -->
     <insert id="save" parameterType="com.youwin.dto.NoticeDto">
         INSERT INTO notice_board (
@@ -36,13 +51,13 @@
                  )
     </insert>
 
-    <!-- 💡 3. [추가] 공지사항 삭제 SQL 쿼리 -->
+    <!-- 3. [추가] 공지사항 삭제 SQL 쿼리 -->
     <delete id="deleteById" parameterType="long">
         DELETE FROM notice_board
         WHERE notice_id = #{noticeId}
     </delete>
 
-    <!-- 💡 4. [추가] 공지사항 데이터 수정 UPDATE 쿼리 -->
+    <!-- 4. [추가] 공지사항 데이터 수정 UPDATE 쿼리 -->
     <update id="update" parameterType="com.youwin.dto.NoticeDto">
         UPDATE notice_board
         SET category = #{category},
