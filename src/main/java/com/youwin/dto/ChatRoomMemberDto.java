@@ -1,11 +1,15 @@
 package com.youwin.dto;
 
 
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@ToString
 public class ChatRoomMemberDto {
 
     private Integer roomId;

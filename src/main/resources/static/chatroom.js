@@ -78,7 +78,7 @@
                 message: text
             };
 
-            const response = await fetch("/chatroom/message", {
+            const response = await fetch("/chat/message/send", {
                 method: "POST", headers: {
                     "Content-Type": "application/json"
 
@@ -222,7 +222,7 @@
                         targetId: Number(targetId.value)
                     };
 
-                    const response = await fetch("/chatroom/create", {
+                    const response = await fetch("/chat/room/create", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json"

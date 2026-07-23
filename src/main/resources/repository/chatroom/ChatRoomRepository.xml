@@ -4,60 +4,252 @@
 
 <mapper namespace="com.youwin.repository.ChatRoomRepository">
 
-    <select id="findMyRooms"
-            parameterType="int"
-            resultType="com.youwin.dto.ChatRoomDto">
+    <!-- 아티스트 목록 조회-->
+    <select id="findArtistList" resultType="com.youwin.dto.ArtistDto">
 
-    SELECT
-        cr.room_id,
-        cr.room_name,
-        cr.target_id,
-        cr.theme_id,
-        cr.created_at
-    FROM member m
+        SELECT
+            artist_id,
+            artist_name,
+            artist_image_url,
+            created_at
+        FROM artists
+        ORDER BY artist_name
 
-    INNER JOIN chat_room_members crm
-    ON m.id = crm.member_id
-
-    INNER JOIN chat_rooms cr
-    ON crm.room_id = cr.room_id
-
-    WHERE m.id = #{memberId}
-    ORDER BY cr.created_at DESC
     </select>
 
-    <insert id="createRoom"
-            parameterType="com.youwin.dto.ChatRoomDto"
-            useGeneratedKeys="true"
-            keyProperty="roomId">
+    <!-- 아티스트 검색 -->
+    <select id="searchArtist" parameterType="String" resultType="com.youwin.dto.ArtistDto">
 
-        INSERT INTO chat_rooms
-        (
+        SELECT
+            artist_id,
+            artist_name,
+            artist_image_url,
+            created_at
+        FROM artists
+        WHERE artist_name LIKE CONCAT('%',#{keyword}, '%')
+        ORDER BY artist_name
+    </select>
+
+    <!-- 아티스트 선택 -->
+    <select id="findArtist" parameterType="int" resultType="com.youwin.dto.ArtistDto">
+
+        SELECT
+            artist_id,
+            artist_name,
+            artist_image_url,
+            created_at
+        FROM artists
+        WHERE artist_id=#{artistId}
+
+    </select>
+
+    <!-- 노래 목록 조회 -->
+    <select id="findSongList" resultType="com.youwin.dto.SongDto">
+
+        SELECT
+            song_id,
+            artist_id,
+            theme_id,
+            song_title,
+            album_image_url,
+            release_date
+        FROM songs
+        ORDER BY release_date DESC
+
+    </select>
+
+    <!-- 노래 검색 -->
+    <select id="searchSong" parameterType="String" resultType="com.youwin.dto.SongDto">
+
+        SELECT
+            song_id,
+            song_title,
+            artist_id,
+            theme_id,
+            album_image_url,
+            release_date
+        FROM songs
+        WHERE song_title LIKE CONCAT('%',#{keyword},'%')
+        ORDER BY release_date
+    </select>
+
+    <!-- 노래 선택 -->
+    <select id="findSong" parameterType="int" resultType="com.youwin.dto.SongDto">
+
+        SELECT
+            song_id,
+            song_title,
+            artist_id,
+            theme_id,
+            album_image_url,
+            release_date
+        FROM songs
+        WHERE song_id=#{songId}
+
+    </select>
+
+    <!-- 장르별 노래 조회 -->
+    <select id="findSongByTheme" parameterType="int" resultType="com.youwin.dto.SongDto">
+
+        SELECT
+            song_id,
+            song_title,
+            artist_id,
+            theme_id,
+            album_image_url,
+            release_date
+        FROM songs
+        WHERE theme_id=#{themeId}
+    </select>
+
+    <!-- 장르 목록 조회 -->
+    <select id="findThemeList" resultType="com.youwin.dto.ThemeDto">
+
+        SELECT
+            theme_id,
+            theme_name,
+            created_at
+        FROM themes
+        ORDER BY theme_name
+    </select>
+
+    <!-- 장르 조회 -->
+    <select id="findTheme" parameterType="int" resultType="com.youwin.dto.ThemeDto">
+
+        SELECT
+            theme_id,
+            theme_name,
+            created_at
+        FROM themes
+        WHERE theme_id=#{themeId}
+
+    </select>
+
+    <!-- 채팅방 목록 조회 -->
+    <select id="findRoomList" resultType="com.youwin.dto.ChatRoomDto">
+
+        SELECT
+            room_id,
             room_name,
             target_id,
-            theme_id
-        )
-        VALUES
-            (
-                #{roomName},
-                #{targetId},
-                #{themeId}
-            )
+            theme_id,
+            created_at
+        FROM chat_rooms
+        ORDER BY created_at DESC
+    </select>
 
-    </insert>
+    <!-- 채팅방 조회 -->
+    <select id="findRoom" parameterType="int" resultType="com.youwin.dto.ChatRoomDto">
 
-    <insert id="joinRoom">
+        SELECT
+            room_id,
+            room_name,
+            target_id,
+            theme_id,
+            created_at
+        FROM chat_rooms
+        WHERE room_id=#{roomId}
+    </select>
 
-        INSERT INTO chat_room_members
-        (
+    <!-- 이전 채팅 조회 -->
+    <select id="findMessages" parameterType="int" resultType="com.youwin.dto.ChatMessageDto">
+
+        SELECT
+            message_id,
+            room_id,
+            member_id,
+            message,
+            sent_at
+        FROM chat_messages
+        WHERE room_id=#{roomId}
+        ORDER BY message_id
+    </select>
+
+    <!-- 새 메시지 조회 -->
+    <select id="findNewMessages" parameterType="map" resultType="com.youwin.dto.ChatMessageDto">
+
+        SELECT
+            message_id,
+            room_id,
+            member_id,
+            message,
+            sent_at
+        FROM chat_messages
+        WHERE room_id = #{roomId}
+        AND message_id > #{lastMessageId}
+        ORDER BY message_id
+
+    </select>
+
+    <!-- 참여자 목록 조회 -->
+
+    <select id="findMembers" parameterType="int" resultType="com.youwin.dto.ChatRoomMemberDto">
+
+        SELECT
             room_id,
             member_id
-        )
+        FROM chat_room_members
+        WHERE room_id = #{roomId}
+
+    </select>
+
+    <!-- 채팅방 생성 -->
+    <insert id="createRoom" parameterType="com.youwin.dto.ChatRoomDto" useGeneratedKeys="true" keyProperty="roomId">
+
+        INSERT INTO chat_rooms
+            (
+             room_name,
+             target_id,
+             theme_id
+            )
         VALUES
             (
-                #{roomId},
-                #{memberId}
+             #{roomName},
+             #{targetId},
+             #{themeId}
             )
-
     </insert>
+
+    <!-- 채팅방 입장 -->
+    <insert id="joinRoom" parameterType="com.youwin.dto.ChatRoomMemberDto">
+
+        INSERT INTO chat_room_members
+            (
+             room_id,
+             member_id
+            )
+        VALUES
+            (
+             #{roomId},
+             #{memberId}
+            )
+    </insert>
+
+    <!-- 메시지 전송 -->
+    <insert id="saveMessage" parameterType="com.youwin.dto.ChatMessageDto">
+
+        INSERT INTO chat_messages
+            (
+             room_id,
+             member_id,
+             message
+            )
+        VALUES
+            (
+             #{roomId},
+             #{memberId},
+             #{message}
+            )
+    </insert>
+
+    <!-- 채팅방 퇴장 -->
+    <delete id="leaveRoom" parameterType="com.youwin.dto.ChatRoomMemberDto">
+
+        DELETE
+        FROM chat_room_members
+        WHERE room_id=#{roomId}
+        AND member_id=#{memberId}
+    </delete>
+
 </mapper>
+
