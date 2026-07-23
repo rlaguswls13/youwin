@@ -43,7 +43,9 @@
                             <c:forEach var="room" items="${roomList}">
 
                                 <a href="${pageContext.request.contextPath}/chatroom?roomId=${room.roomId}"
-                                   class="room-item" data-room-item data-room-name="${room.roomName}">
+                                   class="room-item ${param.roomId == room.roomId ? 'is-active' : ''}"
+                                   data-room-item
+                                   data-room-name="${room.roomName}">
 
                                     <span class="room-item__art">🎵</span>
 
@@ -74,7 +76,11 @@
                         <header class="conversation-head">
                             <button class="icon-button mobile-panel-button" type="button" data-rooms-toggle aria-label="채팅방 목록 열기" aria-expanded="false">☰</button>
                             <div class="room-item__art">NEW</div>
-                            <div class="conversation-head__info"><h1 id="conversation-title" data-room-title>신보 같이 듣기</h1><p><span class="online-dot">●</span> 128명 참여 중 · 음악과 관련된 대화를 나눠 주세요</p></div>
+                            <div class="conversation-head__info"><h2 data-room-title>
+                                <c:if test="${not empty room}">
+                                ${room.roomName}
+                                </c:if></h2>
+                            <p><span class="online-dot">●</span> 128명 참여 중 · 음악과 관련된 대화를 나눠 주세요</p></div>
                             <div class="conversation-head__actions"><button class="icon-button" type="button" aria-label="채팅방 검색">⌕</button><button class="icon-button" type="button" aria-label="채팅방 설정">···</button></div>
                         </header>
 
@@ -91,9 +97,7 @@
 
                         <div class="message__content">
 
-                        <span class="message__author">
-                            회원 ${message.memberId}
-                        </span>
+                        <span class="message__author">회원 ${message.memberId}</span>
 
                         <div class="message__bubble">${message.message}</div>
                         </div>
@@ -110,10 +114,41 @@
                     </section>
 
                     <aside class="chat-members" aria-label="참여자 목록">
-                        <div class="chat-panel__head"><div><h3>참여자</h3><span>온라인 128명</span></div></div>
-                        <div class="member-group"><p class="member-group__title">Host</p><div class="member-item"><span class="avatar">윤슬</span><span><strong class="member-item__name">윤슬</strong><span class="member-item__status"><span class="online-dot">●</span> 앨범 재생 중</span></span></div></div>
-                        <div class="member-group"><p class="member-group__title">Online</p><div class="member-item"><span class="avatar">민트</span><span><strong class="member-item__name">민트</strong><span class="member-item__status"><span class="online-dot">●</span> 온라인</span></span></div><div class="member-item"><span class="avatar">모노</span><span><strong class="member-item__name">모노</strong><span class="member-item__status"><span class="online-dot">●</span> 온라인</span></span></div><div class="member-item"><span class="avatar">파랑</span><span><strong class="member-item__name">파란밤</strong><span class="member-item__status"><span class="online-dot">●</span> 듣는 중</span></span></div></div>
+
+                        <div class="chat-panel__head">
+                            <div>
+                                <h3>참여자</h3>
+                                <span>${fn:length(memberList)}명</span>
+                            </div>
+                        </div>
+
+                        <c:choose>
+
+                            <c:when test="${empty memberList}">
+                                <p class="room-list__empty">참여자가 없습니다.</p>
+                            </c:when>
+
+                              <c:otherwise>
+
+                                <c:forEach var="member" items="${memberList}">
+
+                                    <div class="member-item">
+
+                    <span class="avatar">${member.memberId}</span>
+                    <span>
+                        <strong class="member-item__name">회원 ${member.memberId}</strong>
+                        <span class="member-item__status"><span class="online-dot">●</span>참여중</span>
+                    </span>
+                   </div>
+
+                                </c:forEach>
+
+                            </c:otherwise>
+
+                        </c:choose>
+
                     </aside>
+
                 </div>
             </main>
             <div class="modal" id="room-modal">

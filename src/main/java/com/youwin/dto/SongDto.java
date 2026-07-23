@@ -1,10 +1,15 @@
 package com.youwin.dto;
 
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDate;
 
-@Data
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@ToString
 public class SongDto {
 
     private Integer songId;
