@@ -182,7 +182,7 @@
                 <input type="password" id="memberPassword" name="memberPassword" required placeholder="비밀번호를 입력하세요">
             </div>
 
-            <!-- 🎯 비밀번호 아래 에러 메시지 영역 -->
+            <!-- 비밀번호 아래 에러 메시지 영역 -->
             <div id="loginErrorMsg" class="error-msg"></div>
 
             <div class="checkbox-group">
@@ -210,7 +210,7 @@
     </div>
 </div>
 
-<!-- 🎯 실패 메시지 수신 및 출력용 스크립트 -->
+<!-- 실패 메시지 수신 및 출력용 스크립트 -->
 <script>
     const serverError = "${errorMessage}";
     if (serverError) {

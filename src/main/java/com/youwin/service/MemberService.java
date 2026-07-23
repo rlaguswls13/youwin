@@ -1,8 +1,13 @@
 package com.youwin.service;
 
+import com.youwin.dto.AutoLoginDto;
 import com.youwin.dto.LoginRequestDto;
 import com.youwin.dto.MemberDto;
 import com.youwin.repository.MemberRepository;
+import com.youwin.repository.AutoLoginRepository;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,18 +17,16 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final AutoLoginRepository autoLoginRepository;
     private final PasswordEncoder passwordEncoder;
-
-    public MemberService(MemberRepository memberRepository, PasswordEncoder passwordEncoder) {
-        this.memberRepository = memberRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     @Transactional
     public void joinMember(MemberDto memberDto) {
@@ -108,5 +111,51 @@ public class MemberService {
 
         // 5. 세션에 담아둘 회원 프로필 정보 리턴
         return memberDto;
+    }
+
+
+    @Transactional
+    public void setupAutoLogin(String memberId, HttpServletResponse response) {
+        String token = UUID.randomUUID().toString();
+
+        int amount = 60 * 60 * 24 * 7;
+        Date limitDate = new Date(System.currentTimeMillis() + ((long) amount * 1000));
+
+        // DTO 조립 후 upsert 실행
+        AutoLoginDto autoLoginDto = new AutoLoginDto();
+        autoLoginDto.setMemberId(memberId);
+        autoLoginDto.setToken(token);
+        autoLoginDto.setLimitDate(limitDate);
+
+        // 🎯 기존 deleteByMemberId 호출 제거 + upsertToken 하나만 실행!
+        autoLoginRepository.upsertToken(autoLoginDto);
+
+        // 쿠키 생성 및 전달
+        Cookie cookie = new Cookie("remember-me", token);
+        cookie.setPath("/");
+        cookie.setMaxAge(amount);
+        cookie.setHttpOnly(true);
+        response.addCookie(cookie);
+    }
+
+    // [자동 로그인 2] 쿠키의 토큰으로 회원 정보 조회
+    public MemberDto getMemberByAutoLoginToken(String token) {
+        String memberId = autoLoginRepository.findMemberIdByToken(token);
+
+        if (memberId == null) {
+            return null;
+        }
+
+        MemberDto memberDto = memberRepository.findByMemberId(memberId);
+        if (memberDto != null) {
+            memberDto.setMemberPassword(null);
+        }
+        return memberDto;
+    }
+
+    // [자동 로그인 3] 토큰 삭제 (로그아웃 시)
+    @Transactional
+    public void removeAutoLoginToken(String token) {
+        autoLoginRepository.deleteByToken(token);
     }
 }

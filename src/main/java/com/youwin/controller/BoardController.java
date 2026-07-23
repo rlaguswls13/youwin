@@ -76,7 +76,6 @@ public class BoardController {
         // 모델 바인딩 후 JSP 뷰 리턴
         model.addAttribute("list", noticeList);
         model.addAttribute("pageMaker", pageMaker);
-
         return "board";
     }
 
