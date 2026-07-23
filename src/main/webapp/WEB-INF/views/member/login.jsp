@@ -204,7 +204,7 @@
     <div class="footer-links">
         <a href="/member/findId">아이디 찾기</a>
         <span class="bar">|</span>
-        <a href="/member/findPw">비밀번호 찾기</a>
+        <a href="/member/findPassword">비밀번호 찾기</a>
         <span class="bar">|</span>
         <a href="/member/joinStep1">회원가입</a>
     </div>

@@ -13,5 +13,14 @@ public interface MemberRepository {
     int countByNickname(@Param("nickname") String nickname);
     // 로그인용 회원 정보 단건 조회
     MemberDto findByMemberId(@Param("memberId") String memberId);
+    // 이름과 이메일로 아이디 조회
+    String findMemberIdByNameAndEmail(@Param("memberName") String memberName,
+                                      @Param("memberEmail") String memberEmail);
+
+    int countByMemberIdAndEmail(@Param("memberId") String memberId,
+                                   @Param("memberEmail") String memberEmail);
+
+    void updatePassword(@Param("memberId") String memberId,
+                       @Param("memberPassword") String memberPassword);
 
 }

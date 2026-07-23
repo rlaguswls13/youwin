@@ -138,6 +138,19 @@ public class MemberService {
         response.addCookie(cookie);
     }
 
+
+    // 자동 로그인 전용: 비밀번호 검증 없이 아이디로 회원 정보 조회
+    public MemberDto getMemberById(String memberId) {
+        MemberDto memberDto = memberRepository.findByMemberId(memberId);
+
+        if (memberDto != null) {
+            // 기존 login 메서드처럼 세션 저장 전 비밀번호 제거
+            memberDto.setMemberPassword(null);
+        }
+
+        return memberDto;
+    }
+
     // [자동 로그인 2] 쿠키의 토큰으로 회원 정보 조회
     public MemberDto getMemberByAutoLoginToken(String token) {
         String memberId = autoLoginRepository.findMemberIdByToken(token);
@@ -157,5 +170,34 @@ public class MemberService {
     @Transactional
     public void removeAutoLoginToken(String token) {
         autoLoginRepository.deleteByToken(token);
+    }
+
+    // 아이디 찾기
+    public String findMemberId(String memberName, String memberEmail) {
+        String foundMemberId = memberRepository.findMemberIdByNameAndEmail(memberName, memberEmail);
+
+        if (foundMemberId == null) {
+            throw new IllegalArgumentException("일치하는 회원 정보가 없습니다.");
+        }
+
+        return foundMemberId;
+    }
+
+    // 1. 회원 존재 여부 검증
+    public boolean checkMemberExist(String memberId, String memberEmail) {
+        int count = memberRepository.countByMemberIdAndEmail(memberId, memberEmail);
+        if (count == 0) {
+            throw new IllegalArgumentException("입력하신 아이디와 이메일 정보가 일치하지 않습니다.");
+        }
+        return true;
+    }
+
+    // 2. 새 비밀번호를 BCrypt로 암호화 후 DB에 UPDATE
+    public void updatePassword(String memberId, String newPassword) {
+        // BCrypt 암호화
+        String encodedPassword = passwordEncoder.encode(newPassword);
+
+        // DB 업데이트
+        memberRepository.updatePassword(memberId, encodedPassword);
     }
 }
