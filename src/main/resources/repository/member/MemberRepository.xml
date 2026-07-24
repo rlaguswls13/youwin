@@ -43,7 +43,9 @@
             member_name     AS memberName,
             member_phone    AS memberPhone,
             member_email    AS memberEmail,
-            profile_image   AS profileImage
+            profile_image   AS profileImage,
+            created_at      AS createdAt,
+            updated_at      AS updatedAt
         FROM member
         WHERE member_id = #{memberId}
     </select>

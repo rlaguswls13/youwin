@@ -37,10 +37,10 @@ public class AutoLoginInterceptor implements HandlerInterceptor {
 
                 if (memberId != null) {
                     // 3. 만들어두신 getMemberById 메서드 호출! (비밀번호 제거 처리까지 자동 완료)
-                    MemberDto member = memberService.getMemberById(memberId);
+                    MemberDto memberDto = memberService.getMemberById(memberId);
 
-                    if (member != null) {
-                        session.setAttribute("loginUser", member);
+                    if (memberDto != null) {
+                        session.setAttribute("loginUser", memberDto);
                     }
                 } else {
                     // DB에 없거나 만료된 토큰인 경우, 쓰레기 쿠키 삭제

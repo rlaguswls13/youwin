@@ -118,7 +118,7 @@ public class MemberService {
     public void setupAutoLogin(String memberId, HttpServletResponse response) {
         String token = UUID.randomUUID().toString();
 
-        int amount = 60 * 60 * 24 * 7;
+        int amount = 60 * 60 * 24 * 7; // 7일
         Date limitDate = new Date(System.currentTimeMillis() + ((long) amount * 1000));
 
         // DTO 조립 후 upsert 실행
@@ -151,22 +151,7 @@ public class MemberService {
         return memberDto;
     }
 
-    // [자동 로그인 2] 쿠키의 토큰으로 회원 정보 조회
-    public MemberDto getMemberByAutoLoginToken(String token) {
-        String memberId = autoLoginRepository.findMemberIdByToken(token);
-
-        if (memberId == null) {
-            return null;
-        }
-
-        MemberDto memberDto = memberRepository.findByMemberId(memberId);
-        if (memberDto != null) {
-            memberDto.setMemberPassword(null);
-        }
-        return memberDto;
-    }
-
-    // [자동 로그인 3] 토큰 삭제 (로그아웃 시)
+    // [자동 로그인 2] 토큰 삭제 (로그아웃 시)
     @Transactional
     public void removeAutoLoginToken(String token) {
         autoLoginRepository.deleteByToken(token);

@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!doctype html>
 <html lang="ko">
 <head>
@@ -18,7 +19,7 @@
                 <a href="${pageContext.request.contextPath}/">홈</a>
                 <a href="${pageContext.request.contextPath}/board">게시판</a>
                 <a href="${pageContext.request.contextPath}/chatroom">채팅방</a>
-                <a class="is-active" href="${pageContext.request.contextPath}/member/mypage">마이페이지</a>
+                <a class="is-active" href="${pageContext.request.contextPath}/member/myPage">마이페이지</a>
             </nav>
             <div class="site-header__actions"><a class="button button--secondary" href="${pageContext.request.contextPath}/member/settings">프로필 설정</a><span class="avatar">YU</span></div>
             <button class="menu-toggle" type="button" data-menu-toggle aria-label="메뉴 열기" aria-expanded="false"></button>
@@ -28,9 +29,34 @@
     <main class="page-main">
         <div class="site-container">
             <section class="surface profile-hero" aria-labelledby="profile-title">
-                <div class="profile-avatar" aria-hidden="true">YU</div>
-                <div class="profile-copy"><p class="profile-copy__label">MY MUSIC PROFILE</p><h1 id="profile-title">Youwin Listener</h1><div class="profile-copy__meta"><span>@youwin_user</span><span>가입일 2026.07.14</span><span>마지막 접속 오늘</span></div></div>
-                <div class="profile-hero__actions"><a class="button button--secondary" href="${pageContext.request.contextPath}/member/settings">프로필 수정</a><a class="button" href="${pageContext.request.contextPath}/chatroom">채팅방 가기</a></div>
+                <!-- 1. 프로필 사진 (등록된 이미지가 있으면 img 출력, 없으면 기본 이니셜 출력) -->
+                <div class="profile-avatar" aria-hidden="true">
+                    <c:choose>
+                        <c:when test="${not empty member.profileImage}">
+                            <img src="${pageContext.request.contextPath}${member.profileImage}" class="profile-img" alt="프로필 사진">
+                        </c:when>
+                        <c:otherwise>
+                            <svg viewBox="0 0 24 24" width="40" height="40" fill="currentColor">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path>
+                            </svg>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+
+                <div class="profile-copy">
+                    <p class="profile-copy__label">MY MUSIC PROFILE</p>
+                    <h1 id="profile-title">${member.nickname}</h1>
+                    <div class="profile-copy__meta">
+                        <span>@${member.memberId}</span>
+                        <span>가입일 ${member.formattedCreatedAt}</span>
+                        <span>수정일 ${member.formattedUpdatedAt}</span>
+                    </div>
+                </div>
+
+                <div class="profile-hero__actions">
+                    <a class="button button--secondary" href="${pageContext.request.contextPath}/member/settings">프로필 수정</a>
+                    <a class="button" href="${pageContext.request.contextPath}/chatroom">채팅방 가기</a>
+                </div>
             </section>
 
             <section class="profile-stats" aria-label="활동 통계">

@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -25,8 +24,7 @@ public class MemberController {
     private final MemberService memberService;
 
     @PostMapping("/join")
-    public String join(MemberDto memberDto, MultipartFile profile) {
-        // INSERT 서비스 호출
+    public String join(MemberDto memberDto) {
         memberService.joinMember(memberDto);
 
         return "redirect:/member/login";
@@ -167,9 +165,29 @@ public class MemberController {
         return "member/login";
     }
 
-    @GetMapping("/mypage")
-    public String mypageForm() {
-        return "member/mypage";
+    @GetMapping("/myPage")
+    public String myPage(HttpSession session, Model model) {
+        MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
+
+        // 🎯 1. 세션이 없으면 마이페이지 접근을 막고 로그인 화면으로 이동
+        if (loginUser == null) {
+            return "redirect:/member/login";
+        }
+
+        // 🎯 2. DB에서 최신 회원 정보 가져오기
+        MemberDto member = memberService.getMemberById(loginUser.getMemberId());
+
+        // DB에서 조회가 실패한 경우 처리
+        if (member == null) {
+            session.invalidate();
+            return "redirect:/member/login";
+        }
+
+        // 🎯 3. 세션과 모델 데이터 모두 최신화
+        session.setAttribute("loginUser", member);
+        model.addAttribute("member", member);
+
+        return "member/myPage";
     }
 
     @GetMapping("/settings")

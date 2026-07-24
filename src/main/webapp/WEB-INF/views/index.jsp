@@ -22,7 +22,7 @@
                 <a class="is-active" href="${pageContext.request.contextPath}/">홈</a>
                 <a href="${pageContext.request.contextPath}/board">게시판</a>
                 <a href="${pageContext.request.contextPath}/chatroom">채팅방</a>
-                <a href="${pageContext.request.contextPath}/member/mypage">마이페이지</a>
+                <a href="${pageContext.request.contextPath}/member/myPage">마이페이지</a>
                 <div class="user-menu">
                     <!-- 세션에 loginUser가 있는 경우 (로그인 상태) -->
                     <c:if test="${not empty sessionScope.loginUser}">
