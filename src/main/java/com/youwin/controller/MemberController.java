@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -151,6 +152,72 @@ public class MemberController {
         return "redirect:/member/login?resetSuccess=true";
     }
 
+    // 닉네임 변경
+    @PostMapping("/updateNickname")
+    public String updateNickname(@RequestParam("nickname") String nickname, HttpSession session) {
+        MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
+        if (loginUser != null) {
+            memberService.updateNickname(loginUser.getMemberId(), nickname);
+        }
+        return "redirect:/member/settings";
+    }
+
+    // 전화번호 변경
+    @PostMapping("/updatePhone")
+    public String updatePhone(@RequestParam("memberPhone") String memberPhone, HttpSession session) {
+        MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
+        if (loginUser != null) {
+            memberService.updatePhone(loginUser.getMemberId(), memberPhone);
+        }
+        return "redirect:/member/settings";
+    }
+
+    // 이메일 변경
+    @PostMapping("/updateEmail")
+    public String updateEmail(@RequestParam("memberEmail") String memberEmail, HttpSession session) {
+        MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
+        if (loginUser != null) {
+            memberService.updateEmail(loginUser.getMemberId(), memberEmail);
+        }
+        return "redirect:/member/settings";
+    }
+
+    // 프로필 이미지 변경
+    @PostMapping("/updateProfileImage")
+    public String updateProfileImage(
+            @RequestParam(value = "profile", required = false) MultipartFile profile,
+            @RequestParam(value = "deleteProfile", defaultValue = "false") boolean deleteProfile,
+            HttpSession session) {
+
+        MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
+        if (loginUser != null) {
+            memberService.updateProfileImage(loginUser.getMemberId(), profile, deleteProfile);
+        }
+        return "redirect:/member/settings";
+    }
+
+    // 비밀번호 변경
+    @PostMapping("/updatePasswordInSettings")
+    public String updatePasswordInSettings(
+            @RequestParam("currentPassword") String currentPassword,
+            @RequestParam("newPassword") String newPassword,
+            @RequestParam("confirmPassword") String confirmPassword,
+            HttpSession session,
+            RedirectAttributes rttr) {
+
+        MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
+        if (loginUser == null) return "redirect:/member/login";
+
+        try {
+            memberService.updatePasswordInSettings(loginUser.getMemberId(), currentPassword, newPassword, confirmPassword);
+            rttr.addFlashAttribute("successMessage", "비밀번호가 성공적으로 변경되었습니다.");
+        } catch (IllegalArgumentException e) {
+            rttr.addFlashAttribute("errorMessage", e.getMessage());
+        }
+
+        return "redirect:/member/settings";
+    }
+
     // view 이동
     @GetMapping("/joinStep1")
     public String joinStep1() { return "member/joinStep1"; }
@@ -168,30 +235,37 @@ public class MemberController {
     @GetMapping("/myPage")
     public String myPage(HttpSession session, Model model) {
         MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
-
-        // 🎯 1. 세션이 없으면 마이페이지 접근을 막고 로그인 화면으로 이동
         if (loginUser == null) {
             return "redirect:/member/login";
         }
-
-        // 🎯 2. DB에서 최신 회원 정보 가져오기
         MemberDto member = memberService.getMemberById(loginUser.getMemberId());
-
-        // DB에서 조회가 실패한 경우 처리
         if (member == null) {
             session.invalidate();
             return "redirect:/member/login";
         }
 
-        // 🎯 3. 세션과 모델 데이터 모두 최신화
         session.setAttribute("loginUser", member);
         model.addAttribute("member", member);
-
         return "member/myPage";
     }
 
     @GetMapping("/settings")
-    public String settingsForm() { return "member/settings"; }
+    public String settingsForm(HttpSession session, Model model) {
+        MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
+        if (loginUser == null) {
+            return "redirect:/member/login";
+        }
+
+        MemberDto member = memberService.getMemberById(loginUser.getMemberId());
+        if (member == null) {
+            session.invalidate();
+            return "redirect:/member/login";
+        }
+
+        session.setAttribute("loginUser", member); // 최신 정보로 세션 갱신
+        model.addAttribute("member", member);
+        return "member/settings";
+    }
 
     @GetMapping("/findId")
     public String findIdForm() { return "member/findId"; }
@@ -207,4 +281,6 @@ public class MemberController {
         }
         return "member/resetPassword";
     }
+
+
 }

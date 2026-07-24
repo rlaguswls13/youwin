@@ -23,4 +23,9 @@ public interface MemberRepository {
     void updatePassword(@Param("memberId") String memberId,
                        @Param("memberPassword") String memberPassword);
 
+    void updateNickname(@Param("memberId") String memberId, @Param("nickname") String nickname);
+    void updatePhone(@Param("memberId") String memberId, @Param("memberPhone") String memberPhone);
+    void updateEmail(@Param("memberId") String memberId, @Param("memberEmail") String memberEmail);
+    void updateProfileImage(@Param("memberId") String memberId, @Param("profileImage") String profileImage);
+
 }
