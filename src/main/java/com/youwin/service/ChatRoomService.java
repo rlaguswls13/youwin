@@ -58,8 +58,8 @@ public class ChatRoomService {
 
     // ---------------------- 채팅방 ---------------------
 
-    public List<ChatRoomDto> findRoomList() {
-        return repository.findRoomList();
+    public List<ChatRoomDto> findRoomList(Integer memberId) {
+        return repository.findRoomList(memberId);
     }
 
     public ChatRoomDto findRoom(Integer roomId) {
@@ -83,7 +83,18 @@ public class ChatRoomService {
 
     public void leaveRoom(ChatRoomMemberDto dto){
         repository.leaveRoom(dto);
+        int count = repository.countMember(dto.getRoomId());
+
+        if (count == 0) {
+
+            repository.deleteRoom(dto.getRoomId());
     }
+    }
+
+    public void updateRoom(ChatRoomDto dto){
+        repository. updateRoom(dto);
+    }
+    public void deleteRoom(Integer roomId){ repository.deleteRoom(roomId);}
 
     // --------- 채팅 메시지 -----------
 

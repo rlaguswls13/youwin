@@ -16,5 +16,6 @@ public class ChatRoomDto {
     private String roomName;
     private Integer targetId;
     private Integer themeId;
+    private String roomDescription;
     private LocalDateTime createdAt;
 }

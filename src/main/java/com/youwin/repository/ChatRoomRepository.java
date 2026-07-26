@@ -34,7 +34,9 @@ public interface ChatRoomRepository {
 
     // -------------- 채팅방 -------------
 
-    List<ChatRoomDto> findRoomList();
+    List<ChatRoomDto> findRoomList(Integer memberId);
+
+    int countMember(Integer roomId);
 
     ChatRoomDto findRoom(Integer roomId);
 
@@ -43,6 +45,12 @@ public interface ChatRoomRepository {
     void joinRoom(ChatRoomMemberDto dto);
 
     void leaveRoom(ChatRoomMemberDto dto);
+
+    void deleteRoom(Integer roomId);
+
+    void updateRoom(ChatRoomDto dto);
+
+
 
     // --------- 채팅 메시지 -----------
 

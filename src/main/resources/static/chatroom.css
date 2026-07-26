@@ -109,8 +109,14 @@
     text-align: center;
 }
 
+.room-item-wrapper{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
 .room-item {
-    width: 100%;
     display: grid;
     grid-template-columns: 44px minmax(0, 1fr) auto;
     align-items: center;
@@ -120,6 +126,22 @@
     background: transparent;
     cursor: pointer;
     text-align: left;
+    flex: 1;
+    width:auto;
+}
+
+.leave-room-btn{
+    width: 55px;
+    height: 25px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    background: lavender;
+    font-weight: 350;
+    cursor: pointer;
+}
+
+.leave-room-btn:hover{
+    background: var(--color-primary-soft);
 }
 
 .room-item:hover,
