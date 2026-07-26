@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!doctype html>
 <html lang="ko">
 <head>
@@ -22,6 +23,19 @@
                 <a href="${pageContext.request.contextPath}/board">게시판</a>
                 <a href="${pageContext.request.contextPath}/chatroom">채팅방</a>
                 <a href="${pageContext.request.contextPath}/member/mypage">마이페이지</a>
+                <div class="user-menu">
+                    <!-- 세션에 loginUser가 있는 경우 (로그인 상태) -->
+                    <c:if test="${not empty sessionScope.loginUser}">
+                        <span><strong>${sessionScope.loginUser.memberId}</strong>님 환영합니다!</span>
+                        <a href="/member/logout">로그아웃</a>
+                    </c:if>
+
+                    <!-- 세션에 loginUser가 없는 경우 (비로그인 상태) -->
+                    <c:if test="${empty sessionScope.loginUser}">
+                        <a href="/member/login">로그인</a>
+                        <a href="/member/joinStep1">회원가입</a>
+                    </c:if>
+                </div>
             </nav>
             <div class="site-header__actions">
                 <form class="header-search" data-home-search role="search">

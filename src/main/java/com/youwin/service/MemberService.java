@@ -1,7 +1,13 @@
 package com.youwin.service;
 
+import com.youwin.dto.AutoLoginDto;
+import com.youwin.dto.LoginRequestDto;
 import com.youwin.dto.MemberDto;
 import com.youwin.repository.MemberRepository;
+import com.youwin.repository.AutoLoginRepository;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,18 +17,16 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final AutoLoginRepository autoLoginRepository;
     private final PasswordEncoder passwordEncoder;
-
-    public MemberService(MemberRepository memberRepository, PasswordEncoder passwordEncoder) {
-        this.memberRepository = memberRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     @Transactional
     public void joinMember(MemberDto memberDto) {
@@ -86,5 +90,114 @@ public class MemberService {
     public boolean isNicknameDuplicate(String nickname) {
         int count = memberRepository.countByNickname(nickname);
         return count > 0;
+    }
+
+    public MemberDto login(LoginRequestDto loginDto) {
+        // 1. DB에서 아이디로 회원 정보 전체 조회 (MemberDto)
+        MemberDto memberDto = memberRepository.findByMemberId(loginDto.getMemberId());
+
+        // 2. 입력한 아이디에 해당하는 회원이 없는 경우
+        if (memberDto == null) {
+            throw new IllegalArgumentException("아이디 또는 비밀번호가 일치하지 않습니다.");
+        }
+
+        // 3. 비밀번호 검증
+        if (!passwordEncoder.matches(loginDto.getMemberPassword(), memberDto.getMemberPassword())) {
+            throw new IllegalArgumentException("아이디 또는 비밀번호가 일치하지 않습니다.");
+        }
+
+        // 4. 보안을 위해 세션 저장 직전 비밀번호 필드만 null 처리
+        memberDto.setMemberPassword(null);
+
+        // 5. 세션에 담아둘 회원 프로필 정보 리턴
+        return memberDto;
+    }
+
+
+    @Transactional
+    public void setupAutoLogin(String memberId, HttpServletResponse response) {
+        String token = UUID.randomUUID().toString();
+
+        int amount = 60 * 60 * 24 * 7;
+        Date limitDate = new Date(System.currentTimeMillis() + ((long) amount * 1000));
+
+        // DTO 조립 후 upsert 실행
+        AutoLoginDto autoLoginDto = new AutoLoginDto();
+        autoLoginDto.setMemberId(memberId);
+        autoLoginDto.setToken(token);
+        autoLoginDto.setLimitDate(limitDate);
+
+        // 🎯 기존 deleteByMemberId 호출 제거 + upsertToken 하나만 실행!
+        autoLoginRepository.upsertToken(autoLoginDto);
+
+        // 쿠키 생성 및 전달
+        Cookie cookie = new Cookie("remember-me", token);
+        cookie.setPath("/");
+        cookie.setMaxAge(amount);
+        cookie.setHttpOnly(true);
+        response.addCookie(cookie);
+    }
+
+
+    // 자동 로그인 전용: 비밀번호 검증 없이 아이디로 회원 정보 조회
+    public MemberDto getMemberById(String memberId) {
+        MemberDto memberDto = memberRepository.findByMemberId(memberId);
+
+        if (memberDto != null) {
+            // 기존 login 메서드처럼 세션 저장 전 비밀번호 제거
+            memberDto.setMemberPassword(null);
+        }
+
+        return memberDto;
+    }
+
+    // [자동 로그인 2] 쿠키의 토큰으로 회원 정보 조회
+    public MemberDto getMemberByAutoLoginToken(String token) {
+        String memberId = autoLoginRepository.findMemberIdByToken(token);
+
+        if (memberId == null) {
+            return null;
+        }
+
+        MemberDto memberDto = memberRepository.findByMemberId(memberId);
+        if (memberDto != null) {
+            memberDto.setMemberPassword(null);
+        }
+        return memberDto;
+    }
+
+    // [자동 로그인 3] 토큰 삭제 (로그아웃 시)
+    @Transactional
+    public void removeAutoLoginToken(String token) {
+        autoLoginRepository.deleteByToken(token);
+    }
+
+    // 아이디 찾기
+    public String findMemberId(String memberName, String memberEmail) {
+        String foundMemberId = memberRepository.findMemberIdByNameAndEmail(memberName, memberEmail);
+
+        if (foundMemberId == null) {
+            throw new IllegalArgumentException("일치하는 회원 정보가 없습니다.");
+        }
+
+        return foundMemberId;
+    }
+
+    // 1. 회원 존재 여부 검증
+    public boolean checkMemberExist(String memberId, String memberEmail) {
+        int count = memberRepository.countByMemberIdAndEmail(memberId, memberEmail);
+        if (count == 0) {
+            throw new IllegalArgumentException("입력하신 아이디와 이메일 정보가 일치하지 않습니다.");
+        }
+        return true;
+    }
+
+    // 2. 새 비밀번호를 BCrypt로 암호화 후 DB에 UPDATE
+    public void updatePassword(String memberId, String newPassword) {
+        // BCrypt 암호화
+        String encodedPassword = passwordEncoder.encode(newPassword);
+
+        // DB 업데이트
+        memberRepository.updatePassword(memberId, encodedPassword);
     }
 }
