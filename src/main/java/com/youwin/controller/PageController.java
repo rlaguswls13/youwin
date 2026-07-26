@@ -1,11 +1,14 @@
 package com.youwin.controller;
 
+import com.youwin.dto.ChatRoomDto;
 import com.youwin.service.ChatRoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @Controller
@@ -29,11 +32,24 @@ public class PageController {
         @GetMapping("/chatroom")
         public String chatroom(@RequestParam(defaultValue = "1") Integer roomId, Model model) {
 
-            model.addAttribute("roomList", service.findRoomList());
-            model.addAttribute("room", service.findRoom(roomId));
-            model.addAttribute("messageList", service.findMessages(roomId));
-            model.addAttribute("memberList", service.findMembers(roomId));
+            List<ChatRoomDto> roomList = service.findRoomList(1);
 
+            model.addAttribute("roomList", roomList);
+
+            if(roomList.isEmpty()){
+
+                model.addAttribute("room", null);
+                model.addAttribute("messageList", List.of());
+                model.addAttribute("memberList", List.of());
+
+            }else{
+
+                ChatRoomDto room = service.findRoom(roomId);
+
+                model.addAttribute("room", room);
+                model.addAttribute("messageList", service.findMessages(roomId));
+                model.addAttribute("memberList", service.findMembers(roomId));
+            }
             return "room/chatroom";
         }
 

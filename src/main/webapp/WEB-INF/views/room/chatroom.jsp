@@ -29,7 +29,7 @@
             <main class="chat-page">
                 <div class="chat-shell">
                     <aside class="chat-rooms" data-rooms-panel aria-label="채팅방 목록">
-                        <div class="chat-panel__head"><div><h2>오픈 톡</h2><span>참여 중인 대화 ${fn:length(roomList)}</span></div><button class="icon-button" type="button" id="open-room-modal"aria-label="새 채팅방 만들기">＋</button></div>
+                        <div class="chat-panel__head"><div><h2>오픈 톡</h2><span id="room-count">참여 중인 대화 ${fn:length(roomList)}</span></div><button class="icon-button" type="button" id="open-room-modal"aria-label="새 채팅방 만들기">＋</button></div>
                         <div class="room-search"><label class="sr-only" for="room-search">채팅방 검색</label><input id="room-search" type="search" placeholder="채팅방 검색"></div>
                         <div class="room-list">
                          <c:choose>
@@ -40,30 +40,31 @@
 
                            <c:otherwise>
 
-                            <c:forEach var="room" items="${roomList}">
+                           <c:forEach var="room" items="${roomList}">
+                               <div class="room-item-wrapper" data-room-id="${room.roomId}">
 
-                                <a href="${pageContext.request.contextPath}/chatroom?roomId=${room.roomId}"
-                                   class="room-item ${param.roomId == room.roomId ? 'is-active' : ''}"
-                                   data-room-item
-                                   data-room-name="${room.roomName}">
+                               <a href="${pageContext.request.contextPath}/chatroom?roomId=${room.roomId}"
+                                  class="room-item ${param.roomId == room.roomId ? 'is-active' : ''}"
+                                  data-room-item data-room-name="${room.roomName}">
+                                   <span class="room-item__art">🎵</span>
 
-                                    <span class="room-item__art">🎵</span>
+                                   <span>
+                                       <strong class="room-item__name">
+                                           ${room.roomName}
+                                       </strong>
+                                   <span class="room-item__preview">
+                                       음악 채팅방
+                                   </span>
 
-                                    <span>
+                                 </span>
+                              </a>
+                              <button type="button" class="leave-room-btn" data-room-id="${room.roomId}">
+                                  나가기
+                              </button>
 
-                                    <strong class="room-item__name">
-                                            ${room.roomName}
-                                    </strong>
+                             </div>
 
-                                    <span class="room-item__preview">
-                                        음악 채팅방
-                                    </span>
-
-                                </span>
-
-                                </a>
-
-                        </c:forEach>
+                           </c:forEach>
 
                       </c:otherwise>
 
@@ -77,10 +78,26 @@
                             <button class="icon-button mobile-panel-button" type="button" data-rooms-toggle aria-label="채팅방 목록 열기" aria-expanded="false">☰</button>
                             <div class="room-item__art">NEW</div>
                             <div class="conversation-head__info"><h2 data-room-title>
-                                <c:if test="${not empty room}">
-                                ${room.roomName}
-                                </c:if></h2>
-                            <p><span class="online-dot">●</span> 128명 참여 중 · 음악과 관련된 대화를 나눠 주세요</p></div>
+                                <c:choose>
+                                    <c:when test="${not empty room}">
+                                    ${room.roomName}
+                                    </c:when>
+
+                                    <c:otherwise>
+                                        참여 중인 채팅방이 없습니다.
+                                    </c:otherwise>
+                                </c:choose>
+                            </h2>
+
+                                    <c:choose>
+                                    <c:when test="${not empty room}">
+                                    <p><span class="online-dot">●</span>${fn:length(memberList)}명 참여 중 · ${room.roomDescription}</p>
+                                    </c:when>
+
+                                    <c:otherwise>
+                                    <p>채팅방을 선택하거나 새 채팅방을 만들어 주세요.</p>
+                                    </c:otherwise>
+                                    </c:choose>
                             <div class="conversation-head__actions"><button class="icon-button" type="button" aria-label="채팅방 검색">⌕</button><button class="icon-button" type="button" aria-label="채팅방 설정">···</button></div>
                         </header>
 
@@ -168,6 +185,10 @@
                         <label>채팅방 이름</label>
 
                         <input type="text" id="room-name" placeholder="예) 아이유 팬톡">
+
+                        <label>설명</label>
+
+                        <input type="text" id="room-description" maxlength="100" placeholder="예) 좋아하는 노래 같이 들어요">
 
                         <label>장르</label>
 

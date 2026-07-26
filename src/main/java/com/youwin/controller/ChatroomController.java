@@ -17,7 +17,7 @@ public class ChatroomController {
     private final ChatRoomService service;
     private final ChatMessageService chatMessageService;
 
-    // --------- 아티스트 --------------
+    // --------- 아티스트 -------------- V
 
     @GetMapping("/artist/list")
     public List<ArtistDto> findArtistList() {
@@ -25,16 +25,12 @@ public class ChatroomController {
     }
 
     @GetMapping("/artist/search")
-    public List<ArtistDto> searchArtist(@RequestParam String keyword) {
-        return service.searchArtist(keyword);
-    }
+    public List<ArtistDto> searchArtist(@RequestParam String keyword) {return service.searchArtist(keyword);}
 
     @GetMapping("/artist/{artistId}")
-    public ArtistDto findArtist(@PathVariable Integer artistId) {
-        return service.findArtist(artistId);
-    }
+    public ArtistDto findArtist(@PathVariable Integer artistId) {return service.findArtist(artistId);}
 
-    // --------- 노래 ---------
+    // --------- 노래 --------- V
 
     @GetMapping("/song/list")
     public List<SongDto> findSongList() {
@@ -56,7 +52,7 @@ public class ChatroomController {
         return service.findSong(songId);
     }
 
-    // --------- 장르 ---------
+    // --------- 장르 --------- V
 
     @GetMapping("/theme/list")
     public List<ThemeDto> findThemeList() {
@@ -72,7 +68,7 @@ public class ChatroomController {
 
     @GetMapping("/room/list")
     public List<ChatRoomDto> findRoomList() {
-        return service.findRoomList();
+        return service.findRoomList(1);
     }
 
     @GetMapping("/room/{roomId}")
@@ -84,10 +80,15 @@ public class ChatroomController {
     public Integer createRoom(@RequestBody ChatRoomDto dto) {
 
         service.createRoom(dto);
-
         return dto.getRoomId();
     }
 
+    @PostMapping("/room/update")
+    public void updateRoom(@RequestBody ChatRoomDto dto){
+        service.updateRoom(dto);
+    }
+
+    // --todo 구현안됨
     @PostMapping("/room/join")
     public void joinRoom(@RequestBody ChatRoomMemberDto dto) {
         service.joinRoom(dto);
