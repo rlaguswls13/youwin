@@ -226,6 +226,29 @@
 
     </insert>
 
+
+    <!-- 채팅방 가입 여부 확인 (중복 가입 방지) -->
+        <select id="existsRoomMember" parameterType="com.youwin.dto.ChatRoomMemberDto" resultType="int">
+
+        SELECT COUNT(*)
+        FROM chat_room_members
+        WHERE room_id = #{roomId}
+          AND member_id = #{memberId}
+
+    </select>
+
+    <!-- 현재 사용자의 채팅방 가입 상태 조회 -->
+    <select id="isJoined" parameterType="map" resultType="boolean">
+
+        SELECT EXISTS (
+            SELECT 1
+            FROM chat_room_members
+            WHERE room_id = #{roomId}
+              AND member_id = #{memberId}
+        )
+
+    </select>
+
     <!-- 채팅방 입장 -->
     <insert id="joinRoom" parameterType="com.youwin.dto.ChatRoomMemberDto">
 
@@ -257,8 +280,10 @@
              #{message}
             )
     </insert>
-    
+
+    <!-- 채팅방 수정 -->
     <update id="updateRoom" parameterType="com.youwin.dto.ChatRoomDto">
+
         UPDATE chat_rooms
         SET
             room_name = #{roomName},

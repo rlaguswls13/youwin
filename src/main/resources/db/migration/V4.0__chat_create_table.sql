@@ -32,11 +32,12 @@ create table if not exists songs (
 -- 생성된 모든 아티스트별/노래별 소통방의 데이터를 관리
 
 create table if not exists chat_rooms(
-    room_id		int 					not null auto_increment comment '채팅방 고유 번호',
-    room_name		varchar(100) 			not null comment '방 이름',
-    room_type		enum('artist','song') 	not null comment '채팅방 구분',
-    target_id		int						not null comment '채팅방 대상 번호(암묵적, room_type에 따라 artists.artist_id 또는 songs.song_id 참조)',
-    theme_id		int						not null comment '장르 번호 FK(암묵적) -> themes.theme_id',
+    room_id		        int 					not null auto_increment comment '채팅방 고유 번호',
+    room_name		    varchar(100) 			not null comment '방 이름',
+    room_type		    enum('artist','song') 	not null comment '채팅방 구분',
+    room_description    varchar(100)			not null comment '방 설명',
+    target_id		    int						not null comment '채팅방 대상 번호(암묵적, room_type에 따라 artists.artist_id 또는 songs.song_id 참조)',
+    theme_id		    int						not null comment '장르 번호 FK(암묵적) -> themes.theme_id',
     created_at		datetime 				not null default now() comment '방 개설 일자',
     primary key(room_id)
     ) comment = '채팅방';

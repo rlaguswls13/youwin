@@ -77,8 +77,25 @@ public class ChatRoomService {
         repository.joinRoom(member);
     }
 
-    public void joinRoom(ChatRoomMemberDto dto){
+    public boolean joinRoom(ChatRoomMemberDto dto){
+
+        System.out.println("1");
+
+        int count = repository.existsRoomMember(dto);
+
+        System.out.println("count = " + count);
+
+        if(count > 0){
+            return false;
+        }
+
+        System.out.println("2");
+
         repository.joinRoom(dto);
+
+        System.out.println("3");
+
+        return true;
     }
 
     public void leaveRoom(ChatRoomMemberDto dto){
@@ -91,9 +108,22 @@ public class ChatRoomService {
     }
     }
 
-    public void updateRoom(ChatRoomDto dto){
-        repository. updateRoom(dto);
+    public boolean isJoined(Integer roomId, Integer memberId){
+
+        return repository.isJoined(roomId, memberId);
+
     }
+
+    public void updateRoom(ChatRoomDto dto){
+
+        int result = repository.updateRoom(dto);
+
+        if(result == 0){
+            throw new RuntimeException("채팅방 수정 실패");
+        }
+
+    }
+
     public void deleteRoom(Integer roomId){ repository.deleteRoom(roomId);}
 
     // --------- 채팅 메시지 -----------

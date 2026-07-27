@@ -17,41 +17,41 @@ public class PageController {
     private final ChatRoomService service;
 
     // 메인 페이지
-        @GetMapping("/")
-        public String index() {
-            return "index";
+    @GetMapping("/")
+    public String index() {
+        return "index";
+    }
+
+    // 채팅방 목록
+    @GetMapping("/room")
+    public String room() {
+        return "room";
+    }
+
+    // 채팅 화면
+    @GetMapping("/chatroom")
+    public String chatroom(
+            @RequestParam(required = false) Integer roomId,
+            Model model) {
+
+        if (roomId == null) {
+            return "redirect:/chatroom?roomId=1";
         }
 
-        // 채팅방 목록
-        @GetMapping("/room")
-        public String room() {
-            return "room";
-        }
+        List<ChatRoomDto> roomList = service.findRoomList(1);
 
-        // 채팅 화면
-        @GetMapping("/chatroom")
-        public String chatroom(@RequestParam(defaultValue = "1") Integer roomId, Model model) {
+        model.addAttribute("roomList", roomList);
+        model.addAttribute("themeList", service.findThemeList());
 
-            List<ChatRoomDto> roomList = service.findRoomList(1);
+        ChatRoomDto room = service.findRoom(roomId);
 
-            model.addAttribute("roomList", roomList);
+        model.addAttribute("room", room);
+        model.addAttribute("joined", service.isJoined(roomId, 1));
+        model.addAttribute("messageList", service.findMessages(roomId));
+        model.addAttribute("memberList", service.findMembers(roomId));
 
-            if(roomList.isEmpty()){
-
-                model.addAttribute("room", null);
-                model.addAttribute("messageList", List.of());
-                model.addAttribute("memberList", List.of());
-
-            }else{
-
-                ChatRoomDto room = service.findRoom(roomId);
-
-                model.addAttribute("room", room);
-                model.addAttribute("messageList", service.findMessages(roomId));
-                model.addAttribute("memberList", service.findMembers(roomId));
-            }
-            return "room/chatroom";
-        }
+        return "room/chatroom";
+    }
 
         // 아티스트
         @GetMapping("/artist")
