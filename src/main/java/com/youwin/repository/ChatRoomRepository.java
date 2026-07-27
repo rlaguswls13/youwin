@@ -45,11 +45,14 @@ public interface ChatRoomRepository {
     void joinRoom(ChatRoomMemberDto dto);
 
     void leaveRoom(ChatRoomMemberDto dto);
+    Integer existsRoomMember(ChatRoomMemberDto dto);
 
     void deleteRoom(Integer roomId);
 
-    void updateRoom(ChatRoomDto dto);
+    int updateRoom(ChatRoomDto dto);
 
+    //----- 현재 사용자의 채팅방 가입 상태 조회 -------
+    boolean isJoined(@Param("roomId") Integer roomId, @Param("memberId") Integer memberId);
 
 
     // --------- 채팅 메시지 -----------

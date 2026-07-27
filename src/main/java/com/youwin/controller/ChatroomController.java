@@ -6,6 +6,7 @@ import com.youwin.service.ChatRoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import jakarta.annotation.PostConstruct;
 
 import java.util.List;
 
@@ -85,13 +86,21 @@ public class ChatroomController {
 
     @PostMapping("/room/update")
     public void updateRoom(@RequestBody ChatRoomDto dto){
+
+        System.out.println("Controller");
+        System.out.println(dto.getRoomId());
+        System.out.println(dto.getRoomName());
+        System.out.println(dto.getRoomDescription());
+        System.out.println(dto.getThemeId());
+
         service.updateRoom(dto);
     }
 
-    // --todo 구현안됨
     @PostMapping("/room/join")
-    public void joinRoom(@RequestBody ChatRoomMemberDto dto) {
-        service.joinRoom(dto);
+    public Boolean joinRoom(@RequestBody ChatRoomMemberDto dto){
+
+        return service.joinRoom(dto);
+
     }
 
     @PostMapping("/room/leave")

@@ -8,17 +8,21 @@
     const roomTitle = document.querySelector("[data-room-title]");
     const roomSearch = document.querySelector("#room-search");
     const emptyMessage = document.querySelector("#empty-room-message");
-    const roomModal = document.querySelector("#room-modal");
-    const openRoomModal = document.querySelector("#open-room-modal");
-    const closeRoomModal = document.querySelector("#close-room-modal");
-    const cancelRoom = document.querySelector("#cancel-room");
-    const createRoom = document.querySelector("#create-room");
-    const roomName = document.querySelector("#room-name");
-    const roomDescription = document.querySelector("#room-description");
-    const themeId = document.querySelector("#theme-id");
-    const targetId = document.querySelector("#target-id");
     const roomCount = document.querySelector("#room-count");
     const leaveButtons = document.querySelectorAll(".leave-room-btn");
+    const roomMenuButton = document.querySelector("#room-menu-button");
+    const roomMenu = document.querySelector("#room-menu");
+    const joinRoomButton = document.querySelector("#join-room-btn");
+    const roomInfoButton = document.querySelector("#room-info-btn");
+    const favoriteRoomButton = document.querySelector("#favorite-room-btn");
+    const reportRoomButton = document.querySelector("#report-room-btn");
+    const editRoomButton = document.querySelector("#edit-room-btn");
+    const editRoomModal = document.querySelector("#edit-room-modal");
+    const editRoomCancel = document.querySelector("#edit-room-cancel");
+    const editRoomSave = document.querySelector("#edit-room-save");
+    const editRoomName = document.querySelector("#edit-room-name");
+    const editRoomDescription = document.querySelector("#edit-room-description");
+    const editRoomTheme = document.querySelector("#edit-room-theme");
 
     if (roomSearch) {
 
@@ -29,14 +33,14 @@
             let count = 0;
 
             roomButtons.forEach(function (button) {
-
+             const wrapper = button.closest(".room-item-wrapper");
              const roomName = button.dataset.roomName.toLowerCase();
 
                 if (roomName.includes(keyword)) {
-                    button.style.display = "flex";
+                    wrapper.style.display = "flex";
                     count++;
                 } else {
-                    button.style.display = "none";
+                    wrapper.style.display = "none";
                 }
             });
 
@@ -78,11 +82,12 @@
             const data = {
                 roomId: Number(roomId),
                 memberId: 1,
-                message: text
             };
 
+            console.log("보낼 데이터 =", data);
             const response = await fetch("/chat/message/send", {
-                method: "POST", headers: {
+                method: "POST",
+                headers: {
                     "Content-Type": "application/json"
 
                 },
@@ -168,7 +173,7 @@
 
         }
 
-        roomButtons.forEach(function (button) {
+            roomButtons.forEach(function (button) {
 
             button.addEventListener("click", function () {
 
@@ -186,53 +191,6 @@
                 }
             });
         });
-
-                if(openRoomModal && roomModal){
-                    openRoomModal.addEventListener("click",function(){
-                        roomModal.classList.add("show");
-                    });
-                }
-
-                if(closeRoomModal && roomModal){closeRoomModal.addEventListener("click",function(){
-                    roomModal.classList.remove("show");
-                    });
-                }
-                if(cancelRoom && roomModal) {cancelRoom.addEventListener("click", function () {
-                    roomModal.classList.remove("show");
-                    });
-                }
-                if (createRoom) {
-                    createRoom.addEventListener("click", async function () {
-                        const name = roomName.value.trim();
-                        if (!name) {
-                            alert("채팅방 이름을 입력하세요.");
-                            return;
-                        }
-
-                        const data = {
-                            roomName: name,
-                            roomDescription: roomDescription.value.trim(),
-                            themeId: Number(themeId.value),
-                            targetId: Number(targetId.value)
-                        };
-
-                        const response = await fetch("/chat/room/create", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json"
-                            },
-                            body: JSON.stringify(data)
-                        });
-
-                        if (!response.ok) {
-                            alert("채팅방 생성 실패");
-                            return;
-                        }
-
-                        const roomId = await response.json();
-                        location.href = "/chatroom?roomId=" + roomId;
-                    });
-                }
 
         leaveButtons.forEach(function(button){
 
@@ -288,13 +246,137 @@
             const count = document.querySelectorAll(".room-item-wrapper").length;
 
             if(roomCount){
-                roomCount.textContent = "참여 중인 대화 " + count;
+                roomCount.textContent = "가입한 대화방 " + count;
 
             }
         }
+            if(roomMenuButton && roomMenu){
+                if(roomMenu){
+
+                roomMenu.addEventListener("click", function(event){
+
+                      event.stopPropagation();
+
+                    });
+
+                }
+                roomMenuButton.addEventListener("click", function (event){
+
+                    event.stopPropagation();
+
+                    roomMenu.classList.toggle("show");
+                });
+            }
+
+            document.addEventListener("click", function (){
+
+               if(roomMenu) {
+                   roomMenu.classList.remove("show");
+
+               }
+            });
+
+            if(joinRoomButton && !joinRoomButton.disabled){
+
+                joinRoomButton.addEventListener("click", async function (){
+
+                    roomMenu.classList.remove("show");
+
+                    const result = confirm("나의 대화방에 추가하시겠습니까?");
+
+                 if(!result){
+                     return;
+                 }
+
+                 const roomId = Number(joinRoomButton.dataset.roomId);
+
+                    console.log(roomId);
+
+                    console.log("현재 roomId =", roomId);
+
+                    const response = await fetch("/chat/room/join",{
+                        method:"POST",
+                        headers:{
+                            "Content-Type":"application/json"
+                        },
+                        body:JSON.stringify({
+                            roomId:roomId,
+                            memberId:1
+                        })
+                    });
+
+                    const joinResult = await response.json();
+
+                    if(joinResult){
+                        alert("가입되었습니다.");
+                        location.reload();
+                    }else{
+                        alert("이미 가입한 채팅방입니다.");
+                    }
+
+                });
+            }
+
+            if(editRoomButton && editRoomModal) {
+
+                editRoomButton.addEventListener("click", function (){
+
+                    roomMenu.classList.remove("show");
+
+                    editRoomModal.classList.add("show");
+                });
+            }
+
+            if(editRoomCancel) {
+                editRoomCancel.addEventListener("click", function (){
+
+                    editRoomModal.classList.remove("show");
+                });
+            }
+
+            if(editRoomModal) {
+
+                editRoomModal.addEventListener("click", function (event){
+
+                    if(event.target === editRoomModal) {
+
+                        editRoomModal.classList.remove("show");
+                    }
+                });
+            }
+
+            if(editRoomSave) {
+
+                editRoomSave.addEventListener("click", async function(){
+
+                    const roomId = Number(new URLSearchParams(location.search).get("roomId"));
+
+                    console.log("roomId =", roomId);
+
+                    const response = await fetch("/chat/room/update",{
+
+                        method:"POST",
+                        headers:{
+                            "Content-Type":"application/json"
+                        },
+
+                        body:JSON.stringify({
+
+                            roomId:roomId,
+                            roomName:editRoomName.value,
+                            roomDescription:editRoomDescription.value,
+                            themeId:Number(editRoomTheme.value)
+                        })
+                    });
+
+                    if(!response.ok){
+
+                        alert("채팅방 수정에 실패했습니다.");
+                        return;
+                    }
+                        alert("수정되었습니다.");
+                        location.reload();
+
+                });
+            }
     })();
-
-
-
-
-
