@@ -1,4 +1,4 @@
--- 1. [조장 요청사항] 테스트 데이터 추가
+-- 1. 테스트 데이터 추가
 -- V1에서 이미 생성된 최고관리자(id: 1)의 계정을 사용하여 공지사항 데이터를 추가합니다.
 INSERT INTO notice_board (member_id, category, title, content, is_pinned, `count`) VALUES
                                                                                        (1, '안내', '[필독] 커뮤니티 이용 가이드라인 및 기본 에티켓 안내', '안전한 소통을 위한 이용 규칙입니다.', 1, 142),
