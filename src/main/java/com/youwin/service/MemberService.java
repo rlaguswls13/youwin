@@ -206,23 +206,24 @@ public class MemberService {
 
 
      // 비밀번호 변경 (설정 페이지용)
-    @Transactional
-    public void updatePasswordInSettings(String memberId, String currentPassword, String newPassword, String confirmPassword) {
-        // 1) 새 비밀번호 일치 확인
-        if (!newPassword.equals(confirmPassword)) {
-            throw new IllegalArgumentException("새 비밀번호가 일치하지 않습니다.");
-        }
+     @Transactional
+     public void updatePasswordInSettings(String memberId, String currentPassword, String newPassword) {
 
-        // 2) 현재 비밀번호 검증
-        MemberDto member = memberRepository.findByMemberId(memberId);
-        if (member == null || !passwordEncoder.matches(currentPassword, member.getMemberPassword())) {
-            throw new IllegalArgumentException("현재 비밀번호가 올바르지 않습니다.");
-        }
+         // 1) 회원 조회 및 현재 비밀번호 검증
+         MemberDto member = memberRepository.findByMemberId(memberId);
+         if (member == null || !passwordEncoder.matches(currentPassword, member.getMemberPassword())) {
+             throw new IllegalArgumentException("현재 비밀번호가 올바르지 않습니다.");
+         }
 
-        // 3) 새 비밀번호 암호화 후 변경
-        String encodedPassword = passwordEncoder.encode(newPassword);
-        memberRepository.updatePassword(memberId, encodedPassword);
-    }
+         // 2) 새 비밀번호가 기존 비밀번호와 동일한지 검증
+         if (passwordEncoder.matches(newPassword, member.getMemberPassword())) {
+             throw new IllegalArgumentException("현재 비밀번호와 동일한 비밀번호로는 변경할 수 없습니다.");
+         }
+
+         // 3) 새 비밀번호 암호화 후 변경
+         String encodedPassword = passwordEncoder.encode(newPassword);
+         memberRepository.updatePassword(memberId, encodedPassword);
+     }
 
     // 프로필 이미지 변경 (또는 기본 이미지로 변경)
     @Transactional
@@ -285,5 +286,24 @@ public class MemberService {
                 fileToDelete.delete();
             }
         }
+    }
+
+    // 1. 비밀번호 일치 여부 확인
+    public boolean checkPassword(String memberId, String rawPassword) {
+        // 이미 있는 findByMemberId 메서드로 DB 회원 정보를 가져옵니다.
+        MemberDto memberDto = memberRepository.findByMemberId(memberId);
+
+        if (memberDto == null) {
+            return false;
+        }
+
+        // 입력받은 평문 비밀번호(rawPassword)와 DB에 암호화되어 저장된 비밀번호 비교
+        return passwordEncoder.matches(rawPassword, memberDto.getMemberPassword());
+    }
+
+    // 2. 계정 삭제 (status를 DELETED로 변경)
+    @Transactional
+    public void deleteMember(String memberId) {
+        memberRepository.deleteMember(memberId);
     }
 }

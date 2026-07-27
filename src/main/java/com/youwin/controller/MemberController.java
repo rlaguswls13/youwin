@@ -201,7 +201,6 @@ public class MemberController {
     public String updatePasswordInSettings(
             @RequestParam("currentPassword") String currentPassword,
             @RequestParam("newPassword") String newPassword,
-            @RequestParam("confirmPassword") String confirmPassword,
             HttpSession session,
             RedirectAttributes rttr) {
 
@@ -209,7 +208,7 @@ public class MemberController {
         if (loginUser == null) return "redirect:/member/login";
 
         try {
-            memberService.updatePasswordInSettings(loginUser.getMemberId(), currentPassword, newPassword, confirmPassword);
+            memberService.updatePasswordInSettings(loginUser.getMemberId(), currentPassword, newPassword);
             rttr.addFlashAttribute("successMessage", "비밀번호가 성공적으로 변경되었습니다.");
         } catch (IllegalArgumentException e) {
             rttr.addFlashAttribute("errorMessage", e.getMessage());
@@ -217,6 +216,65 @@ public class MemberController {
 
         return "redirect:/member/settings";
     }
+
+
+    @PostMapping("/delete")
+    public String deleteMember(@RequestParam("password") String password,
+                               HttpServletRequest request,
+                               HttpServletResponse response,
+                               HttpSession session,
+                               RedirectAttributes rttr) {
+
+        MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
+
+        if (loginUser == null) {
+            return "redirect:/member/login";
+        }
+
+        // 1. 비밀번호 일치 여부 확인
+        boolean isPasswordMatch = memberService.checkPassword(loginUser.getMemberId(), password);
+
+        if (!isPasswordMatch) {
+            rttr.addFlashAttribute("errorMessage", "비밀번호가 일치하지 않습니다.");
+            return "redirect:/member/settings";
+        }
+
+        try {
+            // 2. status를 'DELETED'로 변경 (Soft Delete)
+            memberService.deleteMember(loginUser.getMemberId());
+
+            // 3. 자동 로그인 토큰 DB & 쿠키 삭제 (로그아웃의 1번 로직 동일 적용)
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if ("remember-me".equals(cookie.getName())) {
+                        String token = cookie.getValue();
+                        memberService.removeAutoLoginToken(token); // DB 토큰 삭제
+
+                        cookie.setPath("/");
+                        cookie.setMaxAge(0);
+                        response.addCookie(cookie); // 쿠키 삭제
+                        break;
+                    }
+                }
+            }
+
+            // 4. 세션에서 로그인 유저만 제거 (session.invalidate() 대신 사용!)
+            // ★ 이렇게 해야 session.invalidate()로 인해 successMessage가 날아가는 걸 방지합니다.
+            session.removeAttribute("loginUser");
+
+            // 5. 성공 메시지 전달 후 메인으로 리다이렉트
+            rttr.addFlashAttribute("successMessage", "계정 삭제 신청이 완료되었습니다. 이용해 주셔서 감사합니다.");
+            return "redirect:/";
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            rttr.addFlashAttribute("errorMessage", "탈퇴 처리 중 오류가 발생했습니다.");
+            return "redirect:/member/settings";
+        }
+    }
+
+
 
     // view 이동
     @GetMapping("/joinStep1")
@@ -281,6 +339,5 @@ public class MemberController {
         }
         return "member/resetPassword";
     }
-
 
 }

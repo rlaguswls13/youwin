@@ -44,8 +44,10 @@
             member_phone    AS memberPhone,
             member_email    AS memberEmail,
             profile_image   AS profileImage,
+            member_status   AS memberStatus,
             created_at      AS createdAt,
-            updated_at      AS updatedAt
+            updated_at      AS updatedAt,
+            deleted_at      AS deletedAt
         FROM member
         WHERE member_id = #{memberId}
     </select>
@@ -104,5 +106,15 @@
             updated_at = NOW()
         WHERE member_id = #{memberId}
     </update>
+
+    <!-- 회원 상태를 DELETED로 변경하고 삭제 처리 시각 기록 -->
+    <update id="deleteMember">
+        UPDATE member
+        SET member_status = 'DELETED',
+            deleted_at = NOW()
+        WHERE member_id = #{memberId}
+    </update>
+
+
 
 </mapper>

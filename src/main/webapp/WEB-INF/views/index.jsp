@@ -26,7 +26,7 @@
                 <div class="user-menu">
                     <!-- 세션에 loginUser가 있는 경우 (로그인 상태) -->
                     <c:if test="${not empty sessionScope.loginUser}">
-                        <span><strong>${sessionScope.loginUser.memberId}</strong>님 환영합니다!</span>
+                        <span><strong>${sessionScope.loginUser.nickname}</strong>님 환영합니다!</span>
                         <a href="/member/logout">로그아웃</a>
                     </c:if>
 
@@ -172,5 +172,16 @@
 </div>
 <script src="${pageContext.request.contextPath}/app.js"></script>
 <script src="${pageContext.request.contextPath}/home.js"></script>
+<c:if test="${not empty successMessage}">
+    <script>
+        alert("${successMessage}");
+    </script>
+</c:if>
+
+<c:if test="${not empty errorMessage}">
+    <script>
+        alert("${errorMessage}");
+    </script>
+</c:if>
 </body>
 </html>

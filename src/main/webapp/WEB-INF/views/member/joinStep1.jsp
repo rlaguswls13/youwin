@@ -206,7 +206,7 @@
 
       <div class="form-group">
         <label for="member-phone">휴대전화번호</label>
-        <input type="tel" id="member-phone" name="memberPhone" placeholder="숫자만 입력 (예: 01012345678)">
+        <input type="tel" id="member-phone" name="memberPhone" maxlength="11" placeholder="숫자만 입력 (예: 01012345678)">
         <span class="error-msg" id="err-phone"></span>
       </div>
 

@@ -24,8 +24,10 @@ public class MemberDto {
     private String memberPhone;
     private String nickname;
     private String profileImage;
+    private String memberStatus;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime deletedAt;
 
     private MultipartFile profile;
 
@@ -39,6 +41,11 @@ public class MemberDto {
     public String getFormattedUpdatedAt() {
         if (this.updatedAt == null) return "";
         return this.updatedAt.format(DateTimeFormatter.ofPattern("yyyy.MM.dd"));
+    }
+
+    public String getFormattedDeletedAt() {
+        if (this.deletedAt == null) return "";
+        return this.deletedAt.format(DateTimeFormatter.ofPattern("yyyy.MM.dd"));
     }
 }
 
