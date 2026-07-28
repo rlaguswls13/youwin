@@ -1,8 +1,8 @@
 package com.youwin.dto;
 
 import java.time.LocalDateTime;
-import java.util.List; // [추가] List 임포트
-import org.springframework.web.multipart.MultipartFile; // [추가] MultipartFile 임포트
+import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,6 +19,9 @@ public class NoticeDto {
     private LocalDateTime createAt;
     private LocalDateTime updateAt;
 
-    // [신규 추가] 화면에서 첨부한 이미지 파일들을 받아낼 가방 (클래스 내부로 정상 진입)
+    // 새로 업로드하는 이미지 파일들 (가방)
     private List<MultipartFile> files;
+
+    // 수정 시 유지할 기존 이미지 파일명/URL 목록
+    private List<String> existingFiles;
 }

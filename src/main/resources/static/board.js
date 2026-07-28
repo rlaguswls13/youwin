@@ -29,7 +29,7 @@
     const previewContainer = document.getElementById('previewContainer');
     const imageCountSpan = document.getElementById('imageCount');
 
-    // 유저가 선택한 파일들을 담아둘 실제 배열 (FileList 대체재)
+    // 유저가 선택한 파일들을 담아둘 실제 배열
     let uploadedFiles = [];
     const MAX_FILE_COUNT = 5;
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -66,7 +66,7 @@
         if (allowCommentsCheckbox) allowCommentsCheckbox.checked = (row.dataset.allowComments === "1");
     }
 
-    // 이미지 관리 함수군 (업로드 제어, 프리뷰 렌더링, 초기화)
+    // 이미지 관리 함수군
     if (btnUploadTrigger && imageInput) {
         btnUploadTrigger.addEventListener('click', function () {
             imageInput.click();
@@ -87,6 +87,14 @@
                     alert(`[${file.name}] 파일이 제한 용량(5MB)을 초과합니다.`);
                     continue;
                 }
+
+                const isDuplicate = uploadedFiles.some(function(existingFile) {
+                    return existingFile instanceof File &&
+                        existingFile.name === file.name &&
+                        existingFile.size === file.size;
+                });
+
+                if (isDuplicate) continue;
 
                 uploadedFiles.push(file);
                 renderPreview(file, uploadedFiles.length - 1);
@@ -161,7 +169,7 @@
 
 
     // ====================================================================
-    // 0. 레이아웃 (Layout) : 탭 화면 전환 및 초기 UI 상태 복원
+    // 0. 레이아웃 (Layout)
     // ====================================================================
     function showView(target, pushHistory = true) {
         if (!views || views.length === 0) return;
@@ -183,10 +191,10 @@
             button.classList.toggle('is-active', button.dataset.boardTarget === target);
         });
 
-        // 브라우저 뒤로가기 버튼과 연동하기 위한 히스토리 상태 기록
         if (pushHistory) {
             const newUrl = new URL(window.location.href);
             newUrl.searchParams.set('view', target);
+            newUrl.searchParams.set('notice_id', "1");
             history.pushState({ view: target }, '', newUrl.toString());
         }
 
@@ -208,7 +216,6 @@
             searchInput.value = currentKeyword;
         }
 
-        // 페이지 진입 시 URL에 view 파라미터가 있다면 해당 뷰로 초기 복원
         if (currentView) {
             showView(currentView, false);
         }
@@ -227,7 +234,7 @@
 
 
     // ====================================================================
-    // 1. 등록 (Create) : 새 글 작성 폼 활성화 및 에디터 취소 제어
+    // 1. 등록 (Create)
     // ====================================================================
     document.querySelectorAll('[data-open-editor]').forEach(function (button) {
         button.addEventListener('click', function (event) {
@@ -326,7 +333,7 @@
 
 
     // ====================================================================
-    // 4. 수정 (Update)
+    // 4. 수정 (Update) - 서버 중복 데이터 완벽 차단 (Set 활용)
     // ====================================================================
     const editButtons = document.querySelectorAll('.btn-edit');
     editButtons.forEach(function (button) {
@@ -369,9 +376,14 @@
             fetch(imageFetchUrl)
                 .then(response => response.ok ? response.json() : [])
                 .then(images => {
+                    uploadedFiles = [];
+                    if (previewContainer) previewContainer.innerHTML = '';
+
                     if (images && images.length > 0) {
+                        // 서버가 중복 데이터를 주더라도 고유 URL만 뽑아내기 위해 Set 사용
+                        const uniqueUrls = new Set();
+
                         images.forEach((imgData) => {
-                            // 객체 형태나 문자열 형태 모두 대응할 수 있도록 수정
                             const fileName = imgData.savedFileName || imgData.saved_file_name || imgData.fileName || imgData.file_name || (typeof imgData === 'string' ? imgData : null);
                             if (!fileName || fileName === 'undefined') return;
 
@@ -380,9 +392,15 @@
                             let imgUrl = `${hostOrigin}${context}/upload/${fileName}`;
                             imgUrl = imgUrl.replace(/([^:]\/)\/+/g, "$1");
 
+                            uniqueUrls.add(imgUrl);
+                        });
+
+                        // 중복이 제거된 순수 고유 URL들만 배열에 담고 렌더링
+                        uniqueUrls.forEach((imgUrl) => {
                             uploadedFiles.push(imgUrl);
                             renderPreview(imgUrl, uploadedFiles.length - 1);
                         });
+
                         updateImageCount();
                     }
                 })
@@ -394,7 +412,7 @@
 
 
     // ====================================================================
-    // 5. 상세조회 (Detail Read) 및 폼 전송(Submit) 최종 제어
+    // 5. 상세조회 (Detail Read) - 중복 데이터 차단 및 고유값만 출력
     // ====================================================================
     rows.forEach(function (row) {
         row.addEventListener('dblclick', function () {
@@ -403,10 +421,9 @@
             const title = row.dataset.title;
             const content = row.dataset.content;
 
-            // JSP에 존재하는 전용 상세 영역 컴포넌트에 데이터 바인딩
             if (detailCategoryEyebrow) detailCategoryEyebrow.textContent = category;
             if (detailTitleH1) detailTitleH1.textContent = title;
-            if (detailContentDiv) detailContentDiv.textContent = content;
+            if (detailContentDiv) detailContentDiv.innerHTML = content;
 
             const cells = row.querySelectorAll('td');
             if (cells.length >= 6 && detailMetaInfoP) {
@@ -418,31 +435,40 @@
 
             if (detailImagesContainer) {
                 detailImagesContainer.innerHTML = '';
+                detailImagesContainer.style.display = 'flex';
 
                 let imageFetchUrl = '';
                 if (window.contextPath !== undefined) {
                     imageFetchUrl = `${window.location.origin}${window.contextPath}/board/images?noticeId=${noticeId}`;
+                    console.log(imageFetchUrl);
                 } else {
                     const formBase = editorForm ? editorForm.action.split('/board/')[0] : '';
                     imageFetchUrl = `${formBase}/board/images?noticeId=${noticeId}`;
+                    console.log(imageFetchUrl);
                 }
                 imageFetchUrl = imageFetchUrl.replace(/([^:]\/)\/+/g, "$1");
-
+                console.log(imageFetchUrl);
                 fetch(imageFetchUrl)
                     .then(response => response.ok ? response.json() : [])
                     .then(images => {
                         if (images && images.length > 0) {
+                            const uniqueDetailUrls = new Set();
+
                             images.forEach(imgData => {
-                                const img = document.createElement('img');
                                 const fileName = imgData.savedFileName || imgData.saved_file_name || imgData.fileName || imgData.file_name || (typeof imgData === 'string' ? imgData : null);
                                 if (!fileName || fileName === 'undefined') return;
 
                                 const hostOrigin = window.location.origin;
                                 const context = (window.contextPath !== undefined) ? window.contextPath : '';
                                 let imgUrl = `${hostOrigin}${context}/upload/${fileName}`;
-                                img.src = imgUrl.replace(/([^:]\/)\/+/g, "$1");
+                                imgUrl = imgUrl.replace(/([^:]\/)\/+/g, "$1");
 
-                                img.style.cssText = 'width: 100%; max-width: 600px; height: auto; border-radius: 6px; border: 1px solid #e9ecef; margin: 0 auto; display: block;';
+                                uniqueDetailUrls.add(imgUrl);
+                            });
+                            uniqueDetailUrls.forEach(imgUrls => {
+                                const img = document.createElement('img');
+                                img.src = imgUrls;
+                                img.style.cssText = 'width: 100%; max-width: 500px; height: auto; border-radius: 6px; border: 1px solid #e9ecef; margin-top: 10px; display: block;';
                                 detailImagesContainer.appendChild(img);
                             });
                         }
@@ -450,7 +476,6 @@
                     .catch(err => console.error("상세조회 이미지 로드 오류:", err));
             }
 
-            // JSP 내에 구현된 진짜 상세 뷰 섹션 노출
             showView('detail');
         });
     });
@@ -497,18 +522,12 @@
         });
     }
 
-    // ====================================================================
-    // 브라우저 뒤로가기/앞으로가기 버튼 감지 및 연동
-    // ====================================================================
-    window.addEventListener('popstate', function (event) {
+    window.addEventListener('popstate', function () {
         const params = new URLSearchParams(window.location.search);
         const viewParam = params.get('view') || 'notice';
-        showView(viewParam, false); // 히스토리를 다시 쌓지 않고 화면만 복원
+        showView(viewParam, false);
     });
 
-    // ====================================================================
-    // 6. 초기 실행 제어 (Initial Setup & Layout Guard)
-    // ====================================================================
     const initialParams = new URLSearchParams(window.location.search);
     if (!initialParams.has('view')) {
         showView('notice', false);

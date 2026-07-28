@@ -162,7 +162,9 @@
                                             <td onclick="event.stopPropagation();" style="text-align: center;">
                                                 <div style="display: flex; gap: 4px; justify-content: center; align-items: center;">
                                                     <button type="button" class="board-filter btn-edit" style="min-height:28px; padding:0 10px; margin:0; border-color:#2f54eb; color:#2f54eb; background:none; font-size:11px; cursor:pointer;">수정</button>
-                                                    <form action="${pageContext.request.contextPath}/board/delete" method="post" class="delete-form" style="margin:0;">
+
+                                                    <!-- [수정 완료] 삭제 폼 method 속성 누락 및 엔드포인트 경로 수정 -->
+                                                    <form action="${pageContext.request.contextPath}/board/delete" method="POST" class="delete-form" style="margin:0;">
                                                         <input type="hidden" name="noticeId" value="${notice.noticeId}">
                                                         <button type="submit" class="board-filter" style="min-height:28px; padding:0 10px; margin:0; border-color:#ff4d4f; color:#ff4d4f; background:none; font-size:11px; cursor:pointer;">삭제</button>
                                                     </form>

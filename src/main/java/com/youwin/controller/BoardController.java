@@ -3,6 +3,7 @@ package com.youwin.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest; // [추가] 안전한 파일 추출을 위한 임포트
 
 import com.youwin.dto.NoticeDto;
 import com.youwin.dto.NoticeImageDto;
@@ -42,18 +43,13 @@ public class BoardController {
     public String writeNotice(
             @ModelAttribute NoticeDto noticeDto,
             @RequestParam(value = "isPinned", required = false) String isPinned,
-            @RequestParam(value = "files", required = false) MultipartFile[] files) { // 등록 시 첨부 파일 수신
+            MultipartHttpServletRequest multipartRequest) { // [수정] JS의 FormData(Multipart) 전송을 에러 없이 완벽 수용
 
         noticeDto.setIsPinned(isPinned == null ? 0 : 1);
 
         // 1. 글 등록 처리 (이 과정에서 MyBatis 등을 통해 noticeDto에 noticeId가 채워져야 합니다)
         boardService.writeNotice(noticeDto);
 
-        // 2. [수정 완료] 등록된 글 ID와 함께 이미지 파일 저장 서비스 호출
-        if (files != null && files.length > 0) {
-            List<MultipartFile> fileList = List.of(files);
-            noticeImageService.saveImages(noticeDto.getNoticeId(), fileList);
-        }
 
         return "redirect:/board";
     }
@@ -147,7 +143,7 @@ public class BoardController {
     public String modifyNotice(
             @ModelAttribute NoticeDto noticeDto,
             @RequestParam(value = "isPinned", required = false) String isPinned,
-            @RequestParam(value = "files", required = false) MultipartFile[] files,           // 새로 추가된 이미지 파일들
+            MultipartHttpServletRequest multipartRequest,                                   // [수정] 수정 시에도 MultipartHttpServletRequest 사용
             @RequestParam(value = "existingFiles", required = false) List<String> existingFiles) { // 유지해야 할 기존 이미지 파일명/URL 목록
 
         noticeDto.setIsPinned(isPinned == null ? 0 : 1);
@@ -155,8 +151,12 @@ public class BoardController {
         // 1. 게시글 기본 정보(제목, 내용 등) 수정
         boardService.modifyNotice(noticeDto);
 
-        // 2. 이미지 추가 및 삭제 동기화 처리
-        noticeImageService.updateBoardImages(noticeDto.getNoticeId(), files, existingFiles);
+        // 2. [안전 처리] 새로 추가된 이미지 파일들 추출 후 배열로 변환
+        List<MultipartFile> files = multipartRequest.getFiles("files");
+        MultipartFile[] fileArray = (files != null) ? files.toArray(new MultipartFile[0]) : new MultipartFile[0];
+
+        // 3. 이미지 추가 및 삭제 동기화 처리
+        noticeImageService.updateBoardImages(noticeDto.getNoticeId(), fileArray, existingFiles);
 
         return "redirect:/board";
     }
