@@ -2,9 +2,12 @@ package com.youwin.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.youwin.dto.NoticeDto;
+import com.youwin.dto.NoticeImageDto;
 import com.youwin.service.BoardService;
+import com.youwin.service.NoticeImageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 
@@ -17,10 +20,14 @@ import java.util.Map;
 public class BoardController {
 
     private final BoardService boardService;
+    // 이미지 조회를 위해 방금 완성한 이미지 서비스 주입용 멤버 변수
+    private final NoticeImageService noticeImageService;
 
+    // 생성자에 NoticeImageService를 추가하여 스프링이 자동으로 주입하도록 연동
     @Autowired
-    public BoardController(BoardService boardService) {
+    public BoardController(BoardService boardService, NoticeImageService noticeImageService) {
         this.boardService = boardService;
+        this.noticeImageService = noticeImageService;
     }
 
     @GetMapping("/")
@@ -34,11 +41,19 @@ public class BoardController {
     @PostMapping("/write")
     public String writeNotice(
             @ModelAttribute NoticeDto noticeDto,
-            @RequestParam(value = "isPinned", required = false) String isPinned) {
+            @RequestParam(value = "isPinned", required = false) String isPinned,
+            @RequestParam(value = "files", required = false) MultipartFile[] files) { // 등록 시 첨부 파일 수신
 
         noticeDto.setIsPinned(isPinned == null ? 0 : 1);
 
+        // 1. 글 등록 처리 (이 과정에서 MyBatis 등을 통해 noticeDto에 noticeId가 채워져야 합니다)
         boardService.writeNotice(noticeDto);
+
+        // 2. [수정 완료] 등록된 글 ID와 함께 이미지 파일 저장 서비스 호출
+        if (files != null && files.length > 0) {
+            List<MultipartFile> fileList = List.of(files);
+            noticeImageService.saveImages(noticeDto.getNoticeId(), fileList);
+        }
 
         return "redirect:/board";
     }
@@ -118,6 +133,9 @@ public class BoardController {
     // ==========================================
     @PostMapping("/delete")
     public String deleteNotice(@RequestParam("noticeId") Long noticeId) {
+        // 공지사항 삭제 시 서버 내의 물리 이미지 파일도 일괄 지우도록 서비스 호출 연동
+        noticeImageService.deleteImagesByNoticeId(noticeId);
+
         boardService.deleteNotice(noticeId);
         return "redirect:/board";
     }
@@ -128,22 +146,46 @@ public class BoardController {
     @PostMapping("/modify")
     public String modifyNotice(
             @ModelAttribute NoticeDto noticeDto,
-            @RequestParam(value = "isPinned", required = false) String isPinned) {
+            @RequestParam(value = "isPinned", required = false) String isPinned,
+            @RequestParam(value = "files", required = false) MultipartFile[] files,           // 새로 추가된 이미지 파일들
+            @RequestParam(value = "existingFiles", required = false) List<String> existingFiles) { // 유지해야 할 기존 이미지 파일명/URL 목록
 
         noticeDto.setIsPinned(isPinned == null ? 0 : 1);
 
+        // 1. 게시글 기본 정보(제목, 내용 등) 수정
         boardService.modifyNotice(noticeDto);
+
+        // 2. 이미지 추가 및 삭제 동기화 처리
+        noticeImageService.updateBoardImages(noticeDto.getNoticeId(), files, existingFiles);
+
         return "redirect:/board";
     }
 
     // ==========================================
-    // 5
-    // . 공지사항 단건 상세 조회 구역
+    // 5. 공지사항 단건 상세 조회 구역
     // ==========================================
     @GetMapping("/{noticeId}")
     public String detailNotice(@PathVariable("noticeId") Long noticeId, Model model) {
         NoticeDto notice = boardService.getNoticeById(noticeId);
         model.addAttribute("notice", notice);
+
+        // 수정하기 창이나 상세 보기 모달이 열릴 때 기존 동기식 랜더링에 대응하기 위해
+        // 해당 공지사항 ID에 첨부된 이미지 리스트를 미리 조회하여 모델에 함께 담아 전송합니다.
+        List<NoticeImageDto> images = noticeImageService.getImagesByNoticeId(noticeId);
+        model.addAttribute("images", images);
+
         return "board";
+    }
+
+    // ==========================================
+    // 6. 상세조회 이미지 목록 비동기 반환 구역
+    // ==========================================
+    /**
+     * 프론트엔드(board.js)의 fetch 요청을 받아 해당 게시글의 이미지 파일 정보 리스트를 JSON 배열로 반환합니다.
+     */
+    @GetMapping("/images")
+    @ResponseBody
+    public List<NoticeImageDto> getNoticeImages(@RequestParam("noticeId") Long noticeId) {
+        return noticeImageService.getImagesByNoticeId(noticeId);
     }
 }

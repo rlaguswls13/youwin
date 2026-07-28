@@ -1,41 +1,19 @@
 package com.youwin.config;
 
-import com.youwin.interceptor.ActiveUserInterceptor; // ★ 추가
-import com.youwin.interceptor.AutoLoginInterceptor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.io.File;
-
 @Configuration
-@RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
-
-    private final AutoLoginInterceptor autoLoginInterceptor;
-    private final ActiveUserInterceptor activeUserInterceptor; // ★ 주입 추가
-
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        // 1. 자동 로그인 처리 인터셉터 (모든 경로)
-        registry.addInterceptor(autoLoginInterceptor)
-                .addPathPatterns("/**")
-                .excludePathPatterns("/css/**", "/js/**", "/images/**", "/upload/**", "/error");
-
-        // 2. ACTIVE 회원 전용 페이지 접근 제어 인터셉터 (추가)
-        registry.addInterceptor(activeUserInterceptor)
-                .addPathPatterns("/member/myPage", "/member/settings") // 보호할 경로 지정
-                .excludePathPatterns("/css/**", "/js/**", "/images/**", "/upload/**", "/error");
-    }
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String projectPath = System.getProperty("user.dir");
+        // 프로젝트 소스 코드가 없는 외부의 안전한 폴더를 지정합니다. (예시: C:/youwin_upload/)
+        // 맥/리눅스 사용자의 경우 "file:///Users/사용자이름/youwin_upload/" 형태로 지정하시면 됩니다.
+        String uploadPath = "file:///C:/youwin_upload/";
 
-        String uploadPath = "file:///" + projectPath + File.separator + "upload" + File.separator;
-
+        // 브라우저의 /upload/** 요청을 외부 실제 하드디스크 경로로 매핑
         registry.addResourceHandler("/upload/**")
                 .addResourceLocations(uploadPath);
     }
