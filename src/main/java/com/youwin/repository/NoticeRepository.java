@@ -1,6 +1,7 @@
 package com.youwin.repository;
 
 import com.youwin.dto.NoticeDto;
+import com.youwin.dto.NoticeImageDto; // [신규 추가] 이미지 정보 이동을 위한 DTO 임포트
 import org.apache.ibatis.annotations.Mapper;
 import java.util.List;
 import java.util.Map;
@@ -33,4 +34,17 @@ public interface NoticeRepository {
     // 5. 공지사항 단건 상세 조회 구역
     // 단건 상세 조회 쿼리를 호출하기 위한 추상 메서드 선언 (더블클릭 조회 연동)
     NoticeDto findById(Long noticeId);
+
+    // 6. 공지사항 이미지 처리 구역
+    // 업로드된 이미지 정보를 첨부파일 테이블에 기록하는 메서드
+    void insertImage(NoticeImageDto imageDto);
+
+    // 상세조회 시 특정 공지사항 ID에 묶인 이미지 목록을 불러오는 메서드
+    List<NoticeImageDto> selectImagesByNoticeId(Long noticeId);
+
+    // 공지사항 글 삭제 시 연결되어 있던 모든 이미지 데이터를 일괄 제거하는 메서드
+    void deleteImagesByNoticeId(Long noticeId);
+
+    // [추가] 공지사항 수정 시 유지되지 않은 개별 이미지를 DB에서 삭제하는 메서드
+    void deleteImageById(Long imageId);
 }

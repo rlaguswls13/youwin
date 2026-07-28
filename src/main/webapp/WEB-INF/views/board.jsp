@@ -9,6 +9,20 @@
     <title>게시판 | Youwin</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/app.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/board.css">
+    <style>
+        /* 상세조회 시 업로드 프리뷰 양식을 재활용할 때 삭제 버튼을 숨기기 위한 스타일 */
+        .readonly-view .btn-del-img {
+            display: none !important;
+        }
+
+        /* [보완] style="display:none" 대신 클래스 기반의 안전한 뷰 토글 제어 메커니즘 제공 */
+        .board-view {
+            display: none !important;
+        }
+        .board-view.is-active {
+            display: block !important;
+        }
+    </style>
 </head>
 <body>
 <div class="site-shell">
@@ -50,7 +64,8 @@
                 <!-- ==================================================================== -->
                 <section class="board-view" data-board-view="write" aria-labelledby="write-title">
                     <div class="page-heading"><p class="page-eyebrow">Write a post</p><h1 class="page-title" id="write-title">새 공지 작성</h1><p class="page-description">회원에게 필요한 내용을 간결하고 정확하게 작성해 주세요.</p></div>
-                    <form id="editor-form" class="surface editor-card form-grid" action="${pageContext.request.contextPath}/board/write" method="post">
+
+                    <form id="editor-form" class="surface editor-card form-grid" action="${pageContext.request.contextPath}/board/write" method="post" enctype="multipart/form-data">
                         <!-- [4. 수정 전용] 기존 글 ID 식별용 히든 필드 -->
                         <input type="hidden" id="post-noticeId" name="noticeId" value="">
 
@@ -58,7 +73,30 @@
                         <div class="form-options"><label><input type="checkbox" id="post-isPinned" name="isPinned" value="1"> 상단 고정</label><label><input type="checkbox" id="post-allowComments" name="allowComments" value="1"> 댓글 허용</label></div>
                         <div class="form-field"><label for="post-title">제목</label><input id="post-title" type="text" name="title" maxlength="200" placeholder="제목을 입력해 주세요" required></div>
                         <div class="form-field"><label for="post-content">내용</label><textarea id="post-content" name="content" placeholder="내용을 입력해 주세요" required></textarea></div>
-                        <div class="form-actions"><button class="button button--secondary" type="button" data-cancel-editor>취소</button><button id="submit-btn" class="button" type="submit">등록하기</button></div>
+
+                        <!-- 선택된 파일들의 썸네일 미리보기가 가로선 윗부분에 띄워지도록 빈 박스 추가 -->
+                        <div id="previewContainer" style="display: flex; gap: 10px; flex-wrap: wrap; width: 100%;"></div>
+
+                        <!-- 가로선 하단 이미지 업로드 및 액션 버튼 병렬 배치 라인 -->
+                        <div class="form-actions" style="display: flex; justify-content: space-between; align-items: center; width: 100%; width: -webkit-fill-available;">
+
+                            <!-- [좌측] 이미지 컴포넌트 -->
+                            <div class="image-upload-trigger-wrap" style="display: flex; align-items: center; gap: 12px;">
+                                <input type="file" id="imageInput" name="files" multiple accept="image/*" style="display: none;">
+                                <div id="btnUploadTrigger" style="display: flex; align-items: center; gap: 6px; padding: 8px 14px; border: 1px dashed #ced4da; border-radius: 6px; cursor: pointer; background-color: #f8f9fa; user-select: none;">
+                                    <span style="font-weight: bold; color: #495057; font-size: 14px;">+ 이미지 업로드</span>
+                                    <span style="font-size: 13px; color: #6c757d;">(<span id="imageCount">0</span>/5)</span>
+                                </div>
+                                <span style="font-size: 13px; color: #868e96; pointer-events: none;">* 장당 최대 5MB 이하</span>
+                            </div>
+
+                            <!-- [우측] 기존 액션 버튼 컴포넌트 -->
+                            <!-- [해결] form 내부 button의 새로고침/튕김 버그 차단을 위해 onclick 기본이벤트 완벽 물리 격리 적용 -->
+                            <div style="display: flex; gap: 8px;">
+                                <button class="button button--secondary" type="button" data-cancel-editor onclick="event.preventDefault(); event.stopPropagation();">취소</button>
+                                <button id="submit-btn" class="button" type="submit">등록하기</button>
+                            </div>
+                        </div>
                     </form>
                 </section>
 
@@ -69,7 +107,7 @@
 
                     <!-- [1. 등록 진입 버튼] -->
                     <div class="board-heading">
-                        <div class="page-heading"><p class="page-eyebrow">Community board</p><h1 class="page-title" id="notice-title">공지사항</h1><p class="page-description">Youwin의 새로운 소식과 service 안내를 확인하세요.</p></div>
+                        <div class="page-heading"><p class="page-eyebrow">Community board</p><h1 class="page-title" id="notice-title">공지사항</h1><p class="page-description">Youwin의 새로운 소식과 소식을 확인하세요.</p></div>
                         <button class="button" type="button" data-open-editor>새 글 작성</button>
                     </div>
 
@@ -105,7 +143,6 @@
                                 </c:when>
                                 <c:otherwise>
                                     <c:forEach var="notice" items="${list}">
-                                        <!-- 행 클릭 시 [5. 상세조회] 및 [4. 수정]에 쓰일 메타데이터 바인딩 -->
                                         <tr data-board-row
                                             data-category="${notice.category}"
                                             data-id="${notice.noticeId}"
@@ -124,14 +161,7 @@
 
                                             <td onclick="event.stopPropagation();" style="text-align: center;">
                                                 <div style="display: flex; gap: 4px; justify-content: center; align-items: center;">
-                                                    <!-- ==================================================================== -->
-                                                    <!-- 4. 수정 (Update) : 클릭 시 상단 에디터 폼 활성화 및 데이터 매핑 -->
-                                                    <!-- ==================================================================== -->
                                                     <button type="button" class="board-filter btn-edit" style="min-height:28px; padding:0 10px; margin:0; border-color:#2f54eb; color:#2f54eb; background:none; font-size:11px; cursor:pointer;">수정</button>
-
-                                                    <!-- ==================================================================== -->
-                                                    <!-- 3. 삭제 (Delete) : post 방식으로 즉시 데이터 삭제 요청 -->
-                                                    <!-- ==================================================================== -->
                                                     <form action="${pageContext.request.contextPath}/board/delete" method="post" class="delete-form" style="margin:0;">
                                                         <input type="hidden" name="noticeId" value="${notice.noticeId}">
                                                         <button type="submit" class="board-filter" style="min-height:28px; padding:0 10px; margin:0; border-color:#ff4d4f; color:#ff4d4f; background:none; font-size:11px; cursor:pointer;">삭제</button>
@@ -162,20 +192,25 @@
 
                 <!-- ==================================================================== -->
                 <!-- 5. 상세조회 (Detail Read View) -->
-                <!-- 목록 행 클릭 시 자바스크립트에 의해 노출되는 전용 상세화면 블록 -->
                 <!-- ==================================================================== -->
-                <section class="board-view" data-board-view="detail" id="notice-detail-view" style="display: none;" aria-labelledby="detail-title">
+                <!-- [해결] 스크립트 클래스 제어를 방해하던 style="display: none;" 가드를 제거하고 CSS 상단 오버라이딩 처리 완료 -->
+                <section class="board-view" data-board-view="detail" id="notice-detail-view" aria-labelledby="detail-title">
                     <div class="page-heading">
                         <p class="page-eyebrow" id="detail-category-eyebrow">Category</p>
                         <h1 class="page-title" id="detail-title">공지사항 상세보기</h1>
                         <p class="page-description" id="detail-meta-info">작성자: 운영팀 | 작성일: -</p>
                     </div>
                     <div class="surface editor-card" style="padding: 24px; min-height: 200px;">
+
+                        <!-- 업로드되어 보관 중이던 이미지가 수직 순차 배치 형태로 렌더링될 영역 선언 -->
+                        <div id="detail-images" style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; max-width: 100%;"></div>
+
                         <div id="detail-content" style="white-space: pre-wrap; line-height: 1.6; font-size: 14px; color: #333;">
                             내용을 불러오는 중입니다...
                         </div>
                         <div class="form-actions" style="margin-top: 24px; justify-content: flex-end;">
-                            <button class="button" type="button" id="btn-close-detail">목록으로 돌아가기</button>
+                            <!-- [해결] 버튼 튕김 및 홈 화면 백 현상 방지를 위해 인라인 인트러럽트 캡처 바인딩 조치 -->
+                            <button class="button" type="button" id="btn-close-detail" data-cancel-editor onclick="event.preventDefault(); event.stopPropagation();">목록으로 돌아가기</button>
                         </div>
                     </div>
                 </section>
@@ -204,6 +239,9 @@
         </div>
     </main>
 </div>
+<script>
+    window.contextPath = '${pageContext.request.contextPath}';
+</script>
 <script src="${pageContext.request.contextPath}/app.js"></script>
 <script src="${pageContext.request.contextPath}/board.js"></script>
 </body>
