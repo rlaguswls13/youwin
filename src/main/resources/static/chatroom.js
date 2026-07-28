@@ -1,382 +1,435 @@
-(function () {
-    const form = document.querySelector("[data-message-form]");
-    const input = document.querySelector("[data-message-input]");
-    const messageList = document.querySelector("[data-message-list]");
-    const roomsPanel = document.querySelector("[data-rooms-panel]");
-    const roomsToggle = document.querySelector("[data-rooms-toggle]");
-    const roomButtons = document.querySelectorAll("[data-room-item]");
-    const roomTitle = document.querySelector("[data-room-title]");
-    const roomSearch = document.querySelector("#room-search");
-    const emptyMessage = document.querySelector("#empty-room-message");
-    const roomCount = document.querySelector("#room-count");
-    const leaveButtons = document.querySelectorAll(".leave-room-btn");
-    const roomMenuButton = document.querySelector("#room-menu-button");
-    const roomMenu = document.querySelector("#room-menu");
-    const joinRoomButton = document.querySelector("#join-room-btn");
-    const roomInfoButton = document.querySelector("#room-info-btn");
-    const favoriteRoomButton = document.querySelector("#favorite-room-btn");
-    const reportRoomButton = document.querySelector("#report-room-btn");
-    const editRoomButton = document.querySelector("#edit-room-btn");
-    const editRoomModal = document.querySelector("#edit-room-modal");
-    const editRoomCancel = document.querySelector("#edit-room-cancel");
-    const editRoomSave = document.querySelector("#edit-room-save");
-    const editRoomName = document.querySelector("#edit-room-name");
-    const editRoomDescription = document.querySelector("#edit-room-description");
-    const editRoomTheme = document.querySelector("#edit-room-theme");
+    (function () {
+        const roomId = Number(new URLSearchParams(location.search).get("roomId") || 1 );
+        const myMemberId = Number(new URLSearchParams(location.search).get("memberId") || 1 );
+        const memberId = Number(new URLSearchParams(location.search).get("memberId") || 1 );
+        const form = document.querySelector("[data-message-form]");
+        const input = document.querySelector("[data-message-input]");
+        const messageList = document.querySelector("[data-message-list]");
+        const roomsPanel = document.querySelector("[data-rooms-panel]");
+        const roomsToggle = document.querySelector("[data-rooms-toggle]");
+        const roomButtons = document.querySelectorAll("[data-room-item]");
+        const roomTitle = document.querySelector("[data-room-title]");
+        const roomSearch = document.querySelector("#room-search");
+        const emptyMessage = document.querySelector("#empty-room-message");
+        const roomCount = document.querySelector("#room-count");
+        const leaveButtons = document.querySelectorAll(".leave-room-btn");
+        const roomMenuButton = document.querySelector("#room-menu-button");
+        const roomMenu = document.querySelector("#room-menu");
+        const joinRoomButton = document.querySelector("#join-room-btn");
+        const roomInfoButton = document.querySelector("#room-info-btn");
+        const favoriteRoomButton = document.querySelector("#favorite-room-btn");
+        const reportRoomButton = document.querySelector("#report-room-btn");
+        const editRoomButton = document.querySelector("#edit-room-btn");
+        const editRoomModal = document.querySelector("#edit-room-modal");
+        const editRoomCancel = document.querySelector("#edit-room-cancel");
+        const editRoomSave = document.querySelector("#edit-room-save");
+        const editRoomName = document.querySelector("#edit-room-name");
+        const editRoomDescription = document.querySelector("#edit-room-description");
+        const editRoomTheme = document.querySelector("#edit-room-theme");
 
-    if (roomSearch) {
 
-        roomSearch.addEventListener("input", function () {
+        let stompClient = null;
+        let isConnected = false;
 
-            const keyword = roomSearch.value.trim().toLowerCase();
+        if (roomSearch) {
 
-            let count = 0;
+            roomSearch.addEventListener("input", function () {
 
-            roomButtons.forEach(function (button) {
-             const wrapper = button.closest(".room-item-wrapper");
-             const roomName = button.dataset.roomName.toLowerCase();
+                const keyword = roomSearch.value.trim().toLowerCase();
 
-                if (roomName.includes(keyword)) {
-                    wrapper.style.display = "flex";
-                    count++;
-                } else {
-                    wrapper.style.display = "none";
+                let count = 0;
+
+                roomButtons.forEach(function (button) {
+                 const wrapper = button.closest(".room-item-wrapper");
+                 const roomName = button.dataset.roomName.toLowerCase();
+
+                    if (roomName.includes(keyword)) {
+                        wrapper.style.display = "flex";
+                        count++;
+                    } else {
+                        wrapper.style.display = "none";
+                    }
+                });
+
+                if (emptyMessage) {
+                    if (keyword !== "" && count === 0) {
+                        emptyMessage.style.display = "block";
+                    } else {
+                        emptyMessage.style.display = "none";
+
+                    }
                 }
             });
+        }
+        function formatTime(date) {
 
-            if (emptyMessage) {
-                if (keyword !== "" && count === 0) {
-                    emptyMessage.style.display = "block";
-                } else {
-                    emptyMessage.style.display = "none";
+            return new Intl.DateTimeFormat("ko-KR", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false
+            }).format(date);
+        }
+        function addMessage(data) {
 
-                }
-            }
-        });
-    }
-    function formatTime(date) {
+           const message = document.createElement("div");
 
-        return new Intl.DateTimeFormat("ko-KR", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false
-        }).format(date);
+           const myMemberId = memberId;
 
-    }
+           message.className = data.memberId === myMemberId ? "message my-message" : "message other-message";
 
-    if (form && input && messageList) {
-
-        form.addEventListener("submit", async function (event) {
-
-            event.preventDefault();
-
-            const text = input.value.trim();
-
-            if (!text) {
-                input.focus();
-                return;
-            }
-
-            const roomId = new URLSearchParams(window.location.search).get("roomId") || 1;
-
-            const data = {
-                roomId: Number(roomId),
-                memberId: 1,
-            };
-
-            console.log("보낼 데이터 =", data);
-            const response = await fetch("/chat/message/send", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-
-                },
-                body: JSON.stringify(data)
-            });
-
-            if(!response.ok) {
-                alert("메시지 저장에 실패했습니다.");
-                return;
-            }
-
-            const message = document.createElement("div");
-            message.className = "message message--mine";
-
-            const avatar = document.createElement("span");
-            avatar.className = "message__avatar";
-            avatar.textContent = "나";
-
-            const content = document.createElement("div");
-            content.className = "message__content";
-
-            const author = document.createElement("span");
-            author.className = "message__author";
-
-            const bubble = document.createElement("div");
-            bubble.className = "message__bubble";
-            bubble.textContent = text;
-
-            content.append(author, bubble);
-
-            const time = document.createElement("time");
-            time.className = "message__time";
-            time.textContent = formatTime(new Date());
-
-            message.append(avatar, content, time);
+            message.innerHTML = `
+            <span class="message__avatar"></span>
+    
+            <div class="message__content">
+            
+                <span class="message__author">
+                    ${data.memberId === myMemberId ? "나" : data.nickname}
+                </span>
+    
+                <div class="message__bubble">
+                    ${data.message}
+                </div>
+            </div>
+    
+            <time class="message__time">
+                ${formatTime(new Date())}
+            </time>
+        `;
 
             messageList.appendChild(message);
-
-            console.log(message.offsetHeight);
-            console.log(messageList.scrollHeight);
-
-            input.value = "";
-            input.style.height = "";
-
-            requestAnimationFrame(() => {
-                messageList.scrollTop = messageList.scrollHeight;
-            });
-
-        });
-
-        input.addEventListener("keydown", function (event) {
-
-            if (event.key === "Enter" && !event.shiftKey) {
-
-                event.preventDefault();
-                form.requestSubmit();
-
-            }
-
-        });
-
-        input.addEventListener("input", function () {
-
-            input.style.height = "auto";
-            input.style.height = Math.min(input.scrollHeight, 110) + "px";
-
-        });
-
-    }
-
-        if (roomsToggle && roomsPanel) {
-
-            roomsToggle.addEventListener("click", function () {
-
-                const isOpen = roomsPanel.classList.toggle("is-open");
-
-                roomsToggle.setAttribute(
-                    "aria-expanded",
-                    String(isOpen)
-                );
-
-            });
-
+            messageList.scrollTop = messageList.scrollHeight;
         }
 
-            roomButtons.forEach(function (button) {
+        function connectSocket() {
 
-            button.addEventListener("click", function () {
+            stompClient = new StompJs.Client({
 
-                roomButtons.forEach(function (item) {
-                    item.classList.remove("is-active");
-                });
+                webSocketFactory: () => new SockJS("/chat"),
 
-                button.classList.add("is-active");
+                reconnectDelay: 5000,
 
-                if (roomTitle) {
-                    roomTitle.textContent = button.dataset.roomName;
-                }
-                if (roomsPanel) {
-                    roomsPanel.classList.remove("is-open");
-                }
-            });
-        });
+                onConnect: function () {
 
-        leaveButtons.forEach(function(button){
+                    isConnected = true;
 
-            button.addEventListener("click", async function(event){
+                    console.log("WebSocket 연결 성공");
 
-                event.preventDefault();
+                    stompClient.subscribe("/topic/chat/" + roomId, function (message) {
 
-                if(!confirm("채팅방에서 나가시겠습니까?")){
-                    return;
-                }
+                        const data = JSON.parse(message.body);
 
-                const roomId = Number(button.dataset.roomId);
-                const response = await fetch("/chat/room/leave",{
-
-                    method:"POST",
-                    headers:{"Content-Type":"application/json"},
-
-                    body:JSON.stringify({
-                        roomId:roomId,
-                        memberId:1
-                    })
-                });
-
-                if(!response.ok){
-                    alert("채팅방 나가기에 실패했습니다.");
-                    return;
-
-                }
-
-                const roomItem = button.closest(".room-item-wrapper");
-
-                roomItem.remove();
-                updateRoomCount();
-
-                // 현재 보고 있는 방이라면 첫 번째 방으로 이동
-                const currentRoom = Number(new URLSearchParams(location.search).get("roomId"));
-
-                if(currentRoom === roomId){
-
-                    const firstRoom = document.querySelector(".room-item");
-
-                    if(firstRoom){
-                        location.href = firstRoom.href;
-                    }else{
-                        location.href="/chatroom";
-                    }
-                }
-            });
-        });
-
-        function updateRoomCount(){
-
-            const count = document.querySelectorAll(".room-item-wrapper").length;
-
-            if(roomCount){
-                roomCount.textContent = "가입한 대화방 " + count;
-
-            }
-        }
-            if(roomMenuButton && roomMenu){
-                if(roomMenu){
-
-                roomMenu.addEventListener("click", function(event){
-
-                      event.stopPropagation();
+                        addMessage(data);
 
                     });
 
-                }
-                roomMenuButton.addEventListener("click", function (event){
+                    stompClient.subscribe(
+                        "/topic/member/" + roomId,
+                        function (message){
 
-                    event.stopPropagation();
+                            const members = JSON.parse(message.body);
 
-                    roomMenu.classList.toggle("show");
-                });
-            }
+                            console.log("참여자 목록", members);
+                        }
+                    )
 
-            document.addEventListener("click", function (){
+                    stompClient.publish({
 
-               if(roomMenu) {
-                   roomMenu.classList.remove("show");
+                        destination: "/app/member",
 
-               }
-            });
+                        body: JSON.stringify({
 
-            if(joinRoomButton && !joinRoomButton.disabled){
-
-                joinRoomButton.addEventListener("click", async function (){
-
-                    roomMenu.classList.remove("show");
-
-                    const result = confirm("나의 대화방에 추가하시겠습니까?");
-
-                 if(!result){
-                     return;
-                 }
-
-                 const roomId = Number(joinRoomButton.dataset.roomId);
-
-                    console.log(roomId);
-
-                    console.log("현재 roomId =", roomId);
-
-                    const response = await fetch("/chat/room/join",{
-                        method:"POST",
-                        headers:{
-                            "Content-Type":"application/json"
-                        },
-                        body:JSON.stringify({
-                            roomId:roomId,
-                            memberId:1
+                            roomId: Number(roomId),
+                            memberId: myMemberId
                         })
                     });
+                }
+            });
 
-                    const joinResult = await response.json();
+            stompClient.activate();
+        }
+            if (form && input && messageList) {
 
-                    if(joinResult){
-                        alert("가입되었습니다.");
-                        location.reload();
-                    }else{
-                        alert("이미 가입한 채팅방입니다.");
+                form.addEventListener("submit", function (event) {
+
+                    event.preventDefault();
+
+                    const text = input.value.trim();
+
+                    if (!text) {
+                        return;
+                    }
+
+                    const data = {
+                        roomId: Number(roomId),
+                        memberId: memberId,
+                        message: text
+                    };
+
+                    if (!isConnected) {
+                        alert("서버와 아직 연결되지 않았습니다.");
+                        return;
+                    }
+
+                    stompClient.publish({
+                        destination: "/app/message",
+                        body: JSON.stringify(data)
+                    });
+
+                    input.value = "";
+                    input.style.height = "";
+
+                });
+
+                input.addEventListener("keydown", function (event) {
+
+                    if (event.key === "Enter" && !event.shiftKey) {
+
+                        event.preventDefault();
+                        form.requestSubmit();
+
                     }
 
                 });
-            }
 
-            if(editRoomButton && editRoomModal) {
+            input.addEventListener("input", function () {
 
-                editRoomButton.addEventListener("click", function (){
+                input.style.height = "auto";
+                input.style.height = Math.min(input.scrollHeight, 110) + "px";
 
-                    roomMenu.classList.remove("show");
+            });
 
-                    editRoomModal.classList.add("show");
+        }
+
+            if (roomsToggle && roomsPanel) {
+
+                roomsToggle.addEventListener("click", function () {
+
+                    const isOpen = roomsPanel.classList.toggle("is-open");
+
+                    roomsToggle.setAttribute(
+                        "aria-expanded",
+                        String(isOpen)
+                    );
+
                 });
+
             }
 
-            if(editRoomCancel) {
-                editRoomCancel.addEventListener("click", function (){
+                roomButtons.forEach(function (button) {
 
-                    editRoomModal.classList.remove("show");
-                });
-            }
+                button.addEventListener("click", function () {
 
-            if(editRoomModal) {
+                    roomButtons.forEach(function (item) {
+                        item.classList.remove("is-active");
+                    });
 
-                editRoomModal.addEventListener("click", function (event){
+                    button.classList.add("is-active");
 
-                    if(event.target === editRoomModal) {
-
-                        editRoomModal.classList.remove("show");
+                    if (roomTitle) {
+                        roomTitle.textContent = button.dataset.roomName;
+                    }
+                    if (roomsPanel) {
+                        roomsPanel.classList.remove("is-open");
                     }
                 });
-            }
+            });
 
-            if(editRoomSave) {
+            leaveButtons.forEach(function(button){
 
-                editRoomSave.addEventListener("click", async function(){
+                button.addEventListener("click", async function(event){
 
-                    const roomId = Number(new URLSearchParams(location.search).get("roomId"));
+                    event.preventDefault();
 
-                    console.log("roomId =", roomId);
+                    if(!confirm("채팅방에서 나가시겠습니까?")){
+                        return;
+                    }
 
-                    const response = await fetch("/chat/room/update",{
+                    const roomId = Number(button.dataset.roomId);
+                    const response = await fetch("/chat/room/leave",{
 
                         method:"POST",
-                        headers:{
-                            "Content-Type":"application/json"
-                        },
+                        headers:{"Content-Type":"application/json"},
 
                         body:JSON.stringify({
-
                             roomId:roomId,
-                            roomName:editRoomName.value,
-                            roomDescription:editRoomDescription.value,
-                            themeId:Number(editRoomTheme.value)
+                            memberId:memberId
+
                         })
                     });
 
                     if(!response.ok){
+                        alert("채팅방 나가기에 실패했습니다.");
+                        return;
 
-                        alert("채팅방 수정에 실패했습니다.");
+                    }
+
+                    const roomItem = button.closest(".room-item-wrapper");
+
+                    roomItem.remove();
+                    updateRoomCount();
+
+                    // 현재 보고 있는 방이라면 첫 번째 방으로 이동
+                    const currentRoom = Number(new URLSearchParams(location.search).get("roomId"));
+
+                    if(currentRoom === roomId){
+
+                        const firstRoom = document.querySelector(".room-item");
+
+                        if(firstRoom){
+                            location.href = firstRoom.href + "&memberId=" + memberId;
+                        }else{
+                            location.href="/chatroom?memberId=" + memberId;
+                        }
+                    }
+                });
+            });
+
+            function updateRoomCount(){
+
+                const count = document.querySelectorAll(".room-item-wrapper").length;
+
+                if(roomCount){
+                    roomCount.textContent = "가입한 대화방 " + count;
+
+                }
+            }
+                if(roomMenuButton && roomMenu){
+                    if(roomMenu){
+
+                    roomMenu.addEventListener("click", function(event){
+
+                          event.stopPropagation();
+
+                        });
+
+                    }
+                    roomMenuButton.addEventListener("click", function (event){
+
+                        event.stopPropagation();
+
+                        roomMenu.classList.toggle("show");
+                    });
+                }
+
+                document.addEventListener("click", function (){
+
+                   if(roomMenu) {
+                       roomMenu.classList.remove("show");
+
+                   }
+                });
+
+                if(joinRoomButton && !joinRoomButton.disabled){
+
+                    joinRoomButton.addEventListener("click", async function (){
+
+                        roomMenu.classList.remove("show");
+
+                        const result = confirm("나의 대화방에 추가하시겠습니까?");
+
+                     if(!result){
+                         return;
+                     }
+
+                     const roomId = Number(joinRoomButton.dataset.roomId);
+
+                        console.log(roomId);
+
+                        console.log("현재 roomId =", roomId);
+
+                        const response = await fetch("/chat/room/join",{
+                            method:"POST",
+                            headers:{
+                                "Content-Type":"application/json"
+                            },
+                            body:JSON.stringify({
+                                roomId:roomId,
+                                memberId:memberId
+                            })
+                        });
+
+                        const joinResult = await response.json();
+
+                        if(joinResult){
+                            alert("가입되었습니다.");
+                            location.reload();
+                        }else{
+                            alert("이미 가입한 채팅방입니다.");
+                        }
+
+                    });
+                }
+
+                if(editRoomButton && editRoomModal) {
+
+                    editRoomButton.addEventListener("click", function (){
+
+                        roomMenu.classList.remove("show");
+
+                        editRoomModal.classList.add("show");
+                    });
+                }
+
+                if(editRoomCancel) {
+                    editRoomCancel.addEventListener("click", function (){
+
+                        editRoomModal.classList.remove("show");
+                    });
+                }
+
+                if(editRoomModal) {
+
+                    editRoomModal.addEventListener("click", function (event){
+
+                        if(event.target === editRoomModal) {
+
+                            editRoomModal.classList.remove("show");
+                        }
+                    });
+                }
+
+                if(editRoomSave) {
+
+                    editRoomSave.addEventListener("click", async function(){
+
+                        const roomId = Number(new URLSearchParams(location.search).get("roomId"));
+
+                        const response = await fetch("/chat/room/update",{
+
+                            method:"POST",
+                            headers:{
+                                "Content-Type":"application/json"
+                            },
+
+                            body:JSON.stringify({
+
+                                roomId:roomId,
+                                roomName:editRoomName.value,
+                                roomDescription:editRoomDescription.value,
+                                themeId:Number(editRoomTheme.value)
+                            })
+                        });
+
+                        if(!response.ok){
+
+                            alert("채팅방 수정에 실패했습니다.");
+                            return;
+                        }
+                            alert("수정되었습니다.");
+                            location.reload();
+
+                    });
+                }
+
+                document.querySelectorAll(".message__time").forEach(function(time){
+
+                    const value = time.dataset.time;
+
+                    if(!value){
                         return;
                     }
-                        alert("수정되었습니다.");
-                        location.reload();
 
-                });
-            }
-    })();
+                    time.textContent = formatTime(new Date(value));
+                })
+                connectSocket();
+        })();

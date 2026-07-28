@@ -32,13 +32,14 @@ public class PageController {
     @GetMapping("/chatroom")
     public String chatroom(
             @RequestParam(required = false) Integer roomId,
+            @RequestParam(defaultValue = "1") Integer memberId,
             Model model) {
 
         if (roomId == null) {
             return "redirect:/chatroom?roomId=1";
         }
 
-        List<ChatRoomDto> roomList = service.findRoomList(1);
+        List<ChatRoomDto> roomList = service.findRoomList(memberId);
 
         model.addAttribute("roomList", roomList);
         model.addAttribute("themeList", service.findThemeList());
@@ -46,7 +47,8 @@ public class PageController {
         ChatRoomDto room = service.findRoom(roomId);
 
         model.addAttribute("room", room);
-        model.addAttribute("joined", service.isJoined(roomId, 1));
+        model.addAttribute("joined", service.isJoined(roomId, memberId));
+        model.addAttribute("loginMemberId", memberId);
         model.addAttribute("messageList", service.findMessages(roomId));
         model.addAttribute("memberList", service.findMembers(roomId));
 

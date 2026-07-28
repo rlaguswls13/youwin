@@ -44,7 +44,7 @@
                            <c:forEach var="room" items="${roomList}">
                                <div class="room-item-wrapper" data-room-id="${room.roomId}">
 
-                               <a href="${pageContext.request.contextPath}/chatroom?roomId=${room.roomId}"
+                               <a href="${pageContext.request.contextPath}/chatroom?roomId=${room.roomId}&memberId=${param.memberId}"
                                   class="room-item ${param.roomId == room.roomId ? 'is-active' : ''}"
                                   data-room-item data-room-name="${room.roomName}">
                                    <span class="room-item__art">🎵</span>
@@ -127,60 +127,35 @@
 
                             <c:forEach var="message" items="${messageList}">
 
-                        <div class="message">
+                                <div class="message ${message.memberId == loginMemberId ? 'my-message' : 'other-message'}">
 
-                        <span class="message__avatar">
-                                ${message.memberId}
-                        </span>
+                                    <c:if test="${message.memberId != loginMemberId}">
+                                        <div class="message__avatar">😀</div>
+                                    </c:if>
 
-                        <div class="message__content">
+                                    <div class="message__body">
 
-                        <span class="message__author">회원 ${message.memberId}</span>
+                                        <c:if test="${message.memberId != loginMemberId}">
+                                            <div class="message__author">${message.nickname}</div>
+                                        </c:if>
 
-                        <div class="message__bubble">${message.message}</div>
-                        </div>
-                            <time class="message__time">${message.sentAt}</time>
-                        </div>
+                                        <div class="message__row">
+
+                                            <div class="message__bubble">${message.message}</div>
+
+                                            <div class="message__time" data-time="${message.sentAt}"></div>
+                                        </div>
+                                    </div>
+                                </div>
 
                             </c:forEach>
                         </div>
 
                         <form class="message-composer" data-message-form>
                             <div class="message-composer__box"><button class="icon-button" type="button" aria-label="파일 첨부">＋</button><label class="sr-only" for="message-input">메시지 입력</label><textarea id="message-input" data-message-input rows="1" maxlength="1000" placeholder="메시지를 입력하세요"></textarea><button class="send-button" type="submit">전송</button></div>
-                            <p class="composer-help">Enter로 전송 · Shift + Enter로 줄바꿈</p>
+                            <p class="composer-help"></p>
                         </form>
                     </section>
-                    <div id="edit-room-modal" class="modal">
-                        <div class="modal-content">
-                            <h2>채팅방 수정</h2>
-
-                            <label for="edit-room-btn">채팅방 이름</label>
-                            <input type="text" id="edit-room-name" value="${room.roomName}">
-
-                            <label for="edit-room-description">방 설명</label>
-                            <textarea id="edit-room-description">${room.roomDescription}</textarea>
-
-                            <label for="edit-room-artist">아티스트</label>
-                            <select id="edit-room-artist"></select>
-
-                            <label for="edit-room-theme">장르</label>
-                            <select id="edit-room-theme">
-                                <c:forEach var="theme" items="${themeList}">
-
-                                    <option value="${theme.themeId}" ${theme.themeId == room.themeId ? 'selected' : ''}>
-                                        ${theme.themeName}
-                                    </option>
-
-                                </c:forEach>
-
-                            </select>
-
-                            <div class="modal-buttons"></div>
-                            <button type="button" id="edit-room-cancel">취소</button>
-                            <button type="button" id="edit-room-save">수정</button>
-                        </div>
-                    </div>
-                </div>
                     <aside class="chat-members" aria-label="참여자 목록">
 
                         <div class="chat-panel__head">
@@ -202,9 +177,9 @@
 
                                     <div class="member-item">
 
-                    <span class="avatar">${member.memberId}</span>
+                    <span class="avatar">${member.nickname.substring(0,1)}</span>
                     <span>
-                        <strong class="member-item__name">회원 ${member.memberId}</strong>
+                        <strong class="member-item__name">${member.nickname}</strong>
                         <span class="member-item__status"><span class="online-dot">●</span>참여중</span>
                     </span>
                    </div>
@@ -216,10 +191,45 @@
                         </c:choose>
 
                     </aside>
+        <div id="edit-room-modal" class="modal">
+            <div class="modal-content">
+                    <h2>채팅방 수정</h2>
 
-                </div>
-            </main>
+                <label for="edit-room-btn">채팅방 이름</label>
+                <input type="text" id="edit-room-name" value="${room.roomName}">
+
+                <label for="edit-room-description">방 설명</label>
+                <textarea id="edit-room-description">${room.roomDescription}</textarea>
+
+                <label for="edit-room-artist">아티스트</label>
+                <select id="edit-room-artist"></select>
+
+                <label for="edit-room-theme">장르</label>
+                <select id="edit-room-theme">
+                    <c:forEach var="theme" items="${themeList}">
+
+                        <option value="${theme.themeId}" ${theme.themeId == room.themeId ? 'selected' : ''}>
+                                ${theme.themeName}
+                        </option>
+
+                    </c:forEach>
+
+                </select>
+
+                <div class="modal-buttons"></div>
+                <button type="button" id="edit-room-cancel">취소</button>
+                <button type="button" id="edit-room-save">수정</button>
+            </div>
+           </div>
+          </div>
+          </main>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.2.0/bundles/stomp.umd.min.js"></script>
+
         <script src="${pageContext.request.contextPath}/app.js"></script>
+        <script> const loginMemberId = ${loginMemberId};</script>
         <script src="${pageContext.request.contextPath}/chatroom.js"></script>
         </body>
         </html>

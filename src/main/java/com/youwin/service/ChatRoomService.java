@@ -15,6 +15,7 @@ import java.util.List;
 public class ChatRoomService {
 
     private final ChatRoomRepository repository;
+    private Integer memberId;
 
     // ------------ 아티스트 -----------------
     public List<ArtistDto> findArtistList(){
@@ -66,13 +67,13 @@ public class ChatRoomService {
         return repository.findRoom(roomId);
     }
 
-    public void createRoom(ChatRoomDto dto){
+    public void createRoom(ChatRoomDto dto, Integer memberId){
 
         repository.createRoom(dto);
 
         ChatRoomMemberDto member = new ChatRoomMemberDto();
         member.setRoomId(dto.getRoomId());
-        member.setMemberId(1);
+        member.setMemberId(memberId);
 
         repository.joinRoom(member);
     }
@@ -136,12 +137,21 @@ public class ChatRoomService {
         return repository.findNewMessages(roomId, lastMessageId);
     }
 
-    public void saveMessage(ChatMessageDto dto){
+    public ChatMessageDto saveMessage(ChatMessageDto dto){
+
         repository.saveMessage(dto);
+
+        return repository.findMessage(dto.getMessageId());
     }
+
+
 
     // ----------------- 참여자 -----------------
     public List<ChatRoomMemberDto> findMembers(Integer roomId){
         return repository.findMembers(roomId);
+
     }
+
 }
+
+
