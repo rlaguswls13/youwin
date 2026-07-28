@@ -78,9 +78,10 @@ public class ChatroomController {
     }
 
     @PostMapping("/room/create")
-    public Integer createRoom(@RequestBody ChatRoomDto dto) {
+    public Integer createRoom(@RequestBody ChatRoomDto dto,
+                              @RequestParam Integer memberId) {
 
-        service.createRoom(dto);
+        service.createRoom(dto, memberId);
         return dto.getRoomId();
     }
 

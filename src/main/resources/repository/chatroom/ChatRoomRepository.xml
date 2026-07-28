@@ -156,33 +156,58 @@
         WHERE room_id=#{roomId}
     </select>
 
-    <!-- 이전 채팅 조회 -->
-    <select id="findMessages" parameterType="int" resultType="com.youwin.dto.ChatMessageDto">
+    <!-- 채팅방의 메시지 조회 -->
+    <select id="findMessages" resultType="com.youwin.dto.ChatMessageDto">
 
         SELECT
-            message_id,
-            room_id,
-            member_id,
-            message,
-            sent_at
-        FROM chat_messages
-        WHERE room_id=#{roomId}
-        ORDER BY message_id
+            cm.message_id,
+            cm.room_id,
+            cm.member_id,
+            m.nickname,
+            cm.message,
+            cm.sent_at
+        FROM chat_messages cm
+        JOIN member m
+        ON cm.member_id = m.id
+        WHERE cm.room_id = #{roomId}
+        ORDER BY cm.message_id
+
+    </select>
+
+    <select id="findMessage" parameterType="int" resultType="com.youwin.dto.ChatMessageDto">
+
+        SELECT
+            cm.message_id,
+            cm.room_id,
+            cm.member_id,
+            m.nickname,
+            cm.message,
+            cm.sent_at
+        FROM chat_messages cm
+        JOIN member m
+        ON cm.member_id = m.id
+        WHERE cm.message_id = #{messageId}
+
     </select>
 
     <!-- 새 메시지 조회 -->
-    <select id="findNewMessages" parameterType="map" resultType="com.youwin.dto.ChatMessageDto">
+    <select id="findNewMessages"
+            parameterType="map"
+            resultType="com.youwin.dto.ChatMessageDto">
 
         SELECT
-            message_id,
-            room_id,
-            member_id,
-            message,
-            sent_at
-        FROM chat_messages
-        WHERE room_id = #{roomId}
-        AND message_id > #{lastMessageId}
-        ORDER BY message_id
+            cm.message_id,
+            cm.room_id,
+            cm.member_id,
+            m.nickname,
+            cm.message,
+            cm.sent_at
+        FROM chat_messages cm
+        JOIN member m
+        ON cm.member_id = m.id
+        WHERE cm.room_id = #{roomId}
+        AND cm.message_id > #{lastMessageId}
+        ORDER BY cm.message_id
 
     </select>
 
@@ -190,10 +215,15 @@
     <select id="findMembers" parameterType="int" resultType="com.youwin.dto.ChatRoomMemberDto">
 
         SELECT
-            room_id,
-            member_id
-        FROM chat_room_members
-        WHERE room_id = #{roomId}
+            crm.room_id,
+            crm.member_id,
+            m.nickname,
+            crm.join_at
+        FROM chat_room_members crm
+        JOIN member m
+        ON   crm.member_id = m.id
+        WHERE crm.room_id = #{roomId}
+        ORDER BY m.nickname
 
     </select>
 
@@ -203,6 +233,15 @@
         SELECT COUNT(*)
         FROM chat_room_members
         WHERE room_id = #{roomId}
+
+    </select>
+
+    <!-- 참여자 닉네임 -->
+    <select id="findNickname" resultType="string">
+
+        SELECT nickname
+        FROM member
+        WHERE id = #{memberId}
 
     </select>
 
@@ -233,7 +272,7 @@
         SELECT COUNT(*)
         FROM chat_room_members
         WHERE room_id = #{roomId}
-          AND member_id = #{memberId}
+        AND member_id = #{memberId}
 
     </select>
 
@@ -241,10 +280,10 @@
     <select id="isJoined" parameterType="map" resultType="boolean">
 
         SELECT EXISTS (
-            SELECT 1
-            FROM chat_room_members
-            WHERE room_id = #{roomId}
-              AND member_id = #{memberId}
+        SELECT 1
+        FROM chat_room_members
+        WHERE room_id = #{roomId}
+        AND member_id = #{memberId}
         )
 
     </select>
@@ -265,7 +304,7 @@
     </insert>
 
     <!-- 메시지 전송 -->
-    <insert id="saveMessage" parameterType="com.youwin.dto.ChatMessageDto">
+    <insert id="saveMessage" parameterType="com.youwin.dto.ChatMessageDto" useGeneratedKeys="true" keyProperty="messageId">
 
         INSERT INTO chat_messages
             (

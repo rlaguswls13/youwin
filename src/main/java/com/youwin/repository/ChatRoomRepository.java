@@ -59,10 +59,13 @@ public interface ChatRoomRepository {
 
     List<ChatMessageDto> findMessages(Integer roomId);
 
-    List<ChatMessageDto> findNewMessages(@Param("roomId") Integer roomId,
-                                         @Param("lastMessageId") Integer lastMessageId);
+    List<ChatMessageDto> findNewMessages(@Param("roomId") Integer roomId, @Param("lastMessageId") Integer lastMessageId);
 
     void saveMessage(ChatMessageDto dto);
+
+    String findNickname(Integer memberId);
+
+    ChatMessageDto findMessage(Integer messageId);
 
     // ---------- 참여자 --------------
 

@@ -43,7 +43,11 @@
             member_name     AS memberName,
             member_phone    AS memberPhone,
             member_email    AS memberEmail,
-            profile_image   AS profileImage
+            profile_image   AS profileImage,
+            member_status   AS memberStatus,
+            created_at      AS createdAt,
+            updated_at      AS updatedAt,
+            deleted_at      AS deletedAt
         FROM member
         WHERE member_id = #{memberId}
     </select>
@@ -70,5 +74,47 @@
         SET member_password = #{memberPassword}
         WHERE member_id = #{memberId}
     </update>
+
+    <!-- 닉네임 수정 -->
+    <update id="updateNickname">
+        UPDATE member
+        SET nickname = #{nickname},
+            updated_at = NOW()
+        WHERE member_id = #{memberId}
+    </update>
+
+    <!-- 전화번호 수정 -->
+    <update id="updatePhone">
+        UPDATE member
+        SET member_phone = #{memberPhone},
+            updated_at = NOW()
+        WHERE member_id = #{memberId}
+    </update>
+
+    <!-- 이메일 수정 -->
+    <update id="updateEmail">
+        UPDATE member
+        SET member_email = #{memberEmail},
+            updated_at = NOW()
+        WHERE member_id = #{memberId}
+    </update>
+
+    <!-- 프로필 이미지 수정 -->
+    <update id="updateProfileImage">
+        UPDATE member
+        SET profile_image = #{profileImage},
+            updated_at = NOW()
+        WHERE member_id = #{memberId}
+    </update>
+
+    <!-- 회원 상태를 DELETED로 변경하고 삭제 처리 시각 기록 -->
+    <update id="deleteMember">
+        UPDATE member
+        SET member_status = 'DELETED',
+            deleted_at = NOW()
+        WHERE member_id = #{memberId}
+    </update>
+
+
 
 </mapper>

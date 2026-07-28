@@ -14,5 +14,6 @@ public class ChatRoomMemberDto {
 
     private Integer roomId;
     private Integer memberId;
+    private String nickname;
     private LocalDateTime joinAt;
 }
