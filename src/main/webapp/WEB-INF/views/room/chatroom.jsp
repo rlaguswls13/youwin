@@ -92,7 +92,12 @@
 
                                     <c:choose>
                                     <c:when test="${not empty room}">
-                                    <p><span class="online-dot">●</span>${fn:length(memberList)}명 참여 중 · ${room.roomDescription}</p>
+                                    <p><span class="online-dot">●</span>
+                                    <span id="room-member-count">
+                                    ${fn:length(memberList)}명
+                                    </span>
+                                    참여 중 · ${room.roomDescription}
+                                    </p>
 
                                     </c:when>
 
@@ -130,7 +135,7 @@
                                 <div class="message ${message.memberId == loginMemberId ? 'my-message' : 'other-message'}">
 
                                     <c:if test="${message.memberId != loginMemberId}">
-                                        <div class="message__avatar">😀</div>
+                                        <div class="message__avatar"></div>
                                     </c:if>
 
                                     <div class="message__body">
@@ -161,34 +166,32 @@
                         <div class="chat-panel__head">
                             <div>
                                 <h3>참여자</h3>
-                                <span>${fn:length(memberList)}명</span>
+                                <span id="member-count">${fn:length(memberList)}명</span>
                             </div>
                         </div>
 
-                        <c:choose>
+                        <div id="member-list">
+                            <c:forEach var="member" items="${memberList}">
+                                <div class="member-item">
+                                    <span class="avatar">
+                                        ${member.nickname.substring(0,1)}
+                                    </span>
 
-                            <c:when test="${empty memberList}">
-                                <p class="room-list__empty">참여자가 없습니다.</p>
-                            </c:when>
+                                    <span>
+                                        <strong class="member-item__name">
+                                            ${member.nickname}
+                                        </strong>
 
-                              <c:otherwise>
+                                    <span class="member-item__status">
+                                        <span class="online-dot">●</span>
+                                        참여중
+                                    </span>
 
-                                <c:forEach var="member" items="${memberList}">
+                                  </span>
 
-                                    <div class="member-item">
-
-                    <span class="avatar">${member.nickname.substring(0,1)}</span>
-                    <span>
-                        <strong class="member-item__name">${member.nickname}</strong>
-                        <span class="member-item__status"><span class="online-dot">●</span>참여중</span>
-                    </span>
-                   </div>
-
-                                </c:forEach>
-
-                            </c:otherwise>
-
-                        </c:choose>
+                                </div>
+                            </c:forEach>
+                        </div>
 
                     </aside>
         <div id="edit-room-modal" class="modal">

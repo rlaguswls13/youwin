@@ -1,7 +1,6 @@
     (function () {
         const roomId = Number(new URLSearchParams(location.search).get("roomId") || 1 );
         const myMemberId = Number(new URLSearchParams(location.search).get("memberId") || 1 );
-        const memberId = Number(new URLSearchParams(location.search).get("memberId") || 1 );
         const form = document.querySelector("[data-message-form]");
         const input = document.querySelector("[data-message-input]");
         const messageList = document.querySelector("[data-message-list]");
@@ -73,8 +72,6 @@
 
            const message = document.createElement("div");
 
-           const myMemberId = memberId;
-
            message.className = data.memberId === myMemberId ? "message my-message" : "message other-message";
 
             message.innerHTML = `
@@ -108,11 +105,14 @@
 
                 reconnectDelay: 5000,
 
+                debug: str => console.log(str),
+
                 onConnect: function () {
 
                     isConnected = true;
 
-                    console.log("WebSocket 연결 성공");
+                    console.log("★★★★★ CONNECT SUCCESS ★★★★★");
+                    console.log("isConnected =", isConnected);
 
                     stompClient.subscribe("/topic/chat/" + roomId, function (message) {
 
@@ -122,27 +122,41 @@
 
                     });
 
-                    stompClient.subscribe(
-                        "/topic/member/" + roomId,
-                        function (message){
+                    stompClient.subscribe("/topic/member/" + roomId, function (message){
 
-                            const members = JSON.parse(message.body);
+                        const members = JSON.parse(message.body);
 
-                            console.log("참여자 목록", members);
-                        }
-                    )
+                        console.log("참여자 목록=", JSON.stringify(members, null, 2));
+
+                        renderMembers(members);
+
+                    });
 
                     stompClient.publish({
 
-                        destination: "/app/member",
+                        destination: "/app/member/join",
 
                         body: JSON.stringify({
 
                             roomId: Number(roomId),
                             memberId: myMemberId
+
                         })
                     });
+                },
+
+                onStompError: function(frame){
+
+                    console.error("STOMP ERROR", frame);
+
+                },
+
+                onWebSocketError: function(error){
+
+                    console.error("SOCKET ERROR", error);
+
                 }
+
             });
 
             stompClient.activate();
@@ -152,6 +166,9 @@
                 form.addEventListener("submit", function (event) {
 
                     event.preventDefault();
+                    console.log("===== 전송 클릭 =====");
+                    console.log("isConnected =", isConnected);
+                    console.log("stompClient =", stompClient);
 
                     const text = input.value.trim();
 
@@ -161,7 +178,7 @@
 
                     const data = {
                         roomId: Number(roomId),
-                        memberId: memberId,
+                        memberId: myMemberId,
                         message: text
                     };
 
@@ -251,8 +268,8 @@
                         headers:{"Content-Type":"application/json"},
 
                         body:JSON.stringify({
-                            roomId:roomId,
-                            memberId:memberId
+                            roomId: roomId,
+                            memberId: myMemberId
 
                         })
                     });
@@ -276,9 +293,9 @@
                         const firstRoom = document.querySelector(".room-item");
 
                         if(firstRoom){
-                            location.href = firstRoom.href + "&memberId=" + memberId;
+                            location.href = firstRoom.href + "&memberId=" + myMemberId;
                         }else{
-                            location.href="/chatroom?memberId=" + memberId;
+                            location.href="/chatroom?memberId=" + myMemberId;
                         }
                     }
                 });
@@ -343,8 +360,8 @@
                                 "Content-Type":"application/json"
                             },
                             body:JSON.stringify({
-                                roomId:roomId,
-                                memberId:memberId
+                                roomId: roomId,
+                                memberId: myMemberId
                             })
                         });
 
@@ -432,4 +449,66 @@
                     time.textContent = formatTime(new Date(value));
                 })
                 connectSocket();
+
+                window.addEventListener("beforeunload", function () {
+
+                    if(!stompClient || !stompClient.active) {
+                        return;
+                    }
+
+                    stompClient.publish({
+
+                        destination: "/app/member/leave",
+
+                        body: JSON.stringify({
+
+                            roomId: roomId,
+                            memberId: myMemberId
+                        })
+                    })
+                })
+
+                function renderMembers(members) {
+
+                    const memberList = document.querySelector("#member-list");
+                    const memberCount = document.querySelector("#member-count");
+                    const roomMemberCount = document.querySelector("#room-member-count");
+
+                    if(!memberList) {
+                        return;
+                    }
+
+                    memberList.innerHTML = "";
+
+                    members.forEach(function (member){
+
+                        memberList.innerHTML += `
+                            <div class="member-item">
+                            
+                                <span class="avatar">
+                                   ${member.nickname.substring(0,1)}
+                                </span>
+                                
+                                <span>
+                                    <strong class="member-item__name">
+                                       ${member.nickname}
+                                    </strong>
+                                    
+                                    <span class="member-item__status">
+                                        <span class="online-dot">●</span>   
+                                        참여중
+                                    </span>
+                                  </span>
+                                </div>                     
+                           `;
+                    });
+
+                    if(memberCount) {
+                        memberCount.textContent = members.length + "명";
+                    }
+
+                    if(roomMemberCount) {
+                        roomMemberCount.textContent = members.length + "명";
+                    }
+                }
         })();

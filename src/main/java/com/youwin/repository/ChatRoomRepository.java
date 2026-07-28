@@ -70,4 +70,8 @@ public interface ChatRoomRepository {
     // ---------- 참여자 --------------
 
     List<ChatRoomMemberDto> findMembers(Integer roomId);
+
+    // ---------- 현재 접속중인 참여자 -------------
+
+    List<ChatRoomMemberDto> findMembersByIds(List<Integer> memberIds);
 }

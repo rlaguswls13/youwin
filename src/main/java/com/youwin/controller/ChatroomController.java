@@ -4,9 +4,8 @@ import com.youwin.dto.*;
 import com.youwin.service.ChatMessageService;
 import com.youwin.service.ChatRoomService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import jakarta.annotation.PostConstruct;
+
 
 import java.util.List;
 
