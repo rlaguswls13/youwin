@@ -227,6 +227,26 @@
 
     </select>
 
+    <select id="findMembersByIds" resultType="com.youwin.dto.ChatRoomMemberDto">
+
+        SELECT
+        id AS member_id,
+        nickname
+        FROM member
+        WHERE id IN
+
+        <foreach collection="memberIds"
+                 item="memberId"
+                 open="("
+                 separator=","
+                 close=")">
+
+            #{memberId}
+
+        </foreach>
+
+    </select>
+
     <!-- 몇 명인지 숫자 가져오기-->
     <select id="countMember" parameterType="int" resultType="int">
 

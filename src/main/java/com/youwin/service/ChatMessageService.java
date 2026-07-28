@@ -9,7 +9,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class ChatMessageService {
+    public class ChatMessageService {
 
     private final ChatMessageRepository chatMessageRepository;
 

@@ -152,6 +152,13 @@ public class ChatRoomService {
 
     }
 
+    // ------------- 현재 접속 중인 참여자 조회 -----------
+    public List<ChatRoomMemberDto> findMembersByIds(List<Integer> memberIds){
+
+        return repository.findMembersByIds(memberIds);
+
+    }
+
 }
 
 
