@@ -58,13 +58,11 @@ public class PageController {
 
         if(room != null){
 
-            model.addAttribute("joined",
-                    service.isJoined(roomId, memberId));
+            model.addAttribute("joined", service.isJoined(roomId, memberId));
 
             model.addAttribute("loginMemberId", memberId);
 
-            model.addAttribute("messageList",
-                    service.findMessages(roomId));
+            model.addAttribute("messageList", List.of());
 
             model.addAttribute("memberList",
                     service.findMembers(roomId));

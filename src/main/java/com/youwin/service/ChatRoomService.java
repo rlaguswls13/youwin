@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -141,6 +142,13 @@ public class ChatRoomService {
         return repository.findMessages(roomId);
     }
 
+
+    public Integer findLastMessageId(Integer roomId){
+
+        return repository.findLastMessageId(roomId);
+
+    }
+
     public List<ChatMessageDto> findNewMessages(Integer roomId, Integer lastMessageId){
         return repository.findNewMessages(roomId, lastMessageId);
     }
@@ -225,6 +233,15 @@ public class ChatRoomService {
 
     }
 
+    public void joinRoom(Integer roomId, Integer memberId) {
+
+        ChatRoomMemberDto dto = new ChatRoomMemberDto();
+
+        dto.setRoomId(roomId);
+        dto.setMemberId(memberId);
+
+        repository.joinRoom(dto);
+    }
 }
 
 

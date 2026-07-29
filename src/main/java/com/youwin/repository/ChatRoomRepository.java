@@ -3,7 +3,7 @@ package com.youwin.repository;
 import com.youwin.dto.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Mapper
@@ -59,6 +59,7 @@ public interface ChatRoomRepository {
 
     // --------- 채팅 메시지 -----------
 
+
     List<ChatMessageDto> findMessages(Integer roomId);
 
     List<ChatMessageDto> findNewMessages(@Param("roomId") Integer roomId, @Param("lastMessageId") Integer lastMessageId);
@@ -68,6 +69,8 @@ public interface ChatRoomRepository {
     String findNickname(Integer memberId);
 
     ChatMessageDto findMessage(Integer messageId);
+
+    Integer findLastMessageId(Integer roomId);
 
     // ---------- 참여자 --------------
 

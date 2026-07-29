@@ -7,15 +7,23 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class ChatRoomSessiongManager {
 
-    // roomId -> 접속중인 memberId 목록
-    private final Map<Integer, Set<Integer>> roomMembers = new ConcurrentHashMap<>();
+    private final Map<Integer, Set<Integer>> roomMembers
+            = new ConcurrentHashMap<>();
+
+    private final Map<Integer, Map<Integer, Integer>> lastMessageMap
+            = new ConcurrentHashMap<>();
 
     // 입장
-    public void join(Integer roomId, Integer memberId){
+    public void join(Integer roomId, Integer memberId, Integer lastMessageId) {
 
         roomMembers
                 .computeIfAbsent(roomId, k -> ConcurrentHashMap.newKeySet())
                 .add(memberId);
+
+        lastMessageMap
+                .computeIfAbsent(roomId, k -> new ConcurrentHashMap<>())
+                .put(memberId, lastMessageId);
+
     }
 
     // 퇴장
@@ -23,25 +31,50 @@ public class ChatRoomSessiongManager {
 
         Set<Integer> members = roomMembers.get(roomId);
 
-        if(members == null) {
+        if (members == null) {
             return;
         }
 
         members.remove(memberId);
 
-        if(members.isEmpty()){
+        if (members.isEmpty()) {
             roomMembers.remove(roomId);
+        }
+
+        Map<Integer, Integer> lastMap = lastMessageMap.get(roomId);
+
+        if (lastMap != null) {
+
+            lastMap.remove(memberId);
+
+            if (lastMap.isEmpty()) {
+                lastMessageMap.remove(roomId);
+            }
         }
     }
 
     // 현재 접속자
-    public Set<Integer> getMembers(Integer roomId){
-        return roomMembers.getOrDefault(roomId, Collections.emptySet());
+    public Set<Integer> getMembers(Integer roomId) {
+        return roomMembers
+                .getOrDefault(roomId, Collections.emptySet());
     }
 
     // 현재 접속 인원
-    public int count(Integer roomId){
+    public int count(Integer roomId) {
 
         return getMembers(roomId).size();
+    }
+
+    public Integer getLastMessageId(Integer roomId, Integer memberId) {
+
+        Map<Integer, Integer> map =
+                lastMessageMap.get(roomId);
+
+        if (map == null) {
+            return 0;
+        }
+
+        return map.getOrDefault(memberId, 0);
+
     }
 }

@@ -35,8 +35,10 @@ public class ChatSocketController {
     @MessageMapping("/member/join")
     public void join(ChatRoomMemberDto dto) {
 
+        Integer lastMessageId = service.findLastMessageId(dto.getRoomId());
+
         // 메모리에 접속자 등록
-        sessiongManager.join(dto.getRoomId(), dto.getMemberId());
+        sessiongManager.join(dto.getRoomId(), dto.getMemberId(), lastMessageId);
 
         List<ChatRoomMemberDto> members = service.findMembers(dto.getRoomId());
 
