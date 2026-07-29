@@ -227,11 +227,14 @@
 
     </select>
 
-    <select id="findMembersByIds" resultType="com.youwin.dto.ChatRoomMemberDto">
+    <select id="findMembersByIds"
+            resultType="com.youwin.dto.ChatRoomMemberDto">
 
         SELECT
         id AS member_id,
-        nickname
+        nickname,
+        NULL AS room_id,
+        NULL AS join_at
         FROM member
         WHERE id IN
 
@@ -366,6 +369,15 @@
         DELETE
         FROM chat_rooms
         WHERE room_id=#{roomId}
+
+    </delete>
+
+    <!-- 채팅방 메시지 삭제 -->
+    <delete id="deleteMessages" parameterType="int">
+
+        DELETE
+        FROM chat_messages
+        WHERE room_id = #{roomId}
 
     </delete>
 </mapper>

@@ -49,6 +49,8 @@ public interface ChatRoomRepository {
 
     void deleteRoom(Integer roomId);
 
+    void deleteMessages(Integer roomId);
+
     int updateRoom(ChatRoomDto dto);
 
     //----- 현재 사용자의 채팅방 가입 상태 조회 -------

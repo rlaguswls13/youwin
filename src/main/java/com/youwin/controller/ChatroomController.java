@@ -99,6 +99,9 @@ public class ChatroomController {
     @PostMapping("/room/join")
     public Boolean joinRoom(@RequestBody ChatRoomMemberDto dto){
 
+        System.out.println("========== JOIN CONTROLLER ==========");
+        System.out.println(dto);
+
         return service.joinRoom(dto);
 
     }

@@ -36,7 +36,15 @@ public class PageController {
             Model model) {
 
         if (roomId == null) {
-            return "redirect:/chatroom?roomId=1";
+
+            List<ChatRoomDto> rooms = service.findRoomList(memberId);
+
+            if (rooms.isEmpty()) {
+                model.addAttribute("roomList", rooms);
+                return "room/chatroom";
+            }
+
+            return "redirect:/chatroom?roomId=" + rooms.get(0).getRoomId() + "&memberId=" + memberId;
         }
 
         List<ChatRoomDto> roomList = service.findRoomList(memberId);
@@ -47,10 +55,31 @@ public class PageController {
         ChatRoomDto room = service.findRoom(roomId);
 
         model.addAttribute("room", room);
-        model.addAttribute("joined", service.isJoined(roomId, memberId));
-        model.addAttribute("loginMemberId", memberId);
-        model.addAttribute("messageList", service.findMessages(roomId));
-        model.addAttribute("memberList", service.findMembers(roomId));
+
+        if(room != null){
+
+            model.addAttribute("joined",
+                    service.isJoined(roomId, memberId));
+
+            model.addAttribute("loginMemberId", memberId);
+
+            model.addAttribute("messageList",
+                    service.findMessages(roomId));
+
+            model.addAttribute("memberList",
+                    service.findMembers(roomId));
+
+        }else{
+
+            model.addAttribute("joined", false);
+
+            model.addAttribute("loginMemberId", memberId);
+
+            model.addAttribute("messageList", List.of());
+
+            model.addAttribute("memberList", List.of());
+
+        }
 
         return "room/chatroom";
     }

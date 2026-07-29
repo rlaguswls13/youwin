@@ -1,6 +1,7 @@
 package com.youwin.service;
 
 
+import com.youwin.api.websocket.ChatRoomSessiongManager;
 import com.youwin.dto.*;
 import com.youwin.repository.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -15,6 +17,7 @@ import java.util.List;
 public class ChatRoomService {
 
     private final ChatRoomRepository repository;
+    private final ChatRoomSessiongManager sessiongManager;
     private Integer memberId;
 
     // ------------ 아티스트 -----------------
@@ -80,33 +83,38 @@ public class ChatRoomService {
 
     public boolean joinRoom(ChatRoomMemberDto dto){
 
-        System.out.println("1");
+        System.out.println("========== JOIN SERVICE ==========");
+        System.out.println(dto);
 
         int count = repository.existsRoomMember(dto);
 
-        System.out.println("count = " + count);
+        System.out.println("exists = " + count);
 
         if(count > 0){
             return false;
         }
 
-        System.out.println("2");
-
         repository.joinRoom(dto);
 
-        System.out.println("3");
+        System.out.println("INSERT 완료");
+
+        System.out.println("조회 = " + repository.findRoomList(dto.getMemberId()));
 
         return true;
     }
 
     public void leaveRoom(ChatRoomMemberDto dto){
+
         repository.leaveRoom(dto);
+
         int count = repository.countMember(dto.getRoomId());
 
-        if (count == 0) {
+        if(count == 0){
 
+            repository.deleteMessages(dto.getRoomId());
             repository.deleteRoom(dto.getRoomId());
-    }
+
+        }
     }
 
     public boolean isJoined(Integer roomId, Integer memberId){
@@ -148,7 +156,65 @@ public class ChatRoomService {
 
     // ----------------- 참여자 -----------------
     public List<ChatRoomMemberDto> findMembers(Integer roomId){
-        return repository.findMembers(roomId);
+
+        // 가입자(DB)
+        List<ChatRoomMemberDto> members =
+                repository.findMembers(roomId);
+
+        // 현재 접속자(메모리)
+        Set<Integer> onlineIds =
+                sessiongManager.getMembers(roomId);
+
+        // 접속한 회원 정보
+        List<ChatRoomMemberDto> onlineMembers = List.of();
+
+        if (!onlineIds.isEmpty()) {
+
+            onlineMembers =
+                    repository.findMembersByIds(
+                            List.copyOf(onlineIds)
+                    );
+
+        }
+
+        // 가입자의 온라인 여부
+        for(ChatRoomMemberDto member : members){
+
+            member.setOnline(
+                    onlineIds.contains(member.getMemberId())
+            );
+
+        }
+
+        // 가입 안 했는데 접속한 사람 추가
+        for(ChatRoomMemberDto online : onlineMembers){
+
+            boolean exists = false;
+
+            for(ChatRoomMemberDto member : members){
+
+                if(member.getMemberId().equals(online.getMemberId())){
+
+                    exists = true;
+                    break;
+
+                }
+
+            }
+
+            if(!exists){
+
+                online.setRoomId(roomId);
+
+                online.setOnline(true);
+
+                members.add(online);
+
+            }
+
+        }
+
+        return members;
 
     }
 
