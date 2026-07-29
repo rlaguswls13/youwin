@@ -4,6 +4,8 @@ import com.youwin.dto.MemberDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDateTime;
+
 @Mapper
 public interface MemberRepository {
     void insertMember(MemberDto member);
@@ -23,13 +25,14 @@ public interface MemberRepository {
     void updatePassword(@Param("memberId") String memberId,
                        @Param("memberPassword") String memberPassword);
 
-    boolean checkPassword(String memberId, String rawPassword);
-
     void updateNickname(@Param("memberId") String memberId, @Param("nickname") String nickname);
     void updatePhone(@Param("memberId") String memberId, @Param("memberPhone") String memberPhone);
     void updateEmail(@Param("memberId") String memberId, @Param("memberEmail") String memberEmail);
     void updateProfileImage(@Param("memberId") String memberId, @Param("profileImage") String profileImage);
 
     void deleteMember(String memberId);
+
+    // 🟢 30일 지난 탈퇴 회원 삭제
+    int deleteExpiredMembers(@Param("cutoffDate") LocalDateTime cutoffDate);
 
 }

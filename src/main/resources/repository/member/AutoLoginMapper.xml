@@ -29,7 +29,7 @@
     </select>
 
     <!-- 3. 토큰 직접 삭제 (로그아웃용) -->
-    <delete id="deleteByToken">
+    <delete id="deleteByToken" parameterType="string">
         DELETE FROM remember_me
         WHERE token = #{token}
     </delete>

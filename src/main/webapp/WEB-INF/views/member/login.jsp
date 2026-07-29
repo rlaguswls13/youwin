@@ -7,10 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>로그인</title>
-    <!-- 카카오 SDK -->
-    <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"
-            integrity="sha384-TiCUE00h649CAMonG018J2mWZupSD96bUwf64W/XkR62qnXtWUqgHXRE3eGo3nFo"
-            crossorigin="anonymous"></script>
+
     <style>
         * {
             box-sizing: border-box;
@@ -118,26 +115,6 @@
             opacity: 0.7;
         }
 
-        .btn-kakao {
-            width: 100%;
-            padding: 14px;
-            background-color: #FEE500;
-            color: #191919;
-            border: 2px solid #000;
-            border-radius: 30px;
-            font-size: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn-kakao:hover {
-            background-color: #E6CF00;
-        }
-
         .footer-links {
             display: flex;
             justify-content: center;
@@ -185,20 +162,19 @@
             <!-- 비밀번호 아래 에러 메시지 영역 -->
             <div id="loginErrorMsg" class="error-msg"></div>
 
+            <c:if test="${param.error == 'true'}">
+                <div class="error-msg" style="display:block;">
+                    아이디 또는 비밀번호가 올바르지 않거나 탈퇴한 계정입니다.
+                </div>
+            </c:if>
+
             <div class="checkbox-group">
-                <input type="checkbox" id="autoLogin" name="autoLogin" value="true">
-                <label for="autoLogin">자동 로그인 유지</label>
+                <input type="checkbox" id="remember-me" name="remember-me" value="true">
+                <label for="remember-me">자동 로그인 유지</label>
             </div>
 
             <button type="submit" class="btn-submit">로그인</button>
         </form>
-
-        <button type="button" id="kakaoLoginBtn" class="btn-kakao">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 3c-5.523 0-10 3.866-10 8.634 0 3.033 1.815 5.698 4.545 7.221-.194.721-.698 2.614-.8 3.03-.128.523.197.516.416.37.172-.115 2.733-1.855 3.822-2.592.651.091 1.32.139 2.017.139 5.523 0-10-3.866 10-8.634 0-4.768-4.477-8.634-10-8.634z"/>
-            </svg>
-            카카오 로그인
-        </button>
     </div>
 
     <div class="footer-links">
@@ -209,16 +185,6 @@
         <a href="/member/joinStep1">회원가입</a>
     </div>
 </div>
-
-<!-- 실패 메시지 수신 및 출력용 스크립트 -->
-<script>
-    const serverError = "${errorMessage}";
-    if (serverError) {
-        const errorDiv = document.getElementById("loginErrorMsg");
-        errorDiv.textContent = serverError;
-        errorDiv.style.display = "block"; // 에러가 있을 때만 보이게 설정
-    }
-</script>
 
 </body>
 </html>

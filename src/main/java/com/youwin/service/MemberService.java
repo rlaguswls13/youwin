@@ -1,14 +1,19 @@
 package com.youwin.service;
 
 import com.youwin.dto.AutoLoginDto;
-import com.youwin.dto.LoginRequestDto;
 import com.youwin.dto.MemberDto;
 import com.youwin.repository.MemberRepository;
 import com.youwin.repository.AutoLoginRepository;
+import com.youwin.security.CustomUserDetails;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.password4j.Pbkdf2Password4jPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -27,6 +32,21 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final AutoLoginRepository autoLoginRepository;
     private final PasswordEncoder passwordEncoder;
+
+    // SecurityContext 내의 MemberDto 정보 갱신용 보조 메서드
+    private void refreshSecurityContext(String memberId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof CustomUserDetails) {
+            MemberDto updatedMember = memberRepository.findByMemberId(memberId);
+            updatedMember.setMemberPassword(null); // 보안상 비밀번호 제거
+
+            CustomUserDetails newDetails = new CustomUserDetails(updatedMember);
+            UsernamePasswordAuthenticationToken newAuth = new UsernamePasswordAuthenticationToken(
+                    newDetails, auth.getCredentials(), newDetails.getAuthorities()
+            );
+            SecurityContextHolder.getContext().setAuthentication(newAuth);
+        }
+    }
 
     @Transactional
     public void joinMember(MemberDto memberDto) {
@@ -91,28 +111,6 @@ public class MemberService {
         int count = memberRepository.countByNickname(nickname);
         return count > 0;
     }
-
-    public MemberDto login(LoginRequestDto loginDto) {
-        // 1. DB에서 아이디로 회원 정보 전체 조회 (MemberDto)
-        MemberDto memberDto = memberRepository.findByMemberId(loginDto.getMemberId());
-
-        // 2. 입력한 아이디에 해당하는 회원이 없는 경우
-        if (memberDto == null) {
-            throw new IllegalArgumentException("아이디 또는 비밀번호가 일치하지 않습니다.");
-        }
-
-        // 3. 비밀번호 검증
-        if (!passwordEncoder.matches(loginDto.getMemberPassword(), memberDto.getMemberPassword())) {
-            throw new IllegalArgumentException("아이디 또는 비밀번호가 일치하지 않습니다.");
-        }
-
-        // 4. 보안을 위해 세션 저장 직전 비밀번호 필드만 null 처리
-        memberDto.setMemberPassword(null);
-
-        // 5. 세션에 담아둘 회원 프로필 정보 리턴
-        return memberDto;
-    }
-
 
     @Transactional
     public void setupAutoLogin(String memberId, HttpServletResponse response) {
@@ -190,18 +188,21 @@ public class MemberService {
     @Transactional
     public void updateNickname(String memberId, String nickname) {
         memberRepository.updateNickname(memberId, nickname);
+        refreshSecurityContext(memberId);
     }
 
     // 전화번호 변경
     @Transactional
     public void updatePhone(String memberId, String memberPhone) {
         memberRepository.updatePhone(memberId, memberPhone);
+        refreshSecurityContext(memberId);
     }
 
     // 이메일 변경
     @Transactional
     public void updateEmail(String memberId, String memberEmail) {
         memberRepository.updateEmail(memberId, memberEmail);
+        refreshSecurityContext(memberId);
     }
 
 
@@ -275,6 +276,7 @@ public class MemberService {
                 throw new RuntimeException("프로필 사진 변경 중 오류가 발생했습니다.", e);
             }
         }
+        refreshSecurityContext(memberId);
     }
 
     // [보조 메서드] 실물 파일 삭제

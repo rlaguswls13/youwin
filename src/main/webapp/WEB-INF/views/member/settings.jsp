@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <!doctype html>
 <html lang="ko">
 <head>
@@ -43,9 +44,56 @@
     .error-msg.success-msg {
       color: #21a675;
     }
+
+    /* ==========================================
+   프로필 이미지 규격 통일 스타일
+   ========================================== */
+
+    /* 1. 프로필 아바타 기본 레이아웃 (원형 & 120px 규격) */
+    .profile-avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #f0f0f0;
+      border: 4px solid #6366f1; /* 맘에 들어 하신 원형 테두리 라인 */
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+      flex-shrink: 0;
+    }
+
+    /* 2. 내부 이미지 규격 및 비율 유지 */
+    .profile-avatar .profile-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* 3. 메인 설정 카드 내 프로필 정렬 및 간격 */
+    .profile-avatar-edit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.25rem;
+      padding: 1rem 0;
+    }
+
+    /* 4. 모달 내부 프로필 미리보기 중앙 정렬 */
+    .modal-avatar-wrapper {
+      margin: 0 auto 1.5rem auto;
+    }
   </style>
 </head>
 <body>
+
+<%-- Security Context의 memberDto 객체를 member 변수로 안전하게 바인딩 --%>
+<sec:authorize access="isAuthenticated()">
+  <sec:authentication property="principal" var="principal"/>
+  <c:set var="member" value="${not empty principal.memberDto ? principal.memberDto : memberDto}"/>
+</sec:authorize>
+
 <div class="site-shell">
   <header class="site-header">
     <div class="site-container site-header__inner">
@@ -63,13 +111,14 @@
       </section>
 
       <!-- 1. 프로필 사진 카드 -->
-      <section class="surface mypage-card" style="margin-bottom: 1.5rem;">
+      <section class="surface mypage-card">
         <h2 class="section-title">프로필 사진</h2>
         <div class="profile-avatar-edit">
+          <!-- 인라인 style 없이 class만 사용 -->
           <div class="profile-avatar" id="avatarPreviewContainer">
             <img id="mainAvatarImg"
                  src="${not empty member.profileImage ? pageContext.request.contextPath.concat(member.profileImage) : pageContext.request.contextPath.concat('/upload/profile/default-profile.svg')}"
-                 class="profile-img" style="width: 100%; height: 100%; object-fit: cover;" alt="프로필 사진">
+                 class="profile-img" alt="프로필 사진">
           </div>
           <button type="button" class="button button--secondary" onclick="openModal('modalProfile')">사진 변경</button>
         </div>
@@ -118,6 +167,8 @@
       <button type="button" class="modal-close" onclick="closeModal('modalNickname')">&times;</button>
     </div>
     <form action="${pageContext.request.contextPath}/member/updateNickname" method="post" id="formNickname" onsubmit="return false;">
+      <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+
       <div class="form-group" style="margin-bottom: 1rem;">
         <label for="nickname">새 닉네임</label>
         <div class="input-with-btn" style="display: flex; gap: 8px; margin-top: 4px;">
@@ -139,6 +190,8 @@
       <button type="button" class="modal-close" onclick="closeModal('modalPhone')">&times;</button>
     </div>
     <form action="${pageContext.request.contextPath}/member/updatePhone" method="post" id="formPhone" onsubmit="return false;">
+      <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+
       <div class="form-group" style="margin-bottom: 1rem;">
         <label for="memberPhone">새 전화번호</label>
         <input type="tel" id="memberPhone" name="memberPhone" value="${member.memberPhone}" maxlength="11" class="input-control">
@@ -157,6 +210,8 @@
       <button type="button" class="modal-close" onclick="closeModal('modalEmail')">&times;</button>
     </div>
     <form action="${pageContext.request.contextPath}/member/updateEmail" method="post" id="formEmail" onsubmit="return false;">
+      <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+
       <div class="form-group" style="margin-bottom: 1rem;">
         <label for="memberEmail">새 이메일</label>
         <input type="email" id="memberEmail" name="memberEmail" value="${member.memberEmail}" class="input-control">
@@ -175,6 +230,8 @@
       <button type="button" class="modal-close" onclick="closeModal('modalPassword')">&times;</button>
     </div>
     <form action="${pageContext.request.contextPath}/member/updatePasswordInSettings" method="post" id="formPassword" onsubmit="return false;">
+      <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+
       <div class="form-group" style="margin-bottom: 0.5rem;">
         <label for="currentPassword">현재 비밀번호</label>
         <input type="password" id="currentPassword" name="currentPassword" class="input-control">
@@ -197,24 +254,25 @@
 
 <!-- 5. 프로필 사진 변경 팝업 -->
 <div class="modal-overlay" id="modalProfile">
-  <div class="modal-content" style="text-align: center;">
+  <div class="modal-content modal-content--center">
     <div class="modal-header">
       <h3>프로필 사진 변경</h3>
       <button type="button" class="modal-close" onclick="closeModal('modalProfile')">&times;</button>
     </div>
 
-    <form action="${pageContext.request.contextPath}/member/updateProfileImage" method="post" enctype="multipart/form-data">
+    <form action="${pageContext.request.contextPath}/member/updateProfileImage" method="post" enctype="multipart/form-data" id="formProfile">
+      <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
       <input type="hidden" name="deleteProfile" id="deleteProfile" value="false">
 
-      <div class="profile-avatar" id="modalAvatarPreview" style="margin: 0 auto 1.5rem auto; width: 100px; height: 100px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f0f0f0;">
+      <div class="profile-avatar modal-avatar-wrapper" id="modalAvatarPreview">
         <img id="modalAvatarImg"
              src="${not empty member.profileImage ? pageContext.request.contextPath.concat(member.profileImage) : pageContext.request.contextPath.concat('/upload/profile/default-profile.svg')}"
-             class="profile-img" style="width: 100%; height: 100%; object-fit: cover;" alt="프로필 미리보기">
+             class="profile-img" alt="프로필 미리보기">
       </div>
 
-      <div style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem; justify-content: center;">
+      <div class="modal-actions-row">
         <input type="file" id="profile" name="profile" accept="image/*" hidden>
-        <label for="profile" class="button button--secondary" style="cursor: pointer;">새 사진 선택</label>
+        <label for="profile" class="button button--secondary">새 사진 선택</label>
         <button type="button" id="modalResetAvatarBtn" class="button button--secondary">기본 이미지로 변경</button>
       </div>
 
@@ -232,6 +290,7 @@
     </div>
 
     <form action="${pageContext.request.contextPath}/member/delete" method="post" id="formDelete" onsubmit="return false;">
+      <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
 
       <!-- 안내문 박스 -->
       <div style="background: #fff5f5; border: 1px solid #fed7d7; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; text-align: left;">
@@ -266,17 +325,90 @@
 
 <!-- 스크립트 영역 -->
 <script>
-  // 모달 제어
+  // 기본 상수 및 원본 이미지 경로
+  const DEFAULT_IMAGE_SRC = "${pageContext.request.contextPath}/upload/profile/default-profile.svg";
+  const currentProfileImgSrc = "${not empty member.profileImage ? pageContext.request.contextPath.concat(member.profileImage) : pageContext.request.contextPath.concat('/upload/profile/default-profile.svg')}";
+
+  // 모달 제어 함수 (전역)
   function openModal(id) {
-    document.getElementById(id).classList.add('is-active');
-  }
-  function closeModal(id) {
-    document.getElementById(id).classList.remove('is-active');
+    const modal = document.getElementById(id);
+    if (modal) modal.classList.add('is-active');
   }
 
-  window.addEventListener('click', function(e) {
-    if (e.target.classList.contains('modal-overlay')) {
-      e.target.classList.remove('is-active');
+  function closeModal(id) {
+    const modal = document.getElementById(id);
+    if (!modal) return;
+
+    modal.classList.remove('is-active');
+
+    // 🟢 프로필 모달이 닫힐 때 선택 취소 처리
+    if (id === 'modalProfile') {
+      cancelProfileChange();
+    }
+  }
+
+  // 🟢 프로필 이미지 변경 취소 함수
+  function cancelProfileChange() {
+    const modalProfileInput = document.getElementById('profile');
+    const deleteProfileInput = document.getElementById('deleteProfile');
+    const modalAvatarImg = document.getElementById('modalAvatarImg');
+    const mainAvatarImg = document.getElementById('mainAvatarImg');
+
+    if (modalProfileInput) modalProfileInput.value = "";
+    if (deleteProfileInput) deleteProfileInput.value = "false";
+
+    // 원래 이미지로 복구
+    if (modalAvatarImg) modalAvatarImg.src = currentProfileImgSrc;
+    if (mainAvatarImg) mainAvatarImg.src = currentProfileImgSrc;
+  }
+
+  // 🟢 DOM 요소 로드 완료 후 이벤트 바인딩
+  document.addEventListener('DOMContentLoaded', function() {
+
+    // 모달 배경 클릭 시 닫기
+    window.addEventListener('click', function(e) {
+      if (e.target.classList.contains('modal-overlay')) {
+        closeModal(e.target.id);
+      }
+    });
+
+    // 프로필 이미지 선택 시 즉시 미리보기
+    const modalProfileInput = document.getElementById('profile');
+    if (modalProfileInput) {
+      modalProfileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        document.getElementById('deleteProfile').value = "false";
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const base64Src = event.target.result;
+          const modalAvatarImg = document.getElementById('modalAvatarImg');
+          const mainAvatarImg = document.getElementById('mainAvatarImg');
+
+          if (modalAvatarImg) modalAvatarImg.src = base64Src;
+          if (mainAvatarImg) mainAvatarImg.src = base64Src;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // 기본 이미지로 변경 버튼 클릭 이벤트
+    const modalResetBtn = document.getElementById('modalResetAvatarBtn');
+    if (modalResetBtn) {
+      modalResetBtn.addEventListener('click', function() {
+        const modalProfileInput = document.getElementById('profile');
+        const deleteProfileInput = document.getElementById('deleteProfile');
+        const modalAvatarImg = document.getElementById('modalAvatarImg');
+        const mainAvatarImg = document.getElementById('mainAvatarImg');
+
+        if (modalProfileInput) modalProfileInput.value = "";
+        if (deleteProfileInput) deleteProfileInput.value = "true";
+
+        if (modalAvatarImg) modalAvatarImg.src = DEFAULT_IMAGE_SRC;
+        if (mainAvatarImg) mainAvatarImg.src = DEFAULT_IMAGE_SRC;
+      });
     }
   });
 
@@ -426,6 +558,7 @@
     }
 
     if (isNicknameValid) {
+      nicknameInput.value = nicknameValue;
       document.getElementById('formNickname').submit();
     } else {
       nicknameInput.focus();
@@ -459,6 +592,7 @@
     }
 
     if (checkField(phoneInput, errPhone, validatePhone)) {
+      phoneInput.value = phoneValue;
       document.getElementById('formPhone').submit();
     } else {
       phoneInput.focus();
@@ -491,6 +625,7 @@
     }
 
     if (checkField(emailInput, errEmail, validateEmail)) {
+      emailInput.value = emailValue;
       document.getElementById('formEmail').submit();
     } else {
       emailInput.focus();
@@ -498,7 +633,6 @@
   }
 
   // ==================== [4. 비밀번호 실시간 검사 및 제출] ====================
-  // ==================== [4. 비밀번호 실시간 검사 및 제출 (수정 완료)] ====================
   const curPw = document.getElementById('currentPassword');
   const newPw = document.getElementById('newPassword');
   const confirmPw = document.getElementById('confirmPassword');
@@ -507,7 +641,6 @@
   const errNew = document.getElementById('err-newPw');
   const errConfirm = document.getElementById('err-confirmPw');
 
-  // 1) 현재 비밀번호 입력 시
   curPw.addEventListener('input', function() {
     const curVal = this.value;
     const newVal = newPw.value;
@@ -525,7 +658,6 @@
     }
   });
 
-  // 2) 새 비밀번호 입력 시
   newPw.addEventListener('input', function() {
     const newVal = this.value;
     const curVal = curPw.value;
@@ -545,7 +677,6 @@
     }
   });
 
-  // 3) 새 비밀번호 확인 입력 시
   confirmPw.addEventListener('input', function() {
     if (this.value !== newPw.value) {
       showError(this, errConfirm, '새 비밀번호가 일치하지 않습니다.');
@@ -553,6 +684,35 @@
       showSuccess(this, errConfirm, '비밀번호가 일치합니다.');
     }
   });
+
+  function submitPasswordForm() {
+    const curVal = curPw.value;
+    const newVal = newPw.value;
+    const confirmVal = confirmPw.value;
+
+    let isValid = true;
+
+    if (!curVal || curVal.trim() === '') {
+      showError(curPw, errCur, '현재 비밀번호를 입력해 주세요.');
+      isValid = false;
+    }
+
+    if (!checkField(newPw, errNew, validatePassword)) {
+      isValid = false;
+    } else if (newVal === curVal) {
+      showError(newPw, errNew, '현재 비밀번호와 동일한 비밀번호는 사용할 수 없습니다.');
+      isValid = false;
+    }
+
+    if (confirmVal !== newVal) {
+      showError(confirmPw, errConfirm, '새 비밀번호가 일치하지 않습니다.');
+      isValid = false;
+    }
+
+    if (isValid) {
+      document.getElementById('formPassword').submit();
+    }
+  }
 
   // ==================== [5. 모달 내 키보드 Enter 처리] ====================
   document.addEventListener('keydown', function(event) {
@@ -574,56 +734,17 @@
       }
       else if (target.id === 'currentPassword') {
         event.preventDefault();
-        if (checkField(target, errCur, validatePassword)) newPw.focus();
+        newPw.focus();
       }
       else if (target.id === 'newPassword') {
         event.preventDefault();
-        if (checkField(target, errNew, validatePassword)) confirmPw.focus();
+        confirmPw.focus();
       }
       else if (target.id === 'confirmPassword') {
         event.preventDefault();
         submitPasswordForm();
       }
     }
-  });
-
-  // ==================== [6. 프로필 사진 처리 (단일 img 태그 통일)] ====================
-  const modalProfileInput = document.getElementById('profile');
-  const modalAvatarImg = document.getElementById('modalAvatarImg');
-  const mainAvatarImg = document.getElementById('mainAvatarImg');
-  const modalResetBtn = document.getElementById('modalResetAvatarBtn');
-  const deleteProfileInput = document.getElementById('deleteProfile');
-
-  // 업로드 폴더 내의 기본 SVG 파일 경로
-  const DEFAULT_IMAGE_SRC = "${pageContext.request.contextPath}/upload/profile/default-profile.svg";
-
-  // 새 사진 선택 시 (미리보기 src 즉시 변경)
-  modalProfileInput.addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    deleteProfileInput.value = "false";
-    const reader = new FileReader();
-
-    reader.onload = function(event) {
-      const base64Src = event.target.result;
-
-      // 태그 구조 수정 없이 src 경로만 교체
-      if (modalAvatarImg) modalAvatarImg.src = base64Src;
-      if (mainAvatarImg) mainAvatarImg.src = base64Src;
-    };
-
-    reader.readAsDataURL(file);
-  });
-
-  // 기본 이미지로 변경 클릭 시
-  modalResetBtn.addEventListener('click', function() {
-    modalProfileInput.value = "";
-    deleteProfileInput.value = "true";
-
-    // 기본 SVG 경로로 src 교체
-    if (modalAvatarImg) modalAvatarImg.src = DEFAULT_IMAGE_SRC;
-    if (mainAvatarImg) mainAvatarImg.src = DEFAULT_IMAGE_SRC;
   });
 
   // ==================== [계정 삭제 (Delete) 처리] ====================
@@ -635,7 +756,6 @@
 
     let isValid = true;
 
-    // 1. 안내문 동의 체크박스 검사
     if (!agreeCheck.checked) {
       showError(null, errAgree, '안내문 확인 동의에 체크해 주세요.');
       isValid = false;
@@ -643,7 +763,6 @@
       resetGuide(errAgree);
     }
 
-    // 2. 비밀번호 입력 여부 검사
     if (!deletePw.value || deletePw.value.trim() === '') {
       showError(deletePw, errPw, '현재 비밀번호를 입력해 주세요.');
       isValid = false;
@@ -651,7 +770,6 @@
       resetGuide(errPw);
     }
 
-    // 3. 검증 통과 시 확인 창 후 서버 제출
     if (isValid) {
       if (confirm('정말로 계정을 삭제하시겠습니까? 30일간 보관 후 영구 삭제됩니다.')) {
         document.getElementById('formDelete').submit();

@@ -115,6 +115,11 @@
         WHERE member_id = #{memberId}
     </update>
 
-
+    <!-- 30일이 경과된 DELETED 상태 회원 삭제 -->
+    <delete id="deleteExpiredMembers">
+        DELETE FROM member
+        WHERE member_status = 'DELETED'
+          AND deleted_at &lt;= #{cutoffDate}
+    </delete>
 
 </mapper>

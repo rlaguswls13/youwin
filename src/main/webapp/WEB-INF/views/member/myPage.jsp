@@ -1,5 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <!doctype html>
 <html lang="ko">
 <head>
@@ -9,19 +11,60 @@
     <title>마이페이지 | Youwin</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/app.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/mypage.css">
+    <style>
+        /* ==========================================
+   프로필 이미지 규격 통일 스타일
+   ========================================== */
+
+        /* 1. 프로필 아바타 기본 레이아웃 (원형 & 120px 규격) */
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f0f0f0;
+            border: 4px solid #6366f1; /* 맘에 들어 하신 원형 테두리 포인트 */
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+            flex-shrink: 0;
+        }
+
+        /* 2. 내부 이미지 규격 및 비율 유지 */
+        .profile-avatar .profile-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
 </head>
 <body>
+
+<!-- 🟢 Spring Security principal 및 memberDto 변수 바인딩 -->
+<sec:authorize access="isAuthenticated()">
+    <sec:authentication property="principal" var="principal"/>
+    <c:set var="member" value="${not empty principal.memberDto ? principal.memberDto : member}"/>
+</sec:authorize>
+
 <div class="site-shell">
     <header class="site-header">
         <div class="site-container site-header__inner">
-            <a class="brand" href="${pageContext.request.contextPath}/" aria-label="Youwin 홈"><span class="brand__mark">YW</span><span>Youwin</span></a>
+            <a class="brand" href="${pageContext.request.contextPath}/" aria-label="Youwin 홈">
+                <span class="brand__mark">YW</span>
+                <span>Youwin</span>
+            </a>
             <nav class="site-nav" data-site-nav aria-label="주요 메뉴">
                 <a href="${pageContext.request.contextPath}/">홈</a>
                 <a href="${pageContext.request.contextPath}/board">게시판</a>
                 <a href="${pageContext.request.contextPath}/chatroom">채팅방</a>
                 <a class="is-active" href="${pageContext.request.contextPath}/member/myPage">마이페이지</a>
             </nav>
-            <div class="site-header__actions"><a class="button button--secondary" href="${pageContext.request.contextPath}/member/settings">프로필 설정</a><span class="avatar">YU</span></div>
+            <div class="site-header__actions">
+                <a class="button button--secondary" href="${pageContext.request.contextPath}/member/settings">프로필 설정</a>
+                <!-- 아바타에 닉네임 첫 글자 표시 -->
+                <span class="avatar">${not empty member.nickname ? fn:substring(member.nickname, 0, 1) : 'YU'}</span>
+            </div>
             <button class="menu-toggle" type="button" data-menu-toggle aria-label="메뉴 열기" aria-expanded="false"></button>
         </div>
     </header>
@@ -29,18 +72,15 @@
     <main class="page-main">
         <div class="site-container">
             <section class="surface profile-hero" aria-labelledby="profile-title">
-                <!-- 1. 프로필 사진 (등록된 이미지가 있으면 img 출력, 없으면 기본 이니셜 출력) -->
+                <!-- 1. 프로필 사진 (클래스 조합으로 인라인 스타일 불필요) -->
                 <div class="profile-avatar" aria-hidden="true">
-                    <c:choose>
-                        <c:when test="${not empty member.profileImage}">
-                            <img src="${pageContext.request.contextPath}${member.profileImage}" class="profile-img" alt="프로필 사진">
-                        </c:when>
-                        <c:otherwise>
-                            <svg viewBox="0 0 24 24" width="40" height="40" fill="currentColor">
-                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path>
-                            </svg>
-                        </c:otherwise>
-                    </c:choose>
+                    <!-- myPage.jsp 프로필 영역 -->
+                    <div class="profile-avatar" aria-hidden="true">
+                        <img id="mainAvatarImg"
+                             src="${not empty member.profileImage ? pageContext.request.contextPath.concat(member.profileImage) : pageContext.request.contextPath.concat('/upload/profile/default-profile.svg')}"
+                             class="profile-img"
+                             alt="프로필 사진">
+                    </div>
                 </div>
 
                 <div class="profile-copy">
@@ -93,7 +133,19 @@
         </div>
     </main>
 
-    <footer class="site-footer"><div class="site-container site-footer__inner"><span>© 2026 Youwin.</span><div class="site-footer__links"><a href="${pageContext.request.contextPath}/board">고객센터</a><a href="#">로그아웃</a></div></div></footer>
+    <footer class="site-footer">
+        <div class="site-container site-footer__inner">
+            <span>© 2026 Youwin.</span>
+            <div class="site-footer__links">
+                <a href="${pageContext.request.contextPath}/board">고객센터</a>
+                <!-- 스프링 시큐리티 로그아웃 폼 -->
+                <form action="${pageContext.request.contextPath}/member/logout" method="post" class="logout-form">
+                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+                    <button type="submit" class="logout-btn">로그아웃</button>
+                </form>
+            </div>
+        </div>
+    </footer>
 </div>
 <script src="${pageContext.request.contextPath}/app.js"></script>
 </body>

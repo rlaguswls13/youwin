@@ -1,13 +1,18 @@
 package com.youwin.controller;
 
-import com.youwin.dto.LoginRequestDto;
 import com.youwin.dto.MemberDto;
+import com.youwin.security.CustomUserDetails;
 import com.youwin.service.MemberService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,65 +34,6 @@ public class MemberController {
         memberService.joinMember(memberDto);
 
         return "redirect:/member/login";
-    }
-
-    @PostMapping("/login")
-    public String login(
-            LoginRequestDto loginDto,
-            @RequestParam(value = "autoLogin", required = false) boolean autoLogin, // 🎯 1. 체크박스 값 (기본값 false)
-            HttpSession session,
-            HttpServletResponse response,
-            RedirectAttributes rttr) {
-        try {
-            // 서비스 실행
-            MemberDto loginUser = memberService.login(loginDto);
-            session.setAttribute("loginUser", loginUser);
-
-            // 3. [자동 로그인 체크 시 실행]
-            if (autoLogin) {
-                memberService.setupAutoLogin(loginUser.getMemberId(), response);
-            }
-
-            return "redirect:/";
-
-        } catch (IllegalArgumentException e) {
-            // 화면에 보여줄 문구를 담아서 전달
-            rttr.addFlashAttribute("errorMessage", e.getMessage());
-            // 입력했던 아이디 값도 같이 전달
-            rttr.addFlashAttribute("savedMemberId", loginDto.getMemberId());
-            return "redirect:/member/login";
-        }
-    }
-
-    @GetMapping("/logout")
-    public String logout(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            HttpSession session) {
-
-        // 1. 쿠키에서 remember-me 토큰 꺼내서 DB & 쿠키 삭제
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("remember-me".equals(cookie.getName())) {
-                    String token = cookie.getValue();
-
-                    // DB 토큰 삭제
-                    memberService.removeAutoLoginToken(token);
-
-                    // 브라우저 쿠키 삭제 (유효기간 0 설정)
-                    cookie.setPath("/");
-                    cookie.setMaxAge(0);
-                    response.addCookie(cookie);
-                    break;
-                }
-            }
-        }
-
-        // 2. 세션 파기
-        session.invalidate();
-
-        return "redirect:/";
     }
 
     // 아이디 찾기 처리
@@ -154,85 +100,124 @@ public class MemberController {
 
     // 닉네임 변경
     @PostMapping("/updateNickname")
-    public String updateNickname(@RequestParam("nickname") String nickname, HttpSession session) {
-        MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
-        if (loginUser != null) {
-            memberService.updateNickname(loginUser.getMemberId(), nickname);
-        }
+    public String updateNickname(
+            @RequestParam("nickname") String nickname,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        memberService.updateNickname(
+                userDetails.getUsername(),
+                nickname);
+
         return "redirect:/member/settings";
     }
 
     // 전화번호 변경
     @PostMapping("/updatePhone")
-    public String updatePhone(@RequestParam("memberPhone") String memberPhone, HttpSession session) {
-        MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
-        if (loginUser != null) {
-            memberService.updatePhone(loginUser.getMemberId(), memberPhone);
-        }
+    public String updatePhone(
+            @RequestParam("memberPhone") String memberPhone,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        memberService.updatePhone(
+                userDetails.getUsername(),
+                memberPhone);
+
         return "redirect:/member/settings";
     }
 
     // 이메일 변경
     @PostMapping("/updateEmail")
-    public String updateEmail(@RequestParam("memberEmail") String memberEmail, HttpSession session) {
-        MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
-        if (loginUser != null) {
-            memberService.updateEmail(loginUser.getMemberId(), memberEmail);
-        }
+    public String updateEmail(
+            @RequestParam("memberEmail") String memberEmail,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        memberService.updateEmail(
+                userDetails.getUsername(),
+                memberEmail);
+
         return "redirect:/member/settings";
     }
 
     // 프로필 이미지 변경
     @PostMapping("/updateProfileImage")
     public String updateProfileImage(
-            @RequestParam(value = "profile", required = false) MultipartFile profile,
-            @RequestParam(value = "deleteProfile", defaultValue = "false") boolean deleteProfile,
-            HttpSession session) {
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam("deleteProfile") boolean deleteProfile,
+            @RequestParam(value = "profile", required = false) MultipartFile profileFile,
+            RedirectAttributes redirectAttributes) {
 
-        MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
-        if (loginUser != null) {
-            memberService.updateProfileImage(loginUser.getMemberId(), profile, deleteProfile);
-        }
+        // 1. DB 업데이트 (삭제 요청 시 null 처리)
+        memberService.updateProfileImage(
+                userDetails.getMemberDto().getMemberId(),
+                profileFile,
+                deleteProfile);
+
+        // 2. DB에서 최신 회원 정보 조회 (profileImage가 null인 상태)
+        MemberDto updatedMember = memberService.getMemberById(
+                userDetails.getMemberDto().getMemberId());
+
+        // 🟢 3. 새로 조회한 DTO로 CustomUserDetails 객체 '신규 생성'
+        CustomUserDetails newUserDetails = new CustomUserDetails(updatedMember);
+
+        // 🟢 4. SecurityContext의 Authentication 객체 교체 (세션 갱신)
+        Authentication newAuth = new UsernamePasswordAuthenticationToken(
+                newUserDetails,
+                newUserDetails.getPassword(),
+                newUserDetails.getAuthorities()
+        );
+        SecurityContextHolder.getContext().setAuthentication(newAuth);
+
         return "redirect:/member/settings";
     }
 
     // 비밀번호 변경
     @PostMapping("/updatePasswordInSettings")
     public String updatePasswordInSettings(
-            @RequestParam("currentPassword") String currentPassword,
-            @RequestParam("newPassword") String newPassword,
-            HttpSession session,
-            RedirectAttributes rttr) {
+            @RequestParam("currentPassword")
+            String currentPassword,
+            @RequestParam("newPassword")
+            String newPassword,
+            @AuthenticationPrincipal
+            CustomUserDetails userDetails,
 
-        MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
-        if (loginUser == null) return "redirect:/member/login";
+            RedirectAttributes rttr){
 
-        try {
-            memberService.updatePasswordInSettings(loginUser.getMemberId(), currentPassword, newPassword);
-            rttr.addFlashAttribute("successMessage", "비밀번호가 성공적으로 변경되었습니다.");
-        } catch (IllegalArgumentException e) {
-            rttr.addFlashAttribute("errorMessage", e.getMessage());
+        try{
+            memberService.updatePasswordInSettings(
+                    userDetails.getUsername(),
+                    currentPassword,
+                    newPassword);
+
+            rttr.addFlashAttribute(
+                    "successMessage",
+                    "비밀번호가 변경되었습니다.");
+
+        }catch (IllegalArgumentException e){
+            rttr.addFlashAttribute(
+                    "errorMessage",
+                    e.getMessage());
         }
-
         return "redirect:/member/settings";
     }
 
 
     @PostMapping("/delete")
-    public String deleteMember(@RequestParam("password") String password,
-                               HttpServletRequest request,
-                               HttpServletResponse response,
-                               HttpSession session,
-                               RedirectAttributes rttr) {
+    public String deleteMember(
+            @RequestParam("password") String password,
+            HttpServletRequest request,
+            HttpServletResponse response,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            RedirectAttributes rttr) {
 
-        MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
-
-        if (loginUser == null) {
+        // authenticated()로 보호되어 있으므로 사실상 null이 될 일은 거의 없지만
+        // 안전하게 한 번 더 검사
+        if (userDetails == null) {
             return "redirect:/member/login";
         }
 
-        // 1. 비밀번호 일치 여부 확인
-        boolean isPasswordMatch = memberService.checkPassword(loginUser.getMemberId(), password);
+        String memberId = userDetails.getUsername();
+
+        boolean isPasswordMatch =
+                memberService.checkPassword(memberId, password);
 
         if (!isPasswordMatch) {
             rttr.addFlashAttribute("errorMessage", "비밀번호가 일치하지 않습니다.");
@@ -240,41 +225,50 @@ public class MemberController {
         }
 
         try {
-            // 2. status를 'DELETED'로 변경 (Soft Delete)
-            memberService.deleteMember(loginUser.getMemberId());
+            memberService.deleteMember(memberId);
 
-            // 3. 자동 로그인 토큰 DB & 쿠키 삭제 (로그아웃의 1번 로직 동일 적용)
             Cookie[] cookies = request.getCookies();
+
             if (cookies != null) {
                 for (Cookie cookie : cookies) {
                     if ("remember-me".equals(cookie.getName())) {
-                        String token = cookie.getValue();
-                        memberService.removeAutoLoginToken(token); // DB 토큰 삭제
-
+                        memberService.removeAutoLoginToken(cookie.getValue());
                         cookie.setPath("/");
                         cookie.setMaxAge(0);
-                        response.addCookie(cookie); // 쿠키 삭제
+                        response.addCookie(cookie);
+
                         break;
                     }
                 }
             }
 
-            // 4. 세션에서 로그인 유저만 제거 (session.invalidate() 대신 사용!)
-            // ★ 이렇게 해야 session.invalidate()로 인해 successMessage가 날아가는 걸 방지합니다.
-            session.removeAttribute("loginUser");
 
-            // 5. 성공 메시지 전달 후 메인으로 리다이렉트
-            rttr.addFlashAttribute("successMessage", "계정 삭제 신청이 완료되었습니다. 이용해 주셔서 감사합니다.");
+            // Spring Security 로그아웃
+            // SecurityContext + Session 모두 삭제
+            Authentication authentication =
+                    SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null) {
+                new SecurityContextLogoutHandler()
+                        .logout(request, response, authentication);
+            }
+
+            rttr.addFlashAttribute(
+                    "successMessage",
+                    "계정 삭제 신청이 완료되었습니다.");
+
             return "redirect:/";
 
         } catch (Exception e) {
+
             e.printStackTrace();
-            rttr.addFlashAttribute("errorMessage", "탈퇴 처리 중 오류가 발생했습니다.");
+
+            rttr.addFlashAttribute(
+                    "errorMessage",
+                    "탈퇴 처리 중 오류가 발생했습니다.");
+
             return "redirect:/member/settings";
         }
     }
-
-
 
     // view 이동
     @GetMapping("/joinStep1")
@@ -291,37 +285,25 @@ public class MemberController {
     }
 
     @GetMapping("/myPage")
-    public String myPage(HttpSession session, Model model) {
-        MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
-        if (loginUser == null) {
-            return "redirect:/member/login";
-        }
-        MemberDto member = memberService.getMemberById(loginUser.getMemberId());
-        if (member == null) {
-            session.invalidate();
-            return "redirect:/member/login";
-        }
+    public String myPage(
+            @AuthenticationPrincipal CustomUserDetails user,
+            Model model){
 
-        session.setAttribute("loginUser", member);
-        model.addAttribute("member", member);
+        MemberDto memberDto = user.getMemberDto();
+
+        model.addAttribute("memberDto", memberDto);
+
         return "member/myPage";
     }
 
     @GetMapping("/settings")
-    public String settingsForm(HttpSession session, Model model) {
-        MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
-        if (loginUser == null) {
-            return "redirect:/member/login";
-        }
+    public String settingsForm(@AuthenticationPrincipal CustomUserDetails user,
+                               Model model) {
 
-        MemberDto member = memberService.getMemberById(loginUser.getMemberId());
-        if (member == null) {
-            session.invalidate();
-            return "redirect:/member/login";
-        }
+        MemberDto memberDto = memberService.getMemberById(user.getUsername());
 
-        session.setAttribute("loginUser", member); // 최신 정보로 세션 갱신
-        model.addAttribute("member", member);
+        model.addAttribute("memberDto", memberDto);
+
         return "member/settings";
     }
 

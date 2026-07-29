@@ -1,28 +1,96 @@
 package com.youwin.config;
 
+import com.youwin.repository.AutoLoginRepository;
+import com.youwin.security.AutoLoginFilter;
+import com.youwin.security.CustomAuthenticationProvider;
+import com.youwin.security.CustomLoginSuccessHandler;
+import com.youwin.security.CustomUserDetailsService;
+import jakarta.servlet.http.Cookie;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+    private final CustomUserDetailsService userDetailsService;
+    private final CustomAuthenticationProvider customAuthenticationProvider;
+    private final CustomLoginSuccessHandler customLoginSuccessHandler;
+    private final AutoLoginFilter autoLoginFilter;
+    private final AutoLoginRepository autoLoginRepository; // DB 토큰 삭제용 추가
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
-                .csrf(AbstractHttpConfigurer::disable)
-                .formLogin(AbstractHttpConfigurer::disable)
-                .httpBasic(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(requests -> requests.anyRequest().permitAll())
-                .build();
+
+        http
+                .csrf(csrf -> csrf.disable())
+                .userDetailsService(userDetailsService)
+                .authenticationProvider(customAuthenticationProvider)
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/css/**", "/js/**", "/images/**", "/upload/**", "/error"
+                        ).permitAll()
+                        .requestMatchers(
+                                "/", "/api/member/**"
+                        ).permitAll()
+                        .requestMatchers(
+                                "/member/myPage", "/member/settings", "/member/update**", "/member/delete"
+                        ).authenticated()
+                        .requestMatchers(
+                                "/member/**")
+                        .anonymous()
+                        .anyRequest().permitAll()
+                )
+                .formLogin(form -> form
+                        .loginPage("/member/login")
+                        .loginProcessingUrl("/member/login")
+                        .usernameParameter("memberId")
+                        .passwordParameter("memberPassword")
+                        .successHandler(customLoginSuccessHandler)
+                        .failureUrl("/member/login?error=true")
+                        .permitAll()
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/member/logout")
+                        .logoutSuccessUrl("/")
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .deleteCookies("JSESSIONID", "remember-me")
+                        .addLogoutHandler((request, response, authentication) -> {
+                            Cookie[] cookies = request.getCookies();
+                            if (cookies != null) {
+                                for (Cookie cookie : cookies) {
+                                    if ("remember-me".equals(cookie.getName())) {
+                                        autoLoginRepository.deleteByToken(cookie.getValue());
+
+                                        // 브라우저 쿠키 확실하게 만료시키기
+                                        Cookie deleteCookie = new Cookie("remember-me", null);
+                                        deleteCookie.setPath("/");
+                                        deleteCookie.setMaxAge(0);
+                                        response.addCookie(deleteCookie);
+                                        break;
+                                    }
+                                }
+                            }
+                        })
+                )
+                .addFilterBefore(
+                        autoLoginFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                );
+
+        return http.build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 }
