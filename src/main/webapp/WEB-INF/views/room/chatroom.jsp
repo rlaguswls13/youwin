@@ -60,7 +60,7 @@
                                  </span>
                               </a>
                               <button type="button" class="leave-room-btn" data-room-id="${room.roomId}">
-                                  나가기
+                                  삭제
                               </button>
 
                              </div>
@@ -170,29 +170,72 @@
                             </div>
                         </div>
 
-                        <div id="member-list">
+                       <h4>🟢 참여중</h4>
+
+                        <div id="online-member-list">
                             <c:forEach var="member" items="${memberList}">
-                                <div class="member-item">
-                                    <span class="avatar">
-                                        ${member.nickname.substring(0,1)}
-                                    </span>
 
-                                    <span>
-                                        <strong class="member-item__name">
-                                            ${member.nickname}
-                                        </strong>
+                                <c:if test ="${member.online}">
 
-                                    <span class="member-item__status">
-                                        <span class="online-dot">●</span>
-                                        참여중
-                                    </span>
+                                    <div class="member-item">
 
-                                  </span>
+                                        <span class="avatar">
+                                            ${member.nickname.substring(0,1)}
+                                        </span>
 
-                                </div>
+                                        <span>
+                                            <strong class="member-item__name">
+                                                ${member.nickname}
+                                            </strong>
+
+                                         <span class="member-item__status">
+                                             <span class="online-dot">●</span>
+                                             참여중
+                                         </span>
+
+                                      </span>
+
+                                  </div>
+
+                                </c:if>
+
                             </c:forEach>
                         </div>
 
+                        <hr>
+
+                        <h4>⚪ 오프라인</h4>
+
+                        <div id="offline-member-list">
+
+                            <c:forEach var="member" items="${memberList}">
+
+                                <c:if test="${!member.online}">
+
+                                    <div class="member-item">
+
+                                        <span class="avatar">
+                                            ${member.nickname.substring(0,1)}
+                                        </span>
+
+                                        <span>
+
+                                            <strong class="member-item__name">
+                                                ${member.nickname}
+                                            </strong>
+
+                                            <span class="member-item__status">
+                                                오프라인
+                                            </span>
+
+                                        </span>
+
+                                    </div>
+
+                                </c:if>
+
+                            </c:forEach>
+                        </div>
                     </aside>
         <div id="edit-room-modal" class="modal">
             <div class="modal-content">
@@ -232,7 +275,7 @@
         <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.2.0/bundles/stomp.umd.min.js"></script>
 
         <script src="${pageContext.request.contextPath}/app.js"></script>
-        <script> const loginMemberId = ${loginMemberId};</script>
+        <script> const loginMemberId = ${empty loginMemberId ? 0 : loginMemberId};</script>
         <script src="${pageContext.request.contextPath}/chatroom.js"></script>
         </body>
         </html>

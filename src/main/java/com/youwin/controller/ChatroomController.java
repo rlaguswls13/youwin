@@ -4,135 +4,97 @@ import com.youwin.dto.*;
 import com.youwin.service.ChatMessageService;
 import com.youwin.service.ChatRoomService;
 import lombok.RequiredArgsConstructor;
+import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.web.servlet.ModelAndView;
 
 
 import java.util.List;
 
 @RequiredArgsConstructor
-@RestController
-@RequestMapping("/chat")
+@Controller
 public class ChatroomController {
 
     private final ChatRoomService service;
-    private final ChatMessageService chatMessageService;
 
-    // --------- 아티스트 -------------- V
 
-    @GetMapping("/artist/list")
-    public List<ArtistDto> findArtistList() {
-        return service.findArtistList();
-    }
+        // 전체 메인 페이지 화면
+        @GetMapping("/")
+        public String home() {
+            return "index";
+        }
 
-    @GetMapping("/artist/search")
-    public List<ArtistDto> searchArtist(@RequestParam String keyword) {return service.searchArtist(keyword);}
+        // 내 메인 페이지 화면
+        @GetMapping("/index")
+        public String index() {
+            return "room/index";
+        }
 
-    @GetMapping("/artist/{artistId}")
-    public ArtistDto findArtist(@PathVariable Integer artistId) {return service.findArtist(artistId);}
+        //채팅방 만들기 화면
+        @GetMapping("/room/create")
+        public String createRoom() {
+            return "createRoom";
+        }
 
-    // --------- 노래 --------- V
+        // 채팅방 화면
+        @GetMapping("/chatroom")
+        public String chatroom(
+                @RequestParam(required = false) Integer roomId, HttpSession session, Model model) {
 
-    @GetMapping("/song/list")
-    public List<SongDto> findSongList() {
-        return service.findSongList();
-    }
+            Integer memberId = (Integer) session.getAttribute("loginMemberId");
 
-    @GetMapping("/song/search")
-    public List<SongDto> searchSong(@RequestParam String keyword) {
-        return service.searchSong(keyword);
-    }
+            if(memberId == null){
+                memberId = 1;
+                session.setAttribute("loginMemberId", memberId);
+            }
 
-    @GetMapping("/song/theme/{themeId}")
-    public List<SongDto> findSongByTheme(@PathVariable Integer themeId) {
-        return service.findSongByTheme(themeId);
-    }
+            if (roomId == null) {
 
-    @GetMapping("/song/{songId}")
-    public SongDto findSong(@PathVariable Integer songId) {
-        return service.findSong(songId);
-    }
+                List<ChatRoomDto> rooms = service.findRoomList(memberId);
 
-    // --------- 장르 --------- V
+                model.addAttribute("roomList", rooms);
 
-    @GetMapping("/theme/list")
-    public List<ThemeDto> findThemeList() {
-        return service.findThemeList();
-    }
+                return "room/chatroom";
 
-    @GetMapping("/theme/{themeId}")
-    public ThemeDto findTheme(@PathVariable Integer themeId) {
-        return service.findTheme(themeId);
-    }
+            }
 
-    // --------- 채팅방 ---------
+            model.addAttribute("roomList", service.findRoomList(memberId));
+           // model.addAttribute("themeList", service.findThemeList());
+            model.addAttribute("room", service.findRoom(roomId));
+            model.addAttribute("joined", service.isJoined(roomId, memberId));
+            model.addAttribute("loginMemberId", memberId);
+            model.addAttribute("messageList", List.of());
+            model.addAttribute("memberList", service.findMembers(roomId));
 
-    @GetMapping("/room/list")
-    public List<ChatRoomDto> findRoomList() {
-        return service.findRoomList(1);
-    }
+            return "room/chatroom";
+        }
 
-    @GetMapping("/room/{roomId}")
-    public ChatRoomDto findRoom(@PathVariable Integer roomId) {
-        return service.findRoom(roomId);
-    }
+        @GetMapping("/chatroom/details")
+        public String details() {
+            return "room/details";
+        }
 
-    @PostMapping("/room/create")
-    public Integer createRoom(@RequestBody ChatRoomDto dto,
-                              @RequestParam Integer memberId) {
+        // 아티스트
+        @GetMapping("/artist")
+        public String artist() {
+            return "artist";
+        }
 
-        service.createRoom(dto, memberId);
-        return dto.getRoomId();
-    }
+        // 노래
+        @GetMapping("/song")
+        public String song() {
+            return "song";
+        }
 
-    @PostMapping("/room/update")
-    public void updateRoom(@RequestBody ChatRoomDto dto){
-
-        System.out.println("Controller");
-        System.out.println(dto.getRoomId());
-        System.out.println(dto.getRoomName());
-        System.out.println(dto.getRoomDescription());
-        System.out.println(dto.getThemeId());
-
-        service.updateRoom(dto);
-    }
-
-    @PostMapping("/room/join")
-    public Boolean joinRoom(@RequestBody ChatRoomMemberDto dto){
-
-        return service.joinRoom(dto);
+        // 장르
+        @GetMapping("/theme")
+        public String theme() {
+            return "theme";
+        }
 
     }
 
-    @PostMapping("/room/leave")
-    public void leaveRoom(@RequestBody ChatRoomMemberDto dto) {
-        service.leaveRoom(dto);
-    }
 
-    // --------- 채팅 메시지 ---------
-
-    @GetMapping("/message/{roomId}")
-    public List<ChatMessageDto> findMessages(@PathVariable Integer roomId) {
-        return service.findMessages(roomId);
-    }
-
-    @GetMapping("/message/new")
-    public List<ChatMessageDto> findNewMessages(
-            @RequestParam Integer roomId,
-            @RequestParam Integer lastMessageId) {
-
-        return service.findNewMessages(roomId, lastMessageId);
-    }
-
-    @PostMapping("/message/send")
-    public void saveMessage(@RequestBody ChatMessageDto dto) {
-        service.saveMessage(dto);
-    }
-
-    // --------- 참여자 ---------
-
-    @GetMapping("/member/{roomId}")
-    public List<ChatRoomMemberDto> findMembers(@PathVariable Integer roomId) {
-        return service.findMembers(roomId);
-    }
-
-}
