@@ -28,7 +28,7 @@
 
                 <!-- 🟢 로그인 상태일 때만 마이페이지 노출 -->
                 <sec:authorize access="isAuthenticated()">
-                    <a href="${pageContext.request.contextPath}/member/myPage">마이페이지</a>
+                    <a href="${pageContext.request.contextPath}/member/mypage">마이페이지</a>
                 </sec:authorize>
 
                 <div class="user-menu">
@@ -58,7 +58,7 @@
                     <label class="sr-only" for="global-search">통합 검색</label>
                     <input id="global-search" name="query" type="search" placeholder="아티스트, 노래, 게시글 검색">
                 </form>
-                <a class="avatar-link" href="${pageContext.request.contextPath}/member/myPage" aria-label="마이페이지">YU</a>
+                <a class="avatar-link" href="${pageContext.request.contextPath}/member/mypage" aria-label="마이페이지">YU</a>
             </div>
 
             <button class="menu-toggle" type="button" data-menu-toggle aria-label="메뉴 열기" aria-expanded="false"></button>

@@ -200,7 +200,10 @@
 
       <div class="form-group">
         <label for="member-email">이메일</label>
-        <input type="email" id="member-email" name="memberEmail" placeholder="이메일">
+        <div class="input-with-btn">
+          <input type="email" id="member-email" name="memberEmail" placeholder="이메일">
+          <button type="button" class="btn-check" id="btn-check-email" onclick="checkDuplicateEmail()">중복확인</button>
+        </div>
         <span class="error-msg" id="err-email"></span>
       </div>
 
@@ -225,6 +228,7 @@
 
 <script>
   let isIdChecked = false;
+  let isEmailChecked = false;
 
   // 공통 메시지 표시 함수
   function showError(inputElem, errElem, message) {
@@ -351,6 +355,48 @@
     clearError(this, document.getElementById('err-id'));
   });
 
+  // 이메일 중복 체크 함수 (Ajax 연동)
+  function checkDuplicateEmail() {
+    const emailInput = document.getElementById('member-email');
+    const errEmail = document.getElementById('err-email');
+    const emailValue = emailInput.value;
+
+    // 1) 입력값 유효성 검사
+    const msg = validateEmail(emailValue);
+    if (msg) {
+      showError(emailInput, errEmail, msg);
+      isEmailChecked = false;
+      return;
+    }
+
+    // 2) 이메일 중복 확인 API 호출
+    fetch('/api/member/check-email?memberEmail=' + encodeURIComponent(emailValue))
+            .then(response => {
+              if (!response.ok) throw new Error('서버 응답 오류');
+              return response.json();
+            })
+            .then(isDuplicate => {
+              if (isDuplicate) {
+                showError(emailInput, errEmail, '이미 사용 중인 이메일입니다.');
+                isEmailChecked = false;
+              } else {
+                showSuccess(emailInput, errEmail, '사용 가능한 이메일입니다.');
+                isEmailChecked = true;
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              showError(emailInput, errEmail, '중복 확인 중 오류가 발생했습니다.');
+              isEmailChecked = false;
+            });
+  }
+
+  // 3. 이메일 입력값 변경 시 중복확인 상태 초기화
+  document.getElementById('member-email').addEventListener('input', function() {
+    isEmailChecked = false;
+    clearError(this, document.getElementById('err-email'));
+  });
+
   // 다음 단계 이동 및 전체 유효성 검사
   function goToNextStep() {
     const idInput = document.getElementById('member-id');
@@ -374,7 +420,11 @@
 
     const isPwValid = checkField(pwInput, errPw, validatePassword);
     const isNameValid = checkField(nameInput, errName, validateName);
-    const isEmailValid = checkField(emailInput, errEmail, validateEmail);
+    let isEmailValid = checkField(emailInput, errEmail, validateEmail);
+    if (isEmailValid && !isEmailChecked) {
+      showError(emailInput, errEmail, '이메일 중복확인을 진행해 주세요.');
+      isEmailValid = false;
+    }
     const isPhoneValid = checkField(phoneInput, errPhone, validatePhone);
 
     // 첫 번째로 실패한 항목으로 포커스 이동
@@ -428,9 +478,12 @@
             emailInput.focus();
           }
         }
+        // joinStep1.jsp 내 엔터키 처리 부분 수정
         else if (target.id === 'member-email') {
-          if (checkField(emailInput, document.getElementById('err-email'), validateEmail)) {
-            phoneInput.focus();
+          if (isEmailChecked) {
+            phoneInput.focus(); // 중복확인 통과했으면 다음 칸(휴대전화)으로 이동
+          } else {
+            checkDuplicateEmail(); // 안 했으면 중복확인 실행!
           }
         }
         else if (target.id === 'member-phone') {

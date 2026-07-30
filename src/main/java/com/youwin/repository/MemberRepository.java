@@ -13,6 +13,8 @@ public interface MemberRepository {
     int countByMemberId(@Param("memberId") String memberId);
     // 닉네임 개수 조회 (존재하면 1 이상, 없으면 0)
     int countByNickname(@Param("nickname") String nickname);
+    // 이메일 개수 조회 (존재하면 1 이상, 없으면 0)
+    int countByMemberEmail(@Param("memberEmail") String memberEmail);
     // 로그인용 회원 정보 단건 조회
     MemberDto findByMemberId(@Param("memberId") String memberId);
     // 이름과 이메일로 아이디 조회

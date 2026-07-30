@@ -214,7 +214,10 @@
 
       <div class="form-group" style="margin-bottom: 1rem;">
         <label for="memberEmail">새 이메일</label>
-        <input type="email" id="memberEmail" name="memberEmail" value="${member.memberEmail}" class="input-control">
+        <div class="input-with-btn" style="display: flex; gap: 8px; margin-top: 4px;">
+          <input type="email" id="memberEmail" name="memberEmail" value="${member.memberEmail}" class="input-control" style="flex: 1;">
+          <button type="button" class="button button--secondary" id="btn-check-email" onclick="checkDuplicateEmail()">중복확인</button>
+        </div>
         <span class="error-msg" id="err-email" data-default="올바른 이메일 형식을 입력해 주세요. (예: example@domain.com)">올바른 이메일 형식을 입력해 주세요. (예: example@domain.com)</span>
       </div>
       <button type="button" id="btnEmail" class="button button--full" onclick="submitEmailForm()">수정 완료</button>
@@ -600,31 +603,85 @@
   }
 
   // ==================== [3. 이메일 실시간 검사 및 제출] ====================
+  // ==================== [3. 이메일 중복확인, 실시간 검사 및 제출] ====================
   const emailInput = document.getElementById('memberEmail');
   const errEmail = document.getElementById('err-email');
+  let isEmailChecked = true; // 본인의 현재 이메일인 상태로 시작하므로 초기값 true
 
+  // 이메일 중복확인 버튼 클릭 이벤트
+  function checkDuplicateEmail() {
+    const emailValue = emailInput.value.trim();
+
+    // 1) 본인 원래 이메일인 경우
+    if (emailValue === currentEmail) {
+      showSuccess(emailInput, errEmail, '현재 사용 중인 본인의 이메일입니다.');
+      isEmailChecked = true;
+      return;
+    }
+
+    // 2) 유효성 검사 (형식 체크)
+    if (!checkField(emailInput, errEmail, validateEmail)) {
+      isEmailChecked = false;
+      return;
+    }
+
+    // 3) 이메일 중복 확인 API 호출
+    fetch('${pageContext.request.contextPath}/api/member/check-email?memberEmail=' + encodeURIComponent(emailValue))
+            .then(response => {
+              if (!response.ok) throw new Error('서버 응답 오류');
+              return response.json();
+            })
+            .then(isDuplicate => {
+              if (isDuplicate) {
+                showError(emailInput, errEmail, '이미 사용 중인 이메일입니다.');
+                isEmailChecked = false;
+              } else {
+                showSuccess(emailInput, errEmail, '사용 가능한 이메일입니다.');
+                isEmailChecked = true;
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              showError(emailInput, errEmail, '중복 확인 중 오류가 발생했습니다.');
+              isEmailChecked = false;
+            });
+  }
+
+  // 이메일 입력값 변경(input) 이벤트
   emailInput.addEventListener('input', function() {
     const val = this.value.trim();
 
     if (val === currentEmail) {
-      showSuccess(this, errEmail, '현재 사용 중인 이메일입니다.');
+      isEmailChecked = true;
+      showSuccess(this, errEmail, '현재 사용 중인 본인의 이메일입니다.');
     } else {
+      isEmailChecked = false;
       checkField(this, errEmail, validateEmail);
     }
   });
 
+  // 이메일 수정 완료 제출 함수
   function submitEmailForm() {
-    const emailInput = document.getElementById('memberEmail');
-    const errEmail = document.getElementById('err-email');
     const emailValue = emailInput.value.trim();
 
+    // 1) 변경 사항이 없는 경우
     if (emailValue === currentEmail) {
       showError(emailInput, errEmail, '현재 사용 중인 이메일과 동일합니다.');
       emailInput.focus();
       return;
     }
 
-    if (checkField(emailInput, errEmail, validateEmail)) {
+    // 2) 유효성 검사
+    let isEmailValid = checkField(emailInput, errEmail, validateEmail);
+
+    // 3) 중복확인 여부 검사
+    if (isEmailValid && !isEmailChecked) {
+      showError(emailInput, errEmail, '이메일 중복확인을 진행해 주세요.');
+      isEmailValid = false;
+    }
+
+    // 4) 최종 제출
+    if (isEmailValid) {
       emailInput.value = emailValue;
       document.getElementById('formEmail').submit();
     } else {
@@ -730,7 +787,8 @@
       }
       else if (target.id === 'memberEmail') {
         event.preventDefault();
-        submitEmailForm();
+        if (isEmailChecked) submitEmailForm();
+        else checkDuplicateEmail();
       }
       else if (target.id === 'currentPassword') {
         event.preventDefault();

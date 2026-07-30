@@ -24,4 +24,9 @@ public class MemberApiController {
     public boolean checkDuplicateNickname(@RequestParam("nickname") String nickname) {
         return memberService.isNicknameDuplicate(nickname);
     }
+
+    @GetMapping("/check-email")
+    public boolean checkDuplicateEmail(@RequestParam("memberEmail") String memberEmail) {
+        return memberService.isEmailDuplicate(memberEmail);
+    }
 }

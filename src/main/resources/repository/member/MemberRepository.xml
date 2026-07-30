@@ -35,6 +35,11 @@
         SELECT COUNT(*) FROM member WHERE nickname = #{nickname}
     </select>
 
+    <!-- 이메일 중복 확인 쿼리 -->
+    <select id="countByMemberEmail" parameterType="string" resultType="int">
+        SELECT COUNT(*) FROM member WHERE member_email = #{memberEmail}
+    </select>
+
     <select id="findByMemberId" parameterType="string" resultType="com.youwin.dto.MemberDto">
         SELECT
             member_id       AS memberId,

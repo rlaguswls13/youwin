@@ -112,6 +112,12 @@ public class MemberService {
         return count > 0;
     }
 
+    // 닉네임 중복 여부 확인 비즈니스 로직
+    public boolean isEmailDuplicate(String memberEmail) {
+        int count = memberRepository.countByMemberEmail(memberEmail);
+        return count > 0;
+    }
+
     @Transactional
     public void setupAutoLogin(String memberId, HttpServletResponse response) {
         String token = UUID.randomUUID().toString();
