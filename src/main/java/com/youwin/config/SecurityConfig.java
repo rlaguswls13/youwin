@@ -40,7 +40,7 @@ public class SecurityConfig {
                                 "/", "/api/member/**"
                         ).permitAll()
                         .requestMatchers(
-                                "/member/myPage", "/member/settings", "/member/update**", "/member/delete"
+                                "/member/mypage", "/member/settings", "/member/update**", "/member/delete"
                         ).authenticated()
                         .requestMatchers(
                                 "/member/**")

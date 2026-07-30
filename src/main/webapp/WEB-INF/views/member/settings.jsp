@@ -99,7 +99,7 @@
     <div class="site-container site-header__inner">
       <a class="brand" href="${pageContext.request.contextPath}/"><span class="brand__mark">YW</span><span>Youwin</span></a>
       <nav class="site-nav">
-        <a href="${pageContext.request.contextPath}/member/myPage">마이페이지</a>
+        <a href="${pageContext.request.contextPath}/member/mypage">마이페이지</a>
       </nav>
     </div>
   </header>

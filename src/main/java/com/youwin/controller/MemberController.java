@@ -199,7 +199,7 @@ public class MemberController {
         return "redirect:/member/settings";
     }
 
-
+    // 수정해야함
     @PostMapping("/delete")
     public String deleteMember(
             @RequestParam("password") String password,
@@ -284,8 +284,8 @@ public class MemberController {
         return "member/login";
     }
 
-    @GetMapping("/myPage")
-    public String myPage(
+    @GetMapping("/mypage")
+    public String mypageForm(
             @AuthenticationPrincipal CustomUserDetails user,
             Model model){
 
@@ -293,7 +293,7 @@ public class MemberController {
 
         model.addAttribute("memberDto", memberDto);
 
-        return "member/myPage";
+        return "member/mypage";
     }
 
     @GetMapping("/settings")

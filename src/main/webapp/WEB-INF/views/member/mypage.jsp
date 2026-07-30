@@ -58,7 +58,7 @@
                 <a href="${pageContext.request.contextPath}/">홈</a>
                 <a href="${pageContext.request.contextPath}/board">게시판</a>
                 <a href="${pageContext.request.contextPath}/chatroom">채팅방</a>
-                <a class="is-active" href="${pageContext.request.contextPath}/member/myPage">마이페이지</a>
+                <a class="is-active" href="${pageContext.request.contextPath}/member/mypage">마이페이지</a>
             </nav>
             <div class="site-header__actions">
                 <a class="button button--secondary" href="${pageContext.request.contextPath}/member/settings">프로필 설정</a>
@@ -74,7 +74,7 @@
             <section class="surface profile-hero" aria-labelledby="profile-title">
                 <!-- 1. 프로필 사진 (클래스 조합으로 인라인 스타일 불필요) -->
                 <div class="profile-avatar" aria-hidden="true">
-                    <!-- myPage.jsp 프로필 영역 -->
+                    <!-- mypage.jsp 프로필 영역 -->
                     <div class="profile-avatar" aria-hidden="true">
                         <img id="mainAvatarImg"
                              src="${not empty member.profileImage ? pageContext.request.contextPath.concat(member.profileImage) : pageContext.request.contextPath.concat('/upload/profile/default-profile.svg')}"
