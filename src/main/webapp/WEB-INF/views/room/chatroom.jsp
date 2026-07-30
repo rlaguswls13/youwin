@@ -60,7 +60,7 @@
                                  </span>
                               </a>
                               <button type="button" class="leave-room-btn" data-room-id="${room.roomId}">
-                                  나가기
+                                  삭제
                               </button>
 
                              </div>

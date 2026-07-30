@@ -1,6 +1,6 @@
     (function () {
         const roomId = Number(new URLSearchParams(location.search).get("roomId") || 1);
-        const myMemberId = Number(new URLSearchParams(location.search).get("memberId") || 1 );
+        const myMemberId = loginMemberId;
         const form = document.querySelector("[data-message-form]");
         const input = document.querySelector("[data-message-input]");
         const messageList = document.querySelector("[data-message-list]");
@@ -297,9 +297,9 @@
                         const firstRoom = document.querySelector(".room-item");
 
                         if(firstRoom){
-                            location.href = firstRoom.href + "&memberId=" + myMemberId;
+                            location.href = firstRoom.href;
                         }else{
-                            location.href="/chatroom?memberId=" + myMemberId;
+                            location.href="/chatroom";
                         }
                     }
                 });
@@ -360,8 +360,8 @@
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
+
                         roomId: roomId,
-                        memberId: myMemberId
                     })
                 });
 
@@ -378,8 +378,8 @@
 
                 if (joinResult) {
                     alert("가입되었습니다.");
-                    location.href = "/chatroom?roomId=" + roomId +
-                        "&memberId=" + myMemberId;
+                    location.href = "/chatroom?roomId=" + roomId;
+
                 } else {
                     alert("이미 가입한 채팅방입니다.");
                 }

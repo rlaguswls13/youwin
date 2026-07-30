@@ -1,4 +1,4 @@
-package com.youwin.api.websocket;
+package com.youwin.api;
 
 import org.springframework.stereotype.Component;
 import java.util.*;

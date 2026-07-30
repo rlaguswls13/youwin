@@ -12,29 +12,31 @@ public interface ChatRoomRepository {
      // --------- 아티스트 -------
     List<ArtistDto> findArtistList();
 
-    List<ArtistDto> searchArtist(@Param("keyword") String keyword);
+    List<ArtistDto> searchArtist(String keyword);
 
-    ArtistDto findArtist(Integer artistId);
 
     // ---------- 노래 -------------
 
     List<SongDto> findSongList();
 
-    List<SongDto> searchSong(@Param("keyword") String keyword);
+    List<SongDto> searchSong(String keyword);
 
-    List<SongDto> findSongByTheme(Integer themeId);
-
-    SongDto findSong(Integer songId);
 
     // -------------- 장르 ---------------
 
     List<ThemeDto> findThemeList();
+
+    List<SongDto> findSongByTheme(Integer themeId);
 
     ThemeDto findTheme(Integer themeId);
 
     // -------------- 채팅방 -------------
 
     List<ChatRoomDto> findRoomList(Integer memberId);
+
+    List<ChatRoomDto> findRoomListBySong(Integer songId);
+
+    List<ChatRoomDto> findRoomsByArtist(Integer artistId);
 
     int countMember(Integer roomId);
 
@@ -45,11 +47,15 @@ public interface ChatRoomRepository {
     void joinRoom(ChatRoomMemberDto dto);
 
     void leaveRoom(ChatRoomMemberDto dto);
+
     Integer existsRoomMember(ChatRoomMemberDto dto);
 
     void deleteRoom(Integer roomId);
 
     void deleteMessages(Integer roomId);
+
+    void deleteRoomMembers(Integer roomId);
+
 
     int updateRoom(ChatRoomDto dto);
 

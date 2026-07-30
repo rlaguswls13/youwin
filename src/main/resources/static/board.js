@@ -6,7 +6,6 @@
     const searchButton = document.querySelector('.board-search button');
     const rows = document.querySelectorAll('[data-board-row]');
 
-    const editorForm = document.getElementById('editor-form');
     const writeTitle = document.getElementById('write-title');
     const submitBtn = document.getElementById('submit-btn');
     const noticeIdInput = document.getElementById('post-noticeId');
@@ -15,6 +14,8 @@
     const contentTextarea = document.getElementById('post-content');
     const isPinnedCheckbox = document.getElementById('post-isPinned');
     const allowCommentsCheckbox = document.getElementById('post-allowComments');
+
+
 
     // 공용 유틸리티 함수: 폼 읽기전용 제어 및 데이터 매핑
     function setFormReadOnly(isReadOnly) {

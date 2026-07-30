@@ -1,14 +1,13 @@
 package com.youwin.service;
 
 
-import com.youwin.api.websocket.ChatRoomSessiongManager;
+import com.youwin.api.ChatRoomSessiongManager;
 import com.youwin.dto.*;
 import com.youwin.repository.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -17,77 +16,76 @@ import java.util.Set;
 @Transactional
 public class ChatRoomService {
 
-    private final ChatRoomRepository repository;
+    private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomSessiongManager sessiongManager;
-    private Integer memberId;
 
     // ------------ 아티스트 -----------------
     public List<ArtistDto> findArtistList(){
-        return repository.findArtistList();
-    }
+        return chatRoomRepository.findArtistList();
+    }  // v
 
     public List<ArtistDto> searchArtist(String keyword){
-        return repository.searchArtist(keyword);
-    }
+        return chatRoomRepository.searchArtist(keyword);
+    } // v
 
-    public ArtistDto findArtist(Integer artistId) {
-        return repository.findArtist(artistId);
-    }
+    public List<ChatRoomDto> findRoomsByArtist(Integer artistId) {
+        return chatRoomRepository. findRoomsByArtist(artistId);
+    } //v
+
+    public List<ChatRoomDto> findRoomListBySong(Integer songId) {
+        return chatRoomRepository.findRoomListBySong(songId);
+    } //v
 
     // ----------------- 노래 ------------
 
     public List<SongDto> findSongList() {
-        return repository.findSongList();
+        return chatRoomRepository.findSongList();
     }
 
     public List<SongDto> searchSong(String keyword){
-        return repository.searchSong(keyword);
-    }
+        return chatRoomRepository.searchSong(keyword);
+    } // v
 
     public List<SongDto> findSongByTheme(Integer themeId) {
-        return repository.findSongByTheme(themeId);
-    }
-
-    public SongDto findSong(Integer songId) {
-        return repository.findSong(songId);
+        return chatRoomRepository.findSongByTheme(themeId);
     }
 
     // ----------------- 장르 ------------------
     public List<ThemeDto> findThemeList() {
-        return repository.findThemeList();
+        return chatRoomRepository.findThemeList();
     }
 
     public ThemeDto findTheme(Integer themeId){
-        return repository.findTheme(themeId);
+        return chatRoomRepository.findTheme(themeId);
     }
 
     // ---------------------- 채팅방 ---------------------
 
     public List<ChatRoomDto> findRoomList(Integer memberId) {
-        return repository.findRoomList(memberId);
+        return chatRoomRepository.findRoomList(memberId);
     }
 
     public ChatRoomDto findRoom(Integer roomId) {
-        return repository.findRoom(roomId);
+        return chatRoomRepository.findRoom(roomId);
     }
 
-    public void createRoom(ChatRoomDto dto, Integer memberId){
+    public Integer createRoom(ChatRoomDto dto) {
 
-        repository.createRoom(dto);
+        // 채팅방 생성
+        chatRoomRepository.createRoom(dto);
 
-        ChatRoomMemberDto member = new ChatRoomMemberDto();
-        member.setRoomId(dto.getRoomId());
-        member.setMemberId(memberId);
+        // 생성자를 채팅방에 자동 참여
+        ChatRoomMemberDto memberDto = new ChatRoomMemberDto();
+        memberDto.setRoomId(dto.getRoomId());
+        memberDto.setMemberId(1); // 테스트용
+        chatRoomRepository.joinRoom(memberDto);
 
-        repository.joinRoom(member);
+        return dto.getRoomId();
     }
 
     public boolean joinRoom(ChatRoomMemberDto dto){
 
-        System.out.println("========== JOIN SERVICE ==========");
-        System.out.println(dto);
-
-        int count = repository.existsRoomMember(dto);
+        int count = chatRoomRepository.existsRoomMember(dto);
 
         System.out.println("exists = " + count);
 
@@ -95,38 +93,34 @@ public class ChatRoomService {
             return false;
         }
 
-        repository.joinRoom(dto);
-
-        System.out.println("INSERT 완료");
-
-        System.out.println("조회 = " + repository.findRoomList(dto.getMemberId()));
+        chatRoomRepository.joinRoom(dto);
 
         return true;
     }
 
     public void leaveRoom(ChatRoomMemberDto dto){
 
-        repository.leaveRoom(dto);
+        chatRoomRepository.leaveRoom(dto);
 
-        int count = repository.countMember(dto.getRoomId());
+        int count = chatRoomRepository.countMember(dto.getRoomId());
 
         if(count == 0){
 
-            repository.deleteMessages(dto.getRoomId());
-            repository.deleteRoom(dto.getRoomId());
+            chatRoomRepository.deleteMessages(dto.getRoomId());
+            chatRoomRepository.deleteRoom(dto.getRoomId());
 
         }
     }
 
     public boolean isJoined(Integer roomId, Integer memberId){
 
-        return repository.isJoined(roomId, memberId);
+        return chatRoomRepository.isJoined(roomId, memberId);
 
     }
 
     public void updateRoom(ChatRoomDto dto){
 
-        int result = repository.updateRoom(dto);
+        int result = chatRoomRepository.updateRoom(dto);
 
         if(result == 0){
             throw new RuntimeException("채팅방 수정 실패");
@@ -134,30 +128,28 @@ public class ChatRoomService {
 
     }
 
-    public void deleteRoom(Integer roomId){ repository.deleteRoom(roomId);}
+    public void deleteRoom(Integer roomId){ chatRoomRepository.deleteRoom(roomId);}
 
     // --------- 채팅 메시지 -----------
 
     public List<ChatMessageDto> findMessages(Integer roomId){
-        return repository.findMessages(roomId);
+        return chatRoomRepository.findMessages(roomId);
     }
 
 
     public Integer findLastMessageId(Integer roomId){
-
-        return repository.findLastMessageId(roomId);
-
+        return chatRoomRepository.findLastMessageId(roomId);
     }
 
     public List<ChatMessageDto> findNewMessages(Integer roomId, Integer lastMessageId){
-        return repository.findNewMessages(roomId, lastMessageId);
+        return chatRoomRepository.findNewMessages(roomId, lastMessageId);
     }
 
     public ChatMessageDto saveMessage(ChatMessageDto dto){
 
-        repository.saveMessage(dto);
+        chatRoomRepository.saveMessage(dto);
 
-        return repository.findMessage(dto.getMessageId());
+        return chatRoomRepository.findMessage(dto.getMessageId());
     }
 
 
@@ -167,7 +159,7 @@ public class ChatRoomService {
 
         // 가입자(DB)
         List<ChatRoomMemberDto> members =
-                repository.findMembers(roomId);
+                chatRoomRepository.findMembers(roomId);
 
         // 현재 접속자(메모리)
         Set<Integer> onlineIds =
@@ -179,7 +171,7 @@ public class ChatRoomService {
         if (!onlineIds.isEmpty()) {
 
             onlineMembers =
-                    repository.findMembersByIds(
+                    chatRoomRepository.findMembersByIds(
                             List.copyOf(onlineIds)
                     );
 
@@ -229,7 +221,7 @@ public class ChatRoomService {
     // ------------- 현재 접속 중인 참여자 조회 -----------
     public List<ChatRoomMemberDto> findMembersByIds(List<Integer> memberIds){
 
-        return repository.findMembersByIds(memberIds);
+        return chatRoomRepository.findMembersByIds(memberIds);
 
     }
 
@@ -240,7 +232,7 @@ public class ChatRoomService {
         dto.setRoomId(roomId);
         dto.setMemberId(memberId);
 
-        repository.joinRoom(dto);
+        chatRoomRepository.joinRoom(dto);
     }
 }
 

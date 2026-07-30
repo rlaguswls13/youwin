@@ -1,6 +1,6 @@
 package com.youwin.controller;
 
-import com.youwin.api.websocket.ChatRoomSessiongManager;
+import com.youwin.api.ChatRoomSessiongManager;
 import com.youwin.dto.ChatRoomMemberDto;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import com.youwin.dto.ChatMessageDto;
@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Controller
