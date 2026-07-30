@@ -14,8 +14,15 @@ public class ChatRoomDto {
 
     private Integer roomId;
     private String roomName;
+    private String roomDescription;
+    private String roomType;
+
     private Integer targetId;
     private Integer themeId;
-    private String roomDescription;
+
+    private String roomImageUrl;
+    private String ownerName;
+    private Integer memberCount;
     private LocalDateTime createdAt;
+
 }

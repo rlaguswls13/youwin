@@ -1,6 +1,6 @@
     (function () {
-        const roomId = Number(new URLSearchParams(location.search).get("roomId") || 1 );
-        const myMemberId = Number(new URLSearchParams(location.search).get("memberId") || 1 );
+        const roomId = Number(new URLSearchParams(location.search).get("roomId") || 1);
+        const myMemberId = loginMemberId;
         const form = document.querySelector("[data-message-form]");
         const input = document.querySelector("[data-message-input]");
         const messageList = document.querySelector("[data-message-list]");
@@ -124,9 +124,13 @@
 
                     stompClient.subscribe("/topic/member/" + roomId, function (message){
 
+                        console.log("===== MEMBER UPDATE =====");
+
+                        console.log(message.body);
+
                         const members = JSON.parse(message.body);
 
-                        console.log("참여자 목록=", JSON.stringify(members, null, 2));
+                        console.log(members);
 
                         renderMembers(members);
 
@@ -293,9 +297,9 @@
                         const firstRoom = document.querySelector(".room-item");
 
                         if(firstRoom){
-                            location.href = firstRoom.href + "&memberId=" + myMemberId;
+                            location.href = firstRoom.href;
                         }else{
-                            location.href="/chatroom?memberId=" + myMemberId;
+                            location.href="/chatroom";
                         }
                     }
                 });
@@ -336,46 +340,52 @@
                    }
                 });
 
-                if(joinRoomButton && !joinRoomButton.disabled){
+        if (joinRoomButton && !joinRoomButton.disabled) {
 
-                    joinRoomButton.addEventListener("click", async function (){
+            joinRoomButton.addEventListener("click", async function () {
 
-                        roomMenu.classList.remove("show");
+                roomMenu.classList.remove("show");
 
-                        const result = confirm("나의 대화방에 추가하시겠습니까?");
-
-                     if(!result){
-                         return;
-                     }
-
-                     const roomId = Number(joinRoomButton.dataset.roomId);
-
-                        console.log(roomId);
-
-                        console.log("현재 roomId =", roomId);
-
-                        const response = await fetch("/chat/room/join",{
-                            method:"POST",
-                            headers:{
-                                "Content-Type":"application/json"
-                            },
-                            body:JSON.stringify({
-                                roomId: roomId,
-                                memberId: myMemberId
-                            })
-                        });
-
-                        const joinResult = await response.json();
-
-                        if(joinResult){
-                            alert("가입되었습니다.");
-                            location.reload();
-                        }else{
-                            alert("이미 가입한 채팅방입니다.");
-                        }
-
-                    });
+                if (!confirm("나의 대화방에 추가하시겠습니까?")) {
+                    return;
                 }
+
+                console.log("가입 요청");
+                console.log("URL roomId =", roomId);
+                console.log("memberId =", myMemberId);
+
+                const response = await fetch("/chat/room/join", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+
+                        roomId: roomId,
+                    })
+                });
+
+                if (!response.ok) {
+                    alert("가입 실패");
+                    return;
+                }
+
+                const joinResult = await response.json();
+
+                console.log("가입 결과=", joinResult)
+                console.log("가입할 roomId =", roomId);
+                console.log("memberId =", myMemberId);
+
+                if (joinResult) {
+                    alert("가입되었습니다.");
+                    location.href = "/chatroom?roomId=" + roomId;
+
+                } else {
+                    alert("이미 가입한 채팅방입니다.");
+                }
+            });
+
+        }
 
                 if(editRoomButton && editRoomModal) {
 
@@ -448,67 +458,88 @@
 
                     time.textContent = formatTime(new Date(value));
                 })
-                connectSocket();
 
-                window.addEventListener("beforeunload", function () {
+                if(roomId) {
+                    connectSocket();
 
-                    if(!stompClient || !stompClient.active) {
-                        return;
-                    }
+                    window.addEventListener("beforeunload", function () {
 
-                    stompClient.publish({
+                        if (!stompClient || !stompClient.active) {
+                            return;
+                        }
 
-                        destination: "/app/member/leave",
+                        stompClient.publish({
 
-                        body: JSON.stringify({
+                            destination: "/app/member/leave",
 
-                            roomId: roomId,
-                            memberId: myMemberId
-                        })
-                    })
-                })
+                            body: JSON.stringify({
+
+                                roomId: roomId,
+                                memberId: myMemberId
+                            })
+                        });
+                    });
+                }
 
                 function renderMembers(members) {
 
-                    const memberList = document.querySelector("#member-list");
+                    console.log("renderMembers 호출");
+                    console.log(members);
+
+                    const onlineList = document.querySelector("#online-member-list");
+                    const offlineList = document.querySelector("#offline-member-list");
+
                     const memberCount = document.querySelector("#member-count");
                     const roomMemberCount = document.querySelector("#room-member-count");
 
-                    if(!memberList) {
+                    if(!onlineList || !offlineList) {
                         return;
                     }
 
-                    memberList.innerHTML = "";
+                    onlineList.innerHTML = "";
+                    offlineList.innerHTML = "";
+
+                    let onlineCount = 0;
 
                     members.forEach(function (member){
 
-                        memberList.innerHTML += `
+                        const html = `
                             <div class="member-item">
                             
-                                <span class="avatar">
-                                   ${member.nickname.substring(0,1)}
+                            <span class="avatar">
+                                ${member.nickname.substring(0,1)}
+                            </span>
+                            
+                            <span>
+                            
+                                <strong class="member-item__name">
+                                    ${member.nickname}
+                                </strong>    
+                                
+                                <span class="member-item__status">
+                                    ${member.online ? "🟢 참여중" : "⚪ 오프라인"}
                                 </span>
                                 
-                                <span>
-                                    <strong class="member-item__name">
-                                       ${member.nickname}
-                                    </strong>
-                                    
-                                    <span class="member-item__status">
-                                        <span class="online-dot">●</span>   
-                                        참여중
-                                    </span>
-                                  </span>
-                                </div>                     
-                           `;
+                              </span>
+                              
+                           </div>         
+                        
+                        `;
+
+                        if(member.online) {
+                            onlineCount++;
+                            onlineList.innerHTML += html;
+                        }else{
+                            offlineList.innerHTML += html;
+                        }
                     });
 
-                    if(memberCount) {
-                        memberCount.textContent = members.length + "명";
-                    }
+                        if(memberCount){
+                            memberCount.textContent = onlineCount + "명";
+                        }
 
-                    if(roomMemberCount) {
-                        roomMemberCount.textContent = members.length + "명";
-                    }
+                        if(roomMemberCount) {
+                            roomMemberCount.textContent = onlineCount + "명";
+                        }
                 }
         })();

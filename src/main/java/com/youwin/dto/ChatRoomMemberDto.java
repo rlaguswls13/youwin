@@ -16,4 +16,5 @@ public class ChatRoomMemberDto {
     private Integer memberId;
     private String nickname;
     private LocalDateTime joinAt;
+    private Boolean online;
 }
