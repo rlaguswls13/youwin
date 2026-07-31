@@ -95,6 +95,16 @@
     padding: 14px;
 }
 
+.room-image{
+
+    width:95%;
+    height:100%;
+    object-fit:cover;
+    border-radius:inherit;
+    display:block;
+
+}
+
 
 .room-search input {
 
@@ -149,6 +159,15 @@
     text-align: left;
     flex: 1;
     width:auto;
+    transition: transform 0.2s ease,
+    box-shadow 0.2s ease;
+
+}
+
+.room-item:hover{
+
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
 
 }
 
@@ -185,21 +204,21 @@
 
 .room-item:hover, .room-item.is-active {
 
-    background: var(--color-primary-soft);
+    background: transparent;
 
 }
 
-.room-item__art {
+.room-item__art{
 
-    width: 44px;
-    height: 44px;
-    display: grid;
-    place-items: center;
-    border-radius: 14px;
-    background: var(--color-primary);
-    color: #fff;
-    font-size: 12px;
-    font-weight: 900;
+    width:56px;
+    height:56px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:16px;
+    overflow:hidden;
+    background:none;
+    padding:0;
 
 }
 

@@ -58,6 +58,7 @@
             room_description,
             target_id,
             theme_id,
+            room_image_url,
             created_at
         FROM chat_rooms
         WHERE room_type = 'artist'
@@ -67,14 +68,35 @@
     </select>
 
     <select id="findRoomListBySong" parameterType="int" resultType="com.youwin.dto.ChatRoomDto">
-
-        SELECT *
+        SELECT
+            room_id AS roomId,
+            room_name AS roomName,
+            room_description AS roomDescription,
+            room_type AS roomType,
+            target_id AS targetId,
+            theme_id AS themeId,
+            room_image_url AS roomImageUrl,
+            created_at AS createdAt
         FROM chat_rooms
         WHERE room_type = 'song'
         AND target_id = #{songId}
-
+        ORDER BY created_at DESC
     </select>
 
+    <select id="searchChatRooms" parameterType="String" resultType="com.youwin.dto.ChatRoomDto">
+        SELECT
+        room_id,
+        room_name,
+        room_description,
+        room_type,
+        theme_id,
+        room_image_url,
+        created_at
+        FROM chat_rooms
+        WHERE UPPER(room_name) LIKE CONCAT('%', UPPER(#{keyword}), '%')
+        OR UPPER(COALESCE(room_description, '')) LIKE CONCAT('%', UPPER(#{keyword}), '%')
+        ORDER BY created_at DESC
+    </select>
 
     <select id="findArtist" parameterType="int" resultType="com.youwin.dto.ArtistDto">
 
@@ -164,6 +186,7 @@
             cr.room_description,
             cr.target_id,
             cr.theme_id,
+            cr.room_image_url,
             cr.created_at
         FROM chat_rooms cr
         JOIN chat_room_members crm
@@ -180,6 +203,7 @@
             cr.room_name,
             cr.room_description,
             cr.target_id,
+            cr.room_image_url,
             cr.theme_id,
             cr.created_at,
             COUNT(crm.member_id) AS member_count
@@ -196,6 +220,7 @@
             cr.room_name,
             cr.room_description,
             cr.target_id,
+            cr.room_image_url,
             cr.theme_id,
             cr.created_at
 
@@ -345,24 +370,24 @@
 
     <!-- 채팅방 생성 -->
     <insert id="createRoom" parameterType="com.youwin.dto.ChatRoomDto" useGeneratedKeys="true" keyProperty="roomId">
-
         INSERT INTO chat_rooms
         (
             room_name,
             room_description,
             room_type,
             target_id,
-            theme_id
+            theme_id,
+            room_image_url
         )
         VALUES
-            (
+        (
             #{roomName},
             #{roomDescription},
             #{roomType},
             #{targetId},
-            #{themeId}
-            )
-
+            #{themeId},
+            #{roomImageUrl}
+        )
     </insert>
 
     <!-- 채팅방 입장 -->
