@@ -6,164 +6,93 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>회원가입</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      background-color: #f0f0f0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
-
-    .join-container {
-      width: 100%;
-      max-width: 450px;
-      padding: 40px 20px;
-      text-align: center;
-    }
-
-    .join-title {
-      font-size: 32px;
-      font-weight: bold;
-      color: #1a1a1a;
-      margin-bottom: 30px;
-    }
-
-    .join-form, .form-step {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      text-align: left;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .form-group label {
-      font-size: 14px;
-      font-weight: bold;
-      color: #333;
-    }
-
-    /* Input + Button 가로 정렬 컨테이너 */
-    .input-with-btn {
-      display: flex;
-      gap: 8px;
-    }
-
-    .input-with-btn input[type="text"] {
-      flex: 1;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background-color: #f0f0f0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    .join-container { width: 100%; max-width: 450px; padding: 40px 20px; text-align: center; }
+    .join-title { font-size: 32px; font-weight: bold; color: #1a1a1a; margin-bottom: 30px; }
+    .join-form, .form-step { display: flex; flex-direction: column; gap: 12px; text-align: left; }
+    .hidden { display: none !important; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 14px; font-weight: bold; color: #333; }
+    .input-with-btn { display: flex; gap: 8px; position: relative; }
+    .input-with-btn input[type="text"], .input-with-btn input[type="email"] { flex: 1; }
 
     .form-group input[type="text"],
     .form-group input[type="password"],
     .form-group input[type="email"],
     .form-group input[type="tel"] {
-      width: 100%;
-      height: 45px;
-      padding: 0 15px;
-      background-color: #dbdbdb;
-      border: 1px solid transparent;
-      outline: none;
-      font-size: 15px;
-      color: #333;
-      transition: background-color 0.2s, border-color 0.2s;
+      width: 100%; height: 45px; padding: 0 15px; background-color: #dbdbdb; border: 1px solid transparent;
+      outline: none; font-size: 15px; color: #333; transition: background-color 0.2s, border-color 0.2s;
+    }
+    .form-group input.input-error { border-color: #e74c3c; background-color: #fdeded; }
+    .form-group input.input-success { border-color: #2ecc71; background-color: #eafaf1; }
+    .form-group input:focus { background-color: #cfcfcf; }
+
+    .error-msg { font-size: 12px; color: #e74c3c; min-height: 18px; line-height: 18px; opacity: 0; transition: opacity 0.2s ease; }
+    .error-msg.show { opacity: 1; }
+    .error-msg.success-msg { color: #27ae60; }
+
+    /* 타이머 스타일 */
+    .timer-text { position: absolute; right: 105px; top: 13px; font-size: 13px; color: #e74c3c; font-weight: bold; }
+
+    .btn-container { margin-top: 10px; display: flex; justify-content: center; }
+    .btn { width: 120px; height: 45px; background-color: #dbdbdb; border: none; outline: none; font-size: 16px; font-weight: bold; color: #333; cursor: pointer; transition: all 0.2s ease; }
+    .btn-check { width: 90px; height: 45px; background-color: #dbdbdb; border: none; outline: none; font-size: 13px; font-weight: bold; color: #333; cursor: pointer; white-space: nowrap; transition: all 0.2s ease; }
+    .btn:hover, .btn-check:hover { background-color: #c5c5c5; color: #000; }
+
+    /* ==========================================
+       [통합] 프로필 이미지 규격 스타일 (마이페이지 디자인)
+       ========================================== */
+    .profile-group {
+      text-align: center;
+      margin-bottom: 10px;
     }
 
-    .form-group input.input-error {
-      border-color: #e74c3c;
-      background-color: #fdeded;
-    }
-
-    .form-group input.input-success {
-      border-color: #2ecc71;
-      background-color: #eafaf1;
-    }
-
-    .form-group input:focus {
-      background-color: #cfcfcf;
-    }
-
-    .error-msg {
-      font-size: 12px;
-      color: #e74c3c;
-      min-height: 18px;
-      line-height: 18px;
-      opacity: 0;
-      transition: opacity 0.2s ease;
-    }
-
-    .error-msg.show {
-      opacity: 1;
-    }
-
-    .error-msg.success-msg {
-      color: #27ae60;
-    }
-
-    /* Step 2 스타일 */
-    .profile-group { text-align: center; }
-    .profile-group > label { display: block; margin-bottom: 10px; }
-    .profile-section { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-    .profile-img-preview {
-      width: 80px; height: 80px; border-radius: 50%;
-      background-color: #d1d1d1; display: flex; justify-content: center; align-items: center;
-      overflow: hidden;
-    }
-    .profile-img-preview svg { width: 100%; height: 100%; fill: #ffffff; }
-    .profile-img-preview img { width: 100%; height: 100%; object-fit: cover; }
-    .file-upload-btn { font-size: 12px; color: #555; cursor: pointer; }
-    .file-upload-btn:hover { text-decoration: underline; }
-    input[type="file"] { display: none; }
-
-    .btn-container {
-      margin-top: 10px;
+    .profile-section {
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
     }
 
-    .btn {
+    /* 1. 마이페이지 프로필 원형 & 보라색 테두리 포인트 */
+    .profile-img-preview {
       width: 120px;
-      height: 45px;
-      background-color: #dbdbdb;
-      border: none;
-      outline: none;
-      font-size: 16px;
-      font-weight: bold;
-      color: #333;
-      cursor: pointer;
-      transition: all 0.2s ease;
+      height: 120px;
+      border-radius: 50%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #f0f0f0;
+      border: 4px solid #6366f1; /* 요청하신 보라색 원형 테두리 */
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+      flex-shrink: 0;
     }
 
-    .btn-check {
-      width: 90px;
-      height: 45px;
-      background-color: #dbdbdb;
-      border: none;
-      outline: none;
+    /* 2. 내부 이미지 규격 및 비율 유지 */
+    .profile-img-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* 3. 사진 변경 버튼 스타일 */
+    .file-upload-btn {
       font-size: 13px;
+      color: #6366f1;
       font-weight: bold;
-      color: #333;
       cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.2s ease;
+      transition: color 0.2s ease;
     }
 
-    .btn:hover, .btn-check:hover {
-      background-color: #c5c5c5;
-      color: #000;
+    .file-upload-btn:hover {
+      text-decoration: underline;
+      color: #4f46e5;
+    }
+
+    input[type="file"] {
+      display: none;
     }
   </style>
 </head>
@@ -198,10 +127,25 @@
         <span class="error-msg" id="err-name"></span>
       </div>
 
+      <!-- 이메일 및 인증번호 발송 -->
       <div class="form-group">
         <label for="member-email">이메일</label>
-        <input type="email" id="member-email" name="memberEmail" placeholder="이메일">
+        <div class="input-with-btn">
+          <input type="email" id="member-email" name="memberEmail" placeholder="이메일">
+          <button type="button" class="btn-check" id="btn-send-code" onclick="sendAuthCode()">인증 요청</button>
+        </div>
         <span class="error-msg" id="err-email"></span>
+      </div>
+
+      <!-- 인증번호 입력란 (기본 hidden 처리) -->
+      <div class="form-group hidden" id="auth-code-group">
+        <label for="auth-code">인증번호</label>
+        <div class="input-with-btn">
+          <input type="text" id="auth-code" maxlength="6" placeholder="인증번호 6자리">
+          <span class="timer-text" id="timer">05:00</span>
+          <button type="button" class="btn-check" id="btn-verify-code" onclick="verifyAuthCode()">확인</button>
+        </div>
+        <span class="error-msg" id="err-auth-code"></span>
       </div>
 
       <div class="form-group">
@@ -215,7 +159,7 @@
       </div>
     </div>
 
-    <!-- Step 2: 회원 설정 (joinStep2.jsp 불러오기) -->
+    <!-- Step 2: 회원 설정 -->
     <div id="step2" class="form-step hidden">
       <jsp:include page="joinStep2.jsp" />
     </div>
@@ -225,6 +169,8 @@
 
 <script>
   let isIdChecked = false;
+  let isEmailVerified = false; // 이메일 최종 인증 성공 여부
+  let timerInterval = null;
 
   // 공통 메시지 표시 함수
   function showError(inputElem, errElem, message) {
@@ -249,7 +195,7 @@
     errElem.classList.remove('show', 'success-msg');
   }
 
-  // 🎯 [공통 헬퍼] 입력 요소 1개를 검사하고 화면 에러 처리를 전담하는 함수
+  // 입력 요소 1개를 검사하고 화면 에러 처리를 전담하는 헬퍼 함수
   function checkField(inputElem, errElem, validateFn) {
     const msg = validateFn(inputElem.value);
     if (msg) {
@@ -311,7 +257,7 @@
     return '';
   }
 
-  // 아이디 중복 체크 (Ajax 연동)
+  // 아이디 중복 체크 (Ajax)
   function checkDuplicateId() {
     const idInput = document.getElementById('member-id');
     const errId = document.getElementById('err-id');
@@ -345,10 +291,108 @@
             });
   }
 
-  // 아이디 값이 바뀌면 중복검사 상태 초기화
+  // [이메일 관련] 1. 인증번호 발송 요청
+  function sendAuthCode() {
+    const emailInput = document.getElementById('member-email');
+    const errEmail = document.getElementById('err-email');
+    const emailVal = emailInput.value;
+
+    const msg = validateEmail(emailVal);
+    if (msg) {
+      showError(emailInput, errEmail, msg);
+      return;
+    }
+
+    fetch('/api/member/check-email?memberEmail=' + encodeURIComponent(emailVal))
+            .then(res => res.json())
+            .then(isDuplicate => {
+              if (isDuplicate) {
+                showError(emailInput, errEmail, '이미 가입된 이메일입니다.');
+              } else {
+                showSuccess(emailInput, errEmail, '인증번호 발송 중...');
+
+                fetch('/api/member/send-code', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ memberEmail: emailVal })
+                })
+                        .then(res => res.json())
+                        .then(data => {
+                          if (data.success) {
+                            showSuccess(emailInput, errEmail, '인증번호가 발송되었습니다.');
+                            document.getElementById('auth-code-group').classList.remove('hidden');
+                            document.getElementById('auth-code').focus(); // 발송 성공 시 인증번호 입력창으로 포커스
+                            startTimer(300); // 5분 타이머
+                          } else {
+                            showError(emailInput, errEmail, data.message);
+                          }
+                        });
+              }
+            });
+  }
+
+  // [이메일 관련] 2. 인증번호 대조 확인
+  function verifyAuthCode() {
+    const emailVal = document.getElementById('member-email').value;
+    const codeInput = document.getElementById('auth-code');
+    const errCode = document.getElementById('err-auth-code');
+
+    if (!codeInput.value || codeInput.value.length !== 6) {
+      showError(codeInput, errCode, '6자리 인증번호를 입력해 주세요.');
+      return;
+    }
+
+    fetch('/api/member/verify-code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ memberEmail: emailVal, code: codeInput.value })
+    })
+            .then(res => res.json())
+            .then(data => {
+              if (data.success) {
+                showSuccess(codeInput, errCode, '이메일 인증이 완료되었습니다.');
+                isEmailVerified = true;
+                clearInterval(timerInterval);
+                document.getElementById('timer').innerText = '';
+                document.getElementById('member-email').readOnly = true;
+                codeInput.readOnly = true;
+                document.getElementById('member-phone').focus(); // 인증 성공 시 다음 칸(휴대전화)으로 이동
+              } else {
+                showError(codeInput, errCode, data.message);
+                isEmailVerified = false;
+              }
+            });
+  }
+
+  // 타이머 헬퍼
+  function startTimer(duration) {
+    let timer = duration, minutes, seconds;
+    clearInterval(timerInterval);
+    timerInterval = setInterval(function () {
+      minutes = parseInt(timer / 60, 10);
+      seconds = parseInt(timer % 60, 10);
+      minutes = minutes < 10 ? "0" + minutes : minutes;
+      seconds = seconds < 10 ? "0" + seconds : seconds;
+
+      document.getElementById('timer').innerText = minutes + ":" + seconds;
+
+      if (--timer < 0) {
+        clearInterval(timerInterval);
+        document.getElementById('timer').innerText = "만료";
+        showError(document.getElementById('auth-code'), document.getElementById('err-auth-code'), '인증시간이 만료되었습니다. 재발송 해주세요.');
+      }
+    }, 1000);
+  }
+
+  // input 변경 시 초기화
   document.getElementById('member-id').addEventListener('input', function() {
     isIdChecked = false;
     clearError(this, document.getElementById('err-id'));
+  });
+
+  document.getElementById('member-email').addEventListener('input', function() {
+    isEmailVerified = false;
+    clearError(this, document.getElementById('err-email'));
   });
 
   // 다음 단계 이동 및 전체 유효성 검사
@@ -365,7 +409,6 @@
     const errEmail = document.getElementById('err-email');
     const errPhone = document.getElementById('err-phone');
 
-    // 각 필드 일괄 검사
     let isIdValid = checkField(idInput, errId, validateId);
     if (isIdValid && !isIdChecked) {
       showError(idInput, errId, '아이디 중복확인을 진행해 주세요.');
@@ -374,17 +417,20 @@
 
     const isPwValid = checkField(pwInput, errPw, validatePassword);
     const isNameValid = checkField(nameInput, errName, validateName);
-    const isEmailValid = checkField(emailInput, errEmail, validateEmail);
+
+    let isEmailValid = checkField(emailInput, errEmail, validateEmail);
+    if (isEmailValid && !isEmailVerified) {
+      showError(emailInput, errEmail, '이메일 인증을 완료해 주세요.');
+      isEmailValid = false;
+    }
     const isPhoneValid = checkField(phoneInput, errPhone, validatePhone);
 
-    // 첫 번째로 실패한 항목으로 포커스 이동
     if (!isIdValid) idInput.focus();
     else if (!isPwValid) pwInput.focus();
     else if (!isNameValid) nameInput.focus();
     else if (!isEmailValid) emailInput.focus();
     else if (!isPhoneValid) phoneInput.focus();
 
-    // 모두 통과 시 Step 2 전환
     if (isIdValid && isPwValid && isNameValid && isEmailValid && isPhoneValid) {
       document.getElementById('step1').classList.add('hidden');
       document.getElementById('step2').classList.remove('hidden');
@@ -392,12 +438,11 @@
     }
   }
 
-  // 엔터키 순차 포커스 이동 처리
+  // 엔터키 순차 포커스 이동 처리 (이메일 인증 로직 반영)
   document.getElementById('joinForm').addEventListener('keydown', function(event) {
     if (event.key === 'Enter') {
       event.preventDefault();
 
-      // 🎯 [수정 1] target 변수를 최상단으로 이동 (Step 1, Step 2 공용)
       const target = event.target;
       const step1 = document.getElementById('step1');
 
@@ -409,13 +454,14 @@
         const pwInput = document.getElementById('member-password');
         const nameInput = document.getElementById('member-name');
         const emailInput = document.getElementById('member-email');
+        const authCodeInput = document.getElementById('auth-code');
         const phoneInput = document.getElementById('member-phone');
 
         if (target.id === 'member-id') {
           if (isIdChecked) {
-            pwInput.focus(); // 이미 중복확인 통과했으면 다음 칸 이동
+            pwInput.focus();
           } else {
-            checkDuplicateId(); // 안 했으면 중복확인 실행!
+            checkDuplicateId();
           }
         }
         else if (target.id === 'member-password') {
@@ -429,9 +475,10 @@
           }
         }
         else if (target.id === 'member-email') {
-          if (checkField(emailInput, document.getElementById('err-email'), validateEmail)) {
-            phoneInput.focus();
-          }
+          sendAuthCode(); // 엔터치면 인증번호 발송 요청
+        }
+        else if (target.id === 'auth-code') {
+          verifyAuthCode(); // 엔터치면 인증번호 대조 확인
         }
         else if (target.id === 'member-phone') {
           if (checkField(phoneInput, document.getElementById('err-phone'), validatePhone)) {
@@ -439,12 +486,15 @@
           }
         }
       }
+              // ----------------------------------------------------
+              // [Step 2] 회원설정 단계 (joinStep2.jsp 연동)
+      // ----------------------------------------------------
       else {
         if (target.id === 'nickname') {
-          if (isNicknameChecked) {
-            submitForm(); // 이미 중복확인 통과했으면 가입 제출
+          if (typeof isNicknameChecked !== 'undefined' && isNicknameChecked) {
+            submitForm();
           } else {
-            checkDuplicateNickname(); // 안 했으면 중복확인 실행!
+            checkDuplicateNickname();
           }
         } else {
           submitForm();

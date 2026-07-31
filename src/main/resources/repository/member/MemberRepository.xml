@@ -35,6 +35,11 @@
         SELECT COUNT(*) FROM member WHERE nickname = #{nickname}
     </select>
 
+    <!-- 이메일 중복 확인 쿼리 -->
+    <select id="countByMemberEmail" parameterType="string" resultType="int">
+        SELECT COUNT(*) FROM member WHERE member_email = #{memberEmail}
+    </select>
+
     <select id="findByMemberId" parameterType="string" resultType="com.youwin.dto.MemberDto">
         SELECT
             member_id       AS memberId,
@@ -52,7 +57,14 @@
         WHERE member_id = #{memberId}
     </select>
 
-    <!-- 1. 이름과 이메일로 아이디 찾기 -->
+    <!-- 1. 아이디찾기 : 존재 여부 확인 (COUNT > 0 이면 true 반환) -->
+    <select id="existsByNameAndEmail" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM member
+        WHERE member_name = #{memberName}
+          AND member_email = #{memberEmail}
+    </select>
+    <!-- 2. 이름과 이메일로 아이디 찾기 -->
     <select id="findMemberIdByNameAndEmail" resultType="string">
         SELECT member_id
         FROM member
@@ -60,15 +72,15 @@
           AND member_email = #{memberEmail}
     </select>
 
-    <!-- 2. 아이디와 이메일 일치 여부 확인 (1이면 존재, 0이면 없음) -->
-    <select id="countByMemberIdAndEmail" resultType="int">
-        SELECT COUNT(*)
+    <!-- 3. 비밀번호찾기 : 존재 여부 확인 -->
+    <select id="existsByIdAndEmail" resultType="boolean">
+        SELECT COUNT(*) > 0
         FROM member
         WHERE member_id = #{memberId}
           AND member_email = #{memberEmail}
     </select>
 
-    <!-- 3. 임시 비밀번호로 업데이트 -->
+    <!-- 4. 임시 비밀번호로 업데이트 -->
     <update id="updatePassword">
         UPDATE member
         SET member_password = #{memberPassword}
@@ -122,4 +134,44 @@
           AND deleted_at &lt;= #{cutoffDate}
     </delete>
 
+    <!-- 로그인 성공 시 마지막 로그인 시간 갱신 -->
+    <update id="updateLastLoginAt">
+        UPDATE member
+        SET last_login_at = NOW()
+        WHERE member_id = #{memberId}
+    </update>
+
+    <!-- 휴면 계정 전환 -->
+    <update id="convertToDormantAccounts">
+        UPDATE member
+        SET member_status = 'DORMANT'
+        WHERE member_id IN (
+            SELECT temp.member_id FROM (
+               SELECT member_id
+               FROM member
+               WHERE member_status = 'ACTIVE'
+                 AND (
+                   last_login_at &lt; #{cutoffDate}
+                       OR (last_login_at IS NULL AND created_at &lt; #{cutoffDate})
+                   )
+           ) AS temp
+        )
+    </update>
+
+    <!-- 1. 휴면 계정 해제 -->
+    <update id="activateDormantAccount">
+        UPDATE member
+        SET member_status = 'ACTIVE',
+            last_login_at = NOW()
+        WHERE member_id = #{memberId}
+    </update>
+
+    <!-- 2. 탈퇴 취소 (복구) -->
+    <update id="cancelDeleteMember">
+        UPDATE member
+        SET member_status = 'ACTIVE',
+            deleted_at = NULL,
+            last_login_at = NOW()
+        WHERE member_id = #{memberId}
+    </update>
 </mapper>

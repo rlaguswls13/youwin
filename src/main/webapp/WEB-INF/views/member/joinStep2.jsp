@@ -4,10 +4,11 @@
 <div class="form-group profile-group">
   <label>프로필 이미지</label>
   <div class="profile-section">
+    <!-- 마이페이지 프로필과 동일한 규격 적용 및 기본 프로필 SVG 설정 -->
     <div class="profile-img-preview" id="image-preview">
-      <svg viewBox="0 0 24 24">
-        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path>
-      </svg>
+      <img id="preview-img"
+           src="${pageContext.request.contextPath}/upload/profile/default-profile.svg"
+           alt="프로필 미리보기">
     </div>
     <label for="profile-file" class="file-upload-btn">파일 올리기</label>
     <input type="file" id="profile-file" name="profile" accept="image/*" onchange="previewImage(this)">
@@ -32,19 +33,20 @@
 <script>
   let isNicknameChecked = false;
 
-  // 프로필 이미지 미리보기
+  // 🟢 프로필 이미지 미리보기 (원형 보라색 테두리 보존)
   function previewImage(input) {
-    const previewContainer = document.getElementById('image-preview');
+    const previewImg = document.getElementById('preview-img');
     if (input.files && input.files[0]) {
       const reader = new FileReader();
       reader.onload = function(e) {
-        previewContainer.innerHTML = '<img src="' + e.target.result + '" alt="프로필 미리보기">';
+        // img 태그의 src만 교체하여 감싸는 원형 테두리 스타일이 유지됨
+        previewImg.src = e.target.result;
       }
       reader.readAsDataURL(input.files[0]);
     }
   }
 
-  // 닉네임 유효성 검사
+  // 닉네임 유효성 검사 (원래 코드 100% 유지)
   function validateNickname(nicknameValue) {
     if (!nicknameValue || nicknameValue.trim() === '') return '닉네임을 입력해 주세요.';
     if (/\s/.test(nicknameValue)) return '닉네임에는 공백(띄어쓰기)을 포함할 수 없습니다.';
@@ -52,7 +54,7 @@
     return '';
   }
 
-  // 닉네임 중복 체크 (Ajax 연동)
+  // 닉네임 중복 체크 (Ajax 연동 - 원래 코드 100% 유지)
   function checkDuplicateNickname() {
     const nicknameInput = document.getElementById('nickname');
     const errNickname = document.getElementById('err-nickname');
@@ -86,13 +88,13 @@
             });
   }
 
-  // 닉네임 변경 시 초기화
+  // 닉네임 변경 시 초기화 (원래 코드 100% 유지)
   document.getElementById('nickname').addEventListener('input', function() {
     isNicknameChecked = false;
     clearError(this, document.getElementById('err-nickname'));
   });
 
-  // 최종 폼 제출 처리
+  // 최종 폼 제출 처리 (원래 코드 100% 유지)
   function submitForm() {
     const nicknameInput = document.getElementById('nickname');
     const errNickname = document.getElementById('err-nickname');

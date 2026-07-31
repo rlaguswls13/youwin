@@ -13,7 +13,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.crypto.password4j.Pbkdf2Password4jPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -32,6 +31,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final AutoLoginRepository autoLoginRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailVerificationService emailVerificationService;
 
     // SecurityContext 내의 MemberDto 정보 갱신용 보조 메서드
     private void refreshSecurityContext(String memberId) {
@@ -50,6 +50,11 @@ public class MemberService {
 
     @Transactional
     public void joinMember(MemberDto memberDto) {
+        // 이메일 인증 완료 여부 검증
+        if (!emailVerificationService.isVerified(memberDto.getMemberEmail())) {
+            throw new IllegalStateException("이메일 인증이 완료되지 않았습니다.");
+        }
+
         // 1. 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(memberDto.getMemberPassword());
         memberDto.setMemberPassword(encodedPassword);
@@ -99,6 +104,9 @@ public class MemberService {
 
         // 3. DB INSERT (여기서 에러가 나면 트랜잭션이 롤백되면서 위에서 등록한 파일 삭제 이벤트가 자동으로 실행됨)
         memberRepository.insertMember(memberDto);
+
+        // 회원가입 성공 후 사용했던 이메일 인증 데이터 정리
+        emailVerificationService.removeVerification(memberDto.getMemberEmail());
     }
 
     // 아이디 중복 여부 확인 비즈니스 로직
@@ -106,9 +114,16 @@ public class MemberService {
         int count = memberRepository.countByMemberId(memberId);
         return count > 0; // 1 이상이면 true(중복), 0이면 false(사용가능)
     }
+
     // 닉네임 중복 여부 확인 비즈니스 로직
     public boolean isNicknameDuplicate(String nickname) {
         int count = memberRepository.countByNickname(nickname);
+        return count > 0;
+    }
+
+    // 이메일 중복 여부 확인 비즈니스 로직
+    public boolean isEmailDuplicate(String memberEmail) {
+        int count = memberRepository.countByMemberEmail(memberEmail);
         return count > 0;
     }
 
@@ -136,7 +151,6 @@ public class MemberService {
         response.addCookie(cookie);
     }
 
-
     // 자동 로그인 전용: 비밀번호 검증 없이 아이디로 회원 정보 조회
     public MemberDto getMemberById(String memberId) {
         MemberDto memberDto = memberRepository.findByMemberId(memberId);
@@ -155,33 +169,53 @@ public class MemberService {
         autoLoginRepository.deleteByToken(token);
     }
 
-    // 아이디 찾기
+    // 아이디찾기
+    // 1. [이메일 발송 전] 해당 회원 존재 여부 확인용 (boolean)
+    public boolean existsByNameAndEmail(String memberName, String memberEmail) {
+        return memberRepository.existsByNameAndEmail(memberName, memberEmail);
+    }
+
+    // 2. [인증 완료 후] 아이디 최종 조회
     public String findMemberId(String memberName, String memberEmail) {
+        // 1) 이메일 인증 완료 여부 확인
+        if (!emailVerificationService.isVerified(memberEmail)) {
+            throw new IllegalStateException("이메일 인증이 완료되지 않았습니다.");
+        }
+
+        // 2) 이름과 이메일로 아이디 조회
         String foundMemberId = memberRepository.findMemberIdByNameAndEmail(memberName, memberEmail);
 
         if (foundMemberId == null) {
             throw new IllegalArgumentException("일치하는 회원 정보가 없습니다.");
         }
 
+        // 3) 아이디 반환 후 인증 데이터 삭제 (일회성 인증 처리)
+        emailVerificationService.removeVerification(memberEmail);
+
         return foundMemberId;
     }
 
-    // 1. 회원 존재 여부 검증
-    public boolean checkMemberExist(String memberId, String memberEmail) {
-        int count = memberRepository.countByMemberIdAndEmail(memberId, memberEmail);
-        if (count == 0) {
-            throw new IllegalArgumentException("입력하신 아이디와 이메일 정보가 일치하지 않습니다.");
-        }
-        return true;
+    // 1. 아이디 & 이메일 존재 여부 확인
+    public boolean existsByIdAndEmail(String memberId, String memberEmail) {
+        return memberRepository.existsByIdAndEmail(memberId, memberEmail);
     }
 
-    // 2. 새 비밀번호를 BCrypt로 암호화 후 DB에 UPDATE
-    public void updatePassword(String memberId, String newPassword) {
-        // BCrypt 암호화
+    // 비밀번호 재설정
+    @Transactional
+    public void updatePassword(String memberId, String memberEmail, String newPassword) {
+        // 1. 이메일 인증 완료 여부 최종 확인
+        if (!emailVerificationService.isVerified(memberEmail)) {
+            throw new IllegalStateException("이메일 인증이 완료되지 않았습니다.");
+        }
+
+        // 2. BCrypt 암호화
         String encodedPassword = passwordEncoder.encode(newPassword);
 
-        // DB 업데이트
+        // 3. DB 업데이트
         memberRepository.updatePassword(memberId, encodedPassword);
+
+        // 4. 비밀번호 변경 후 인증 정보 삭제
+        emailVerificationService.removeVerification(memberEmail);
     }
 
     // 닉네임 변경
@@ -205,26 +239,25 @@ public class MemberService {
         refreshSecurityContext(memberId);
     }
 
+    // 비밀번호 변경 (설정 페이지용)
+    @Transactional
+    public void updatePasswordInSettings(String memberId, String currentPassword, String newPassword) {
 
-     // 비밀번호 변경 (설정 페이지용)
-     @Transactional
-     public void updatePasswordInSettings(String memberId, String currentPassword, String newPassword) {
+        // 1) 회원 조회 및 현재 비밀번호 검증
+        MemberDto member = memberRepository.findByMemberId(memberId);
+        if (member == null || !passwordEncoder.matches(currentPassword, member.getMemberPassword())) {
+            throw new IllegalArgumentException("현재 비밀번호가 올바르지 않습니다.");
+        }
 
-         // 1) 회원 조회 및 현재 비밀번호 검증
-         MemberDto member = memberRepository.findByMemberId(memberId);
-         if (member == null || !passwordEncoder.matches(currentPassword, member.getMemberPassword())) {
-             throw new IllegalArgumentException("현재 비밀번호가 올바르지 않습니다.");
-         }
+        // 2) 새 비밀번호가 기존 비밀번호와 동일한지 검증
+        if (passwordEncoder.matches(newPassword, member.getMemberPassword())) {
+            throw new IllegalArgumentException("현재 비밀번호와 동일한 비밀번호로는 변경할 수 없습니다.");
+        }
 
-         // 2) 새 비밀번호가 기존 비밀번호와 동일한지 검증
-         if (passwordEncoder.matches(newPassword, member.getMemberPassword())) {
-             throw new IllegalArgumentException("현재 비밀번호와 동일한 비밀번호로는 변경할 수 없습니다.");
-         }
-
-         // 3) 새 비밀번호 암호화 후 변경
-         String encodedPassword = passwordEncoder.encode(newPassword);
-         memberRepository.updatePassword(memberId, encodedPassword);
-     }
+        // 3) 새 비밀번호 암호화 후 변경
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        memberRepository.updatePassword(memberId, encodedPassword);
+    }
 
     // 프로필 이미지 변경 (또는 기본 이미지로 변경)
     @Transactional
@@ -292,14 +325,12 @@ public class MemberService {
 
     // 1. 비밀번호 일치 여부 확인
     public boolean checkPassword(String memberId, String rawPassword) {
-        // 이미 있는 findByMemberId 메서드로 DB 회원 정보를 가져옵니다.
         MemberDto memberDto = memberRepository.findByMemberId(memberId);
 
         if (memberDto == null) {
             return false;
         }
 
-        // 입력받은 평문 비밀번호(rawPassword)와 DB에 암호화되어 저장된 비밀번호 비교
         return passwordEncoder.matches(rawPassword, memberDto.getMemberPassword());
     }
 
@@ -307,5 +338,31 @@ public class MemberService {
     @Transactional
     public void deleteMember(String memberId) {
         memberRepository.deleteMember(memberId);
+    }
+
+    // 로그인 성공 시 호출
+    @Transactional
+    public void updateLastLoginAt(String memberId) {
+        memberRepository.updateLastLoginAt(memberId);
+    }
+
+    // 1. 휴면 해제
+    @Transactional
+    public void activateDormantAccount(String memberId, String memberEmail) {
+        if (!emailVerificationService.isVerified(memberEmail)) {
+            throw new IllegalStateException("이메일 인증이 완료되지 않았습니다.");
+        }
+        memberRepository.activateDormantAccount(memberId);
+        emailVerificationService.removeVerification(memberEmail);
+    }
+
+    // 2. 탈퇴 취소 (복구)
+    @Transactional
+    public void cancelDeleteMember(String memberId, String memberEmail) {
+        if (!emailVerificationService.isVerified(memberEmail)) {
+            throw new IllegalStateException("이메일 인증이 완료되지 않았습니다.");
+        }
+        memberRepository.cancelDeleteMember(memberId);
+        emailVerificationService.removeVerification(memberEmail);
     }
 }

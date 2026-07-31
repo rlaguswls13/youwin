@@ -13,6 +13,20 @@ spring:
     view:
       prefix: /WEB-INF/views/
       suffix: .jsp
+  mail:
+    host: smtp.gmail.com
+    port: 587 # 안되면 465
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    # Google 보안에서 '앱 비밀번호(16자리)'를 발급받아 입력해야 합니다.
+    properties:
+      mail:
+        smtp:
+          auth: true
+          connectiontimeout: 5000
+          timeout: 5000
+          starttls:
+            enable: true
 mybatis:
   mapper-locations: classpath:repository/**/*.xml
   configuration:

@@ -1,10 +1,7 @@
 package com.youwin.config;
 
 import com.youwin.repository.AutoLoginRepository;
-import com.youwin.security.AutoLoginFilter;
-import com.youwin.security.CustomAuthenticationProvider;
-import com.youwin.security.CustomLoginSuccessHandler;
-import com.youwin.security.CustomUserDetailsService;
+import com.youwin.security.*;
 import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +19,7 @@ public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
     private final CustomAuthenticationProvider customAuthenticationProvider;
     private final CustomLoginSuccessHandler customLoginSuccessHandler;
+    private final CustomLoginFailureHandler customLoginFailureHandler;
     private final AutoLoginFilter autoLoginFilter;
     private final AutoLoginRepository autoLoginRepository; // DB 토큰 삭제용 추가
 
@@ -37,14 +35,18 @@ public class SecurityConfig {
                                 "/css/**", "/js/**", "/images/**", "/upload/**", "/error"
                         ).permitAll()
                         .requestMatchers(
-                                "/", "/api/member/**"
+                                "/", "/api/member/**",
+                                "/member/login",
+                                "/member/unlockDormant",
+                                "/member/restoreAccount",
+                                "/email/send-code"
                         ).permitAll()
                         .requestMatchers(
                                 "/member/mypage", "/member/settings", "/member/update**", "/member/delete"
                         ).authenticated()
-                        .requestMatchers(
-                                "/member/**")
-                        .anonymous()
+//                        .requestMatchers(
+//                                "/member/**")
+//                        .anonymous()
                         .anyRequest().permitAll()
                 )
                 .formLogin(form -> form
@@ -53,7 +55,7 @@ public class SecurityConfig {
                         .usernameParameter("memberId")
                         .passwordParameter("memberPassword")
                         .successHandler(customLoginSuccessHandler)
-                        .failureUrl("/member/login?error=true")
+                        .failureHandler(customLoginFailureHandler)
                         .permitAll()
                 )
                 .logout(logout -> logout
