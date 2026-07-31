@@ -17,7 +17,7 @@ public class DormantScheduler {
     private final MemberRepository memberRepository;
 
     // 매일 새벽 3시 자동 실행
-    @Scheduled(cron = "*/10 * * * * *")
+    @Scheduled(cron = "${coustom.cron:*/10 * * * * *}")
     @Transactional
     public void processDormantAccounts() {
         // 기준 시각: 현재로부터 6개월 전 (테스트 시 .minusSeconds(10) 등으로 변경하여 테스트 가능!)

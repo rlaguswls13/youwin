@@ -346,9 +346,23 @@ public class MemberService {
         memberRepository.updateLastLoginAt(memberId);
     }
 
-    // 휴면 해제
+    // 1. 휴면 해제
     @Transactional
-    public void activateDormantAccount(String memberId) {
+    public void activateDormantAccount(String memberId, String memberEmail) {
+        if (!emailVerificationService.isVerified(memberEmail)) {
+            throw new IllegalStateException("이메일 인증이 완료되지 않았습니다.");
+        }
         memberRepository.activateDormantAccount(memberId);
+        emailVerificationService.removeVerification(memberEmail);
+    }
+
+    // 2. 탈퇴 취소 (복구)
+    @Transactional
+    public void cancelDeleteMember(String memberId, String memberEmail) {
+        if (!emailVerificationService.isVerified(memberEmail)) {
+            throw new IllegalStateException("이메일 인증이 완료되지 않았습니다.");
+        }
+        memberRepository.cancelDeleteMember(memberId);
+        emailVerificationService.removeVerification(memberEmail);
     }
 }

@@ -158,10 +158,19 @@
         )
     </update>
 
-    <!-- 3. 휴면 계정 해제 (이메일 인증 완료 후 다시 ACTIVE로 변경) -->
+    <!-- 1. 휴면 계정 해제 -->
     <update id="activateDormantAccount">
         UPDATE member
         SET member_status = 'ACTIVE',
+            last_login_at = NOW()
+        WHERE member_id = #{memberId}
+    </update>
+
+    <!-- 2. 탈퇴 취소 (복구) -->
+    <update id="cancelDeleteMember">
+        UPDATE member
+        SET member_status = 'ACTIVE',
+            deleted_at = NULL,
             last_login_at = NOW()
         WHERE member_id = #{memberId}
     </update>

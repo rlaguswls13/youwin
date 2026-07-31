@@ -2,10 +2,12 @@ package com.youwin.api;
 
 import com.youwin.service.EmailVerificationService;
 import com.youwin.service.MemberService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -117,6 +119,87 @@ public class MemberApiController {
             return ResponseEntity.ok(Map.of("success", true, "message", "비밀번호가 성공적으로 변경되었습니다."));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    // 1. [공통] 복구/휴면해제 인증번호 발송 API
+    @PostMapping("/send-recovery-code")
+    public ResponseEntity<Map<String, Object>> sendRecoveryCode(@RequestBody Map<String, String> request) {
+        Map<String, Object> result = new HashMap<>();
+        String email = request.get("memberEmail");
+
+        try {
+            // EmailVerificationService의 발송 메서드 직접 호출
+            emailVerificationService.sendVerificationCode(email);
+            result.put("success", true);
+            result.put("message", "인증번호가 발송되었습니다.");
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "인증번호 발송에 실패했습니다.");
+            return ResponseEntity.badRequest().body(result);
+        }
+    }
+
+    // 2. 휴면 계정 해제 처리 API
+    @PostMapping("/unlockDormant")
+    public ResponseEntity<String> unlockDormant(@RequestBody Map<String, String> request, HttpSession session) {
+        String code = request.get("code");
+        String memberId = (String) session.getAttribute("unlockMemberId");
+        String memberEmail = (String) session.getAttribute("unlockMemberEmail");
+
+        if (memberId == null || memberEmail == null) {
+            return ResponseEntity.ok("EXPIRED"); // 세션 만료
+        }
+
+        try {
+            // 1) 인증번호 검증
+            boolean isCodeValid = emailVerificationService.verifyCode(memberEmail, code);
+
+            if (isCodeValid) {
+                // 2) 휴면 해제 실행 (DB ACTIVE 전환 + 인증데이터 삭제)
+                memberService.activateDormantAccount(memberId, memberEmail);
+
+                // 세션 정리
+                session.removeAttribute("unlockMemberId");
+                session.removeAttribute("unlockMemberEmail");
+                return ResponseEntity.ok("SUCCESS");
+            } else {
+                return ResponseEntity.ok("FAIL"); // 인증번호 불일치
+            }
+        } catch (Exception e) {
+            return ResponseEntity.ok("FAIL");
+        }
+    }
+
+    // 3. 탈퇴 유예 계정 복구 처리 API
+    @PostMapping("/restoreAccount")
+    public ResponseEntity<String> restoreAccount(@RequestBody Map<String, String> request, HttpSession session) {
+        String code = request.get("code");
+        String memberId = (String) session.getAttribute("restoreMemberId");
+        String memberEmail = (String) session.getAttribute("restoreMemberEmail");
+
+        if (memberId == null || memberEmail == null) {
+            return ResponseEntity.ok("EXPIRED"); // 세션 만료
+        }
+
+        try {
+            // 1) 인증번호 검증
+            boolean isCodeValid = emailVerificationService.verifyCode(memberEmail, code);
+
+            if (isCodeValid) {
+                // 2) 탈퇴 복구 실행 (DB ACTIVE 전환, deleted_at=NULL + 인증데이터 삭제)
+                memberService.cancelDeleteMember(memberId, memberEmail);
+
+                // 세션 정리
+                session.removeAttribute("restoreMemberId");
+                session.removeAttribute("restoreMemberEmail");
+                return ResponseEntity.ok("SUCCESS");
+            } else {
+                return ResponseEntity.ok("FAIL"); // 인증번호 불일치
+            }
+        } catch (Exception e) {
+            return ResponseEntity.ok("FAIL");
         }
     }
 }

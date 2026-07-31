@@ -47,4 +47,6 @@ public interface MemberRepository {
 
     // 3. 휴면 계정 인증 해제 (DORMANT -> ACTIVE 및 로그인 시간 갱신)
     int activateDormantAccount(@Param("memberId") String memberId);
+
+    int cancelDeleteMember(@Param("memberId") String memberId);
 }

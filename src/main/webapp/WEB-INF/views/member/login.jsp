@@ -164,7 +164,7 @@
 
             <c:if test="${param.error == 'true'}">
                 <div class="error-msg" style="display:block;">
-                    아이디 또는 비밀번호가 올바르지 않거나 탈퇴한 계정입니다.
+                        ${param.exception}
                 </div>
             </c:if>
 
