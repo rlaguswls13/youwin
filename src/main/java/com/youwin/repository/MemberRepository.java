@@ -36,7 +36,15 @@ public interface MemberRepository {
 
     void deleteMember(String memberId);
 
-    // 🟢 30일 지난 탈퇴 회원 삭제
+    // 탈퇴 회원 삭제
     int deleteExpiredMembers(@Param("cutoffDate") LocalDateTime cutoffDate);
 
+    // 1. 로그인 성공 시 마지막 로그인 시간 업데이트
+    int updateLastLoginAt(@Param("memberId") String memberId);
+
+    // 2. 장기 미접속 계정을 DORMANT(휴면)로 전환 (기준 일시 전달)
+    int convertToDormantAccounts(@Param("cutoffDate") LocalDateTime cutoffDate);
+
+    // 3. 휴면 계정 인증 해제 (DORMANT -> ACTIVE 및 로그인 시간 갱신)
+    int activateDormantAccount(@Param("memberId") String memberId);
 }

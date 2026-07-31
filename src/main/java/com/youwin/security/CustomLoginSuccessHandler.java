@@ -28,6 +28,9 @@ public class CustomLoginSuccessHandler
         CustomUserDetails user =
                 (CustomUserDetails) authentication.getPrincipal();
 
+        // 마지막 로그인 시간 갱신
+        memberService.updateLastLoginAt(user.getUsername());
+
         // 자동로그인 체크박스 확인 ("on" 또는 "true")
         String rememberMe = request.getParameter("remember-me");
         if ("on".equals(rememberMe) || "true".equals(rememberMe)) {

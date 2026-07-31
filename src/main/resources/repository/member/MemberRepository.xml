@@ -134,4 +134,35 @@
           AND deleted_at &lt;= #{cutoffDate}
     </delete>
 
+    <!-- 로그인 성공 시 마지막 로그인 시간 갱신 -->
+    <update id="updateLastLoginAt">
+        UPDATE member
+        SET last_login_at = NOW()
+        WHERE member_id = #{memberId}
+    </update>
+
+    <!-- 휴면 계정 전환 -->
+    <update id="convertToDormantAccounts">
+        UPDATE member
+        SET member_status = 'DORMANT'
+        WHERE member_id IN (
+            SELECT temp.member_id FROM (
+               SELECT member_id
+               FROM member
+               WHERE member_status = 'ACTIVE'
+                 AND (
+                   last_login_at &lt; #{cutoffDate}
+                       OR (last_login_at IS NULL AND created_at &lt; #{cutoffDate})
+                   )
+           ) AS temp
+        )
+    </update>
+
+    <!-- 3. 휴면 계정 해제 (이메일 인증 완료 후 다시 ACTIVE로 변경) -->
+    <update id="activateDormantAccount">
+        UPDATE member
+        SET member_status = 'ACTIVE',
+            last_login_at = NOW()
+        WHERE member_id = #{memberId}
+    </update>
 </mapper>

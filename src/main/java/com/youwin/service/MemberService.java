@@ -339,4 +339,16 @@ public class MemberService {
     public void deleteMember(String memberId) {
         memberRepository.deleteMember(memberId);
     }
+
+    // 로그인 성공 시 호출
+    @Transactional
+    public void updateLastLoginAt(String memberId) {
+        memberRepository.updateLastLoginAt(memberId);
+    }
+
+    // 휴면 해제
+    @Transactional
+    public void activateDormantAccount(String memberId) {
+        memberRepository.activateDormantAccount(memberId);
+    }
 }
