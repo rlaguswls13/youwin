@@ -15,14 +15,16 @@ public interface MemberRepository {
     int countByNickname(@Param("nickname") String nickname);
     // 이메일 개수 조회 (존재하면 1 이상, 없으면 0)
     int countByMemberEmail(@Param("memberEmail") String memberEmail);
-    // 로그인용 회원 정보 단건 조회
-    MemberDto findByMemberId(@Param("memberId") String memberId);
+    // 회원 존재 여부 확인 (아이디찾기)
+    boolean existsByNameAndEmail(@Param("memberName") String memberName, @Param("memberEmail") String memberEmail);
     // 이름과 이메일로 아이디 조회
     String findMemberIdByNameAndEmail(@Param("memberName") String memberName,
                                       @Param("memberEmail") String memberEmail);
-
-    int countByMemberIdAndEmail(@Param("memberId") String memberId,
-                                   @Param("memberEmail") String memberEmail);
+    // 로그인용 회원 정보 단건 조회
+    MemberDto findByMemberId(@Param("memberId") String memberId);
+    // 회원 존재 여부 확인 (비밀번호 찾기)
+    boolean existsByIdAndEmail(@Param("memberId") String memberId,
+                               @Param("memberEmail") String memberEmail);
 
     void updatePassword(@Param("memberId") String memberId,
                        @Param("memberPassword") String memberPassword);

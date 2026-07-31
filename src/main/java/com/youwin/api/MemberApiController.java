@@ -1,19 +1,20 @@
 package com.youwin.api;
 
-
+import com.youwin.service.EmailVerificationService;
 import com.youwin.service.MemberService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-@RestController // @Controller + @ResponseBody 합친 것 (JSON 반환 전용)
+import java.util.Map;
+
+@RestController
 @RequestMapping("/api/member")
 @RequiredArgsConstructor
 public class MemberApiController {
 
     private final MemberService memberService;
+    private final EmailVerificationService emailVerificationService;
 
     @GetMapping("/check-id")
     public boolean checkDuplicateId(@RequestParam("memberId") String memberId) {
@@ -28,5 +29,94 @@ public class MemberApiController {
     @GetMapping("/check-email")
     public boolean checkDuplicateEmail(@RequestParam("memberEmail") String memberEmail) {
         return memberService.isEmailDuplicate(memberEmail);
+    }
+
+    // 1. 이메일 인증번호 발송 API
+    @PostMapping("/send-code")
+    public ResponseEntity<?> sendVerificationCode(@RequestBody Map<String, String> request) {
+        String email = request.get("memberEmail");
+        try {
+            emailVerificationService.sendVerificationCode(email);
+            return ResponseEntity.ok().body(Map.of("success", true, "message", "인증번호가 발송되었습니다."));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "메일 발송에 실패했습니다."));
+        }
+    }
+
+    // 2. 이메일 인증번호 대조/확인 API
+    @PostMapping("/verify-code")
+    public ResponseEntity<?> verifyCode(@RequestBody Map<String, String> request) {
+        String email = request.get("memberEmail");
+        String code = request.get("code");
+
+        try {
+            boolean isMatched = emailVerificationService.verifyCode(email, code);
+            if (isMatched) {
+                return ResponseEntity.ok().body(Map.of("success", true, "message", "인증에 성공하였습니다."));
+            } else {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "인증번호가 일치하지 않습니다."));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    // 1. 아이디 찾기용 이메일 인증번호 발송 요청
+    @PostMapping("/find-id/send-code")
+    public ResponseEntity<?> sendCodeForFindId(@RequestBody Map<String, String> request) {
+        String name = request.get("memberName");
+        String email = request.get("memberEmail");
+
+        // DB에 해당 이름+이메일을 가진 회원이 존재하는지 boolean으로 먼저 확인!
+        if (!memberService.existsByNameAndEmail(name, email)) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "일치하는 회원 정보가 없습니다."));
+        }
+
+        // 존재하면 인증번호 발송
+        emailVerificationService.sendVerificationCode(email);
+        return ResponseEntity.ok(Map.of("success", true, "message", "인증번호가 발송되었습니다."));
+    }
+
+    // 2. 이메일 인증 완료 후 최종 아이디 찾기 요청
+    @PostMapping("/find-id")
+    public ResponseEntity<?> findId(@RequestBody Map<String, String> request) {
+        String name = request.get("memberName");
+        String email = request.get("memberEmail");
+
+        try {
+            String memberId = memberService.findMemberId(name, email);
+            return ResponseEntity.ok(Map.of("success", true, "memberId", memberId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    // 1. 비밀번호 찾기용 인증번호 발송 (아이디 + 이메일 검증)
+    @PostMapping("/find-pw/send-code")
+    public ResponseEntity<?> sendCodeForFindPw(@RequestBody Map<String, String> request) {
+        String memberId = request.get("memberId");
+        String memberEmail = request.get("memberEmail");
+
+        if (!memberService.existsByIdAndEmail(memberId, memberEmail)) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "일치하는 회원 정보가 없습니다."));
+        }
+
+        emailVerificationService.sendVerificationCode(memberEmail);
+        return ResponseEntity.ok(Map.of("success", true, "message", "인증번호가 발송되었습니다."));
+    }
+
+    // 2. 비밀번호 재설정 요청
+    @PostMapping("/reset-pw")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+        String memberId = request.get("memberId");
+        String memberEmail = request.get("memberEmail");
+        String newPassword = request.get("newPassword");
+
+        try {
+            memberService.updatePassword(memberId, memberEmail, newPassword);
+            return ResponseEntity.ok(Map.of("success", true, "message", "비밀번호가 성공적으로 변경되었습니다."));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+        }
     }
 }
