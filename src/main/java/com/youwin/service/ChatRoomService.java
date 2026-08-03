@@ -7,6 +7,10 @@ import com.youwin.repository.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.File;
+import java.io.IOException;
+import java.util.UUID;
 
 import java.util.List;
 import java.util.Set;
@@ -35,6 +39,10 @@ public class ChatRoomService {
     public List<ChatRoomDto> findRoomListBySong(Integer songId) {
         return chatRoomRepository.findRoomListBySong(songId);
     } //v
+
+    public List<ChatRoomDto> searchChatRooms(String keyword) {
+        return chatRoomRepository.searchChatRooms(keyword);
+    }
 
     // ----------------- 노래 ------------
 
@@ -69,7 +77,26 @@ public class ChatRoomService {
         return chatRoomRepository.findRoom(roomId);
     }
 
-    public Integer createRoom(ChatRoomDto dto) {
+    public Integer createRoom(ChatRoomDto dto, MultipartFile image) {
+
+        if (image != null && !image.isEmpty()) {
+
+            String fileName = UUID.randomUUID() + "_" + image.getOriginalFilename();
+            String uploadPath = "D:/project/youwin/upload/chatroom/";
+
+            File dir = new File(uploadPath);
+
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+
+            try {
+                image.transferTo(new File(dir, fileName));
+                dto.setRoomImageUrl("/upload/chatroom/" + fileName);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
         // 채팅방 생성
         chatRoomRepository.createRoom(dto);

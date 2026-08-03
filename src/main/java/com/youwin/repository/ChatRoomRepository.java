@@ -31,6 +31,7 @@ public interface ChatRoomRepository {
     ThemeDto findTheme(Integer themeId);
 
     // -------------- 채팅방 -------------
+    List<ChatRoomDto> searchChatRooms(String keyword);
 
     List<ChatRoomDto> findRoomList(Integer memberId);
 

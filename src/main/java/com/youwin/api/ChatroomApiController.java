@@ -5,12 +5,10 @@ import com.youwin.service.ChatMessageService;
 import com.youwin.service.ChatRoomService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
 
 @RequiredArgsConstructor
 @RestController
@@ -58,7 +56,10 @@ public class ChatroomApiController {
     public List<ChatRoomDto> findSongRoomList(@PathVariable Integer songId) {
         return chatRoomService.findRoomListBySong(songId);
     }
-
+    @GetMapping("/room/search")
+    public List<ChatRoomDto> searchChatRooms(@RequestParam String keyword) {
+        return chatRoomService.searchChatRooms(keyword);
+    }
 
 
     // ----------- 노래 -------------
@@ -86,9 +87,11 @@ public class ChatroomApiController {
     // --------- 채팅방 ---------
 
     @PostMapping("/room/create")
-    public Integer createRoom(@RequestBody ChatRoomDto dto) {
-
-        return chatRoomService.createRoom(dto);
+    public Integer createRoom(@RequestPart("room") ChatRoomDto dto,
+                              @RequestPart(value = "image", required = false)
+                              MultipartFile image
+                              ){
+        return chatRoomService.createRoom(dto, image);
     }
 
     @GetMapping("/room/list")

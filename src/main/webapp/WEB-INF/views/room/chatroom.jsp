@@ -47,7 +47,9 @@
                                <a href="${pageContext.request.contextPath}/chatroom?roomId=${room.roomId}&memberId=${param.memberId}"
                                   class="room-item ${param.roomId == room.roomId ? 'is-active' : ''}"
                                   data-room-item data-room-name="${room.roomName}">
-                                   <span class="room-item__art">🎵</span>
+                                  <span class="room-item__art">
+                                      <img src="${pageContext.request.contextPath}${room.roomImageUrl}" alt="${room.roomName}" class="room-image">
+                                  </span>
 
                                    <span>
                                        <strong class="room-item__name">
@@ -77,7 +79,7 @@
                     <section class="chat-conversation" aria-labelledby="conversation-title">
                         <header class="conversation-head">
                             <button class="icon-button mobile-panel-button" type="button" data-rooms-toggle aria-label="채팅방 목록 열기" aria-expanded="false">☰</button>
-                            <div class="room-item__art">🎵</div>
+                            <div class="room-item__art"><img src="${pageContext.request.contextPath}${room.roomImageUrl}" alt="${room.roomName}" class="room-image"></div>
                             <div class="conversation-head__info"><h2 data-room-title>
                                 <c:choose>
                                     <c:when test="${not empty room}">
