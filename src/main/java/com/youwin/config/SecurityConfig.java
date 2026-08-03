@@ -38,8 +38,7 @@ public class SecurityConfig {
                                 "/", "/api/member/**",
                                 "/member/login",
                                 "/member/unlockDormant",
-                                "/member/restoreAccount",
-                                "/email/send-code"
+                                "/member/restoreAccount"
                         ).permitAll()
                         .requestMatchers(
                                 "/member/mypage", "/member/settings", "/member/update**", "/member/delete"
