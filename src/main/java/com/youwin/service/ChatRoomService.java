@@ -102,11 +102,9 @@ public class ChatRoomService {
         // =========================
         if (image != null && !image.isEmpty()) {
 
-            String fileName =
-                    UUID.randomUUID() + "_" + image.getOriginalFilename();
+            String fileName = UUID.randomUUID() + "_" + image.getOriginalFilename();
 
-            String uploadPath =
-                    "D:/project/youwin/upload/chatroom/";
+            String uploadPath = System.getProperty("user.dir") + "/upload/chatroom/";
 
             File dir = new File(uploadPath);
 
@@ -235,7 +233,7 @@ public class ChatRoomService {
         if (image != null && !image.isEmpty()) {
 
             String fileName = UUID.randomUUID() + "_" + image.getOriginalFilename();
-            String uploadPath = "D:/project/youwin/upload/chatroom/";
+            String uploadPath = System.getProperty("user.dir") + "/upload/chatroom/";
             File dir = new File(uploadPath);
 
             if (!dir.exists()) {
