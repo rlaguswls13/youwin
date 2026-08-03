@@ -1,131 +1,133 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
-            <!DOCTYPE html>
-            <html lang="ko">
-            <head>
-                <meta charset="UTF-8">
-                <title>you win</title>
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Youwin 음악 채팅방 둘러보기">
+    <title>채팅방 | Youwin</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/app.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/index.css">
+</head>
+<body>
+<div class="site-shell room-explore">
+    <header class="site-header">
+        <div class="site-container site-header__inner">
+            <a class="brand" href="${pageContext.request.contextPath}/" aria-label="Youwin 홈">
+                <span class="brand__mark">YW</span><span>Youwin</span>
+            </a>
+            <nav class="site-nav" data-site-nav aria-label="주요 메뉴">
+                <a href="${pageContext.request.contextPath}/">홈</a>
+                <a href="${pageContext.request.contextPath}/board">게시판</a>
+                <a class="is-active" href="${pageContext.request.contextPath}/index">채팅방</a>
+                <a href="${pageContext.request.contextPath}/member/mypage">마이페이지</a>
+            </nav>
+            <div class="site-header__actions">
+                <button class="button" id="create-btn" type="button">＋ 채팅방 만들기</button>
+            </div>
+            <button class="menu-toggle" type="button" data-menu-toggle aria-label="메뉴 열기" aria-expanded="false"></button>
+        </div>
+    </header>
 
-                <link rel="stylesheet" href="/index.css">
-            </head>
-
-
-            <body>
-
-            <div>
-
-                <h2> you win</h2>
-
-                <h4> 음악 소통 페이지 </h4>
-
-                <button id="home-btn">🏠</button>
-
-                <div>
-                    <input type="text" id="keyword" placeholder="검색어를 입력하세요">
-                    <button type="button" id="search-btn">검색</button>
+    <main class="page-main room-explore__main">
+        <div class="site-container">
+            <section class="room-discovery" aria-labelledby="room-page-title">
+                <div class="room-discovery__copy">
+                    <p class="page-eyebrow">Live music community</p>
+                    <h1 id="room-page-title">지금 듣는 음악으로<br>대화를 시작하세요</h1>
+                    <p>아티스트와 노래를 중심으로 열린 채팅방을 찾고, 취향이 닿는 사람들과 바로 이야기해 보세요.</p>
                 </div>
+                <div class="room-search" role="search">
+                    <label class="sr-only" for="keyword">채팅방 검색</label>
+                    <input type="search" id="keyword" placeholder="방 이름이나 설명으로 검색">
+                    <button class="button" type="button" id="search-btn">검색</button>
+                </div>
+                <div class="room-discovery__meta" aria-label="이용 안내">
+                    <span><strong>ARTIST</strong> 아티스트 중심 대화</span>
+                    <span><strong>SONG</strong> 한 곡을 깊게 듣는 대화</span>
+                </div>
+            </section>
 
-
-
-                <button id="create-btn"> +채팅방 만들기 </button>
-
-                <div id="create-modal" style="display: none;">
-                     <div>
-
-                        <h2>채팅방 만들기</h2>
-
-                        <label>방 이름 *</label> <br>
-                        <input type="text" id="roomName"> <br><br>
-
-                        <label>방 설명</label>
-                        <textarea id="roomDescription"></textarea> <br><br>
-
-                         <label>방 이미지 (선택)</label><br>
-                         <input type="file" id="roomImage" accept="image/*"><br><br>
-                         <img id="previewImage" src="" style="display:none; width:180px; height:180px; object-fit:cover;">
-
-                         <label>방 분류 선택 *</label><br>
-                         <select id="roomType">
-                             <option value="artist">🎤 아티스트별 방</option>
-                             <option value="song">🎵 노래별 방</option>
-                         </select>
-                         <br><br>
-
-                         <label id="artistInputArea">아티스트
-                             <input type="text" id="artistName" placeholder="아티스트를 입력하세요">
-                         </label>
-
-                         <label id="songInputArea" style="display:none;">노래
-                             <input type="text" id="songTitle" placeholder="노래 제목을 입력하세요">
-                         </label>
-                         <br><br>
-
-                         <label>장르</label>
-                         <select id="themeId">
-                             <option value="">선택 안 함</option>
-                         </select>
-                         <br><br>
-
-                        <button id="save-btn">생성</button>
-                        <button id="close-btn">취소</button>
-
-                       </div>
-                     </div>
-
-
-            <div id="join-modal" style="display:none;">
-                <div class="join-modal-content">
-
-                    <h2>채팅방 정보</h2>
-
-                    <img id="join-room-image" src="" alt="채팅방 이미지">
-
-                    <h3 id="join-room-name"></h3>
-
-                    <p>
-                       <strong>방장</strong><br>
-                       <span id="join-room-owner"></span>
-                    </p>
-
-                    <p>
-                        <strong>방 설명</strong><br>
-                        <span id="join-room-description"></span>
-                    </p>
-
-                    <p>
-                        <strong>참여 인원</strong><br>
-                        <span id="join-room-count"></span>명
-                    </p>
-
-                    <p>
-                        <strong>생성일</strong><br>
-                        <span id="join-room-created-at"></span>
-                    </p>
-
-                    <div class="join-modal-btn-area">
-                    <button id="join-ok-btn">가입하기</button>
-                    <button id="join-cancel-btn">취소</button>
+            <section class="room-section" aria-labelledby="artist-room-title">
+                <div class="section-head">
+                    <div>
+                        <p class="room-section__eyebrow">Talk about artists</p>
+                        <h2 class="section-title" id="artist-room-title">아티스트별 채팅방</h2>
+                        <p class="section-copy">좋아하는 아티스트의 음악과 새로운 소식을 함께 나눠요.</p>
                     </div>
-
+                    <span class="room-section__badge">ARTIST ROOMS</span>
                 </div>
+                <div class="room-list-grid" id="artistList" aria-live="polite"></div>
+            </section>
+
+            <section class="room-section" aria-labelledby="song-room-title">
+                <div class="section-head">
+                    <div>
+                        <p class="room-section__eyebrow">One song, many stories</p>
+                        <h2 class="section-title" id="song-room-title">노래별 채팅방</h2>
+                        <p class="section-copy">요즘 반복해서 듣는 한 곡에 관한 감상을 나눠 보세요.</p>
+                    </div>
+                    <span class="room-section__badge">SONG ROOMS</span>
+                </div>
+                <div class="room-list-grid" id="songList" aria-live="polite"></div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="site-container site-footer__inner">
+            <span>© 2026 Youwin. 음악으로 연결되는 커뮤니티.</span>
+            <button class="footer-home" id="home-btn" type="button">홈으로 돌아가기 ↑</button>
+        </div>
+    </footer>
+</div>
+
+<div class="room-modal" id="create-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="create-room-title">
+    <div class="room-modal__card room-create-card">
+        <div class="room-modal__head">
+            <div><p class="page-eyebrow">New conversation</p><h2 id="create-room-title">채팅방 만들기</h2></div>
+            <button class="room-modal__close" id="close-btn" type="button" aria-label="닫기">×</button>
+        </div>
+        <div class="room-form">
+            <label class="room-field">방 이름 <em>필수</em><input type="text" id="roomName" maxlength="50" placeholder="대화 주제가 드러나는 이름을 입력하세요"></label>
+            <label class="room-field">방 설명<textarea id="roomDescription" rows="3" maxlength="200" placeholder="어떤 이야기를 나누는 방인지 알려주세요"></textarea></label>
+            <div class="room-field">
+                <span>대표 이미지 <small>선택</small></span>
+                <label class="room-file" for="roomImage">이미지 선택</label>
+                <input type="file" id="roomImage" accept="image/*">
+                <img id="previewImage" src="" alt="선택한 채팅방 이미지 미리보기" style="display:none;">
             </div>
+            <label class="room-field">방 분류 <em>필수</em><select id="roomType"><option value="artist">아티스트별 방</option><option value="song">노래별 방</option></select></label>
+            <label class="room-field" id="artistInputArea">아티스트<input type="text" id="artistName" placeholder="아티스트 이름"></label>
+            <label class="room-field" id="songInputArea" style="display:none;">노래<input type="text" id="songTitle" placeholder="노래 제목"></label>
+            <label class="room-field">장르 <em>필수</em><select id="themeId"><option value="">장르 선택</option></select></label>
+        </div>
+        <div class="room-modal__actions">
+            <button class="button button--secondary" id="close-btn-secondary" type="button">취소</button>
+            <button class="button" id="save-btn" type="button">채팅방 생성</button>
+        </div>
+    </div>
+</div>
 
-
-
-
-                <h3> 🎤아티스트별 </h3>
-                <div id="artistList"></div>
-
-
-
-                <h3> 🎵노래별 </h3>
-                <div id="songList"></div>
-
-
-
-            </div>
-
+<div class="room-modal" id="join-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="join-room-name">
+    <div class="room-modal__card join-modal-content">
+        <p class="page-eyebrow">Room preview</p>
+        <img id="join-room-image" src="" alt="채팅방 대표 이미지">
+        <h2 id="join-room-name"></h2>
+        <p class="join-room-description" id="join-room-description"></p>
+        <dl class="join-room-meta">
+            <div><dt>방장</dt><dd id="join-room-owner"></dd></div>
+            <div><dt>참여 인원</dt><dd><span id="join-room-count"></span>명</dd></div>
+            <div><dt>생성일</dt><dd id="join-room-created-at"></dd></div>
+        </dl>
+        <div class="room-modal__actions join-modal-btn-area">
+            <button class="button button--secondary" id="join-cancel-btn" type="button">둘러보기</button>
+            <button class="button" id="join-ok-btn" type="button">가입하고 입장하기</button>
+        </div>
+    </div>
+</div>
     <script>
         let selectedRoomId = null;
         const DEFAULT_FALLBACK_IMAGE = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'><rect width='100%' height='100%' fill='%23cccccc'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%23333333'>No Image</text></svg>";
@@ -135,6 +137,14 @@
             await loadThemeOption();
             await findArtistList();
             await findSongList();
+        });
+
+        document.addEventListener("keydown", (event) => {
+            const card = event.target.closest(".room-preview-card");
+            if (card && (event.key === "Enter" || event.key === " ")) {
+                event.preventDefault();
+                card.click();
+            }
         });
 
         // ==================== 상단 검색 섹션 =================
@@ -176,8 +186,13 @@
 
             for (const room of roomList) {
                 const roomDiv = document.createElement("div");
+                roomDiv.className = "room-preview-card";
+                roomDiv.tabIndex = 0;
 
                 const image = document.createElement("img");
+                image.className = "room-preview-card__image";
+                image.loading = "lazy";
+                image.alt = "";
                 image.src = room.roomImageUrl || DEFAULT_FALLBACK_IMAGE;
                 image.width = 150;
                 image.height = 150;
@@ -188,6 +203,7 @@
                 };
 
                 const name = document.createElement("div");
+                name.className = "room-preview-card__name";
                 name.textContent = room.roomName;
 
                 roomDiv.appendChild(image);
@@ -219,9 +235,10 @@
         //  ========================== 채팅방 생성 모달  ==================================
         document.querySelector("#create-btn").addEventListener("click", openModal);
         document.querySelector("#close-btn").addEventListener("click", closeModal);
+        document.querySelector("#close-btn-secondary").addEventListener("click", closeModal);
         document.querySelector("#save-btn").addEventListener("click", createRoom);
 
-        function openModal() { document.querySelector("#create-modal").style.display = "block"; }
+        function openModal() { document.querySelector("#create-modal").style.display = "flex"; document.querySelector("#roomName").focus(); }
 
         document.querySelector("#roomType").addEventListener("change", changeRoomType);
 
@@ -377,14 +394,20 @@
                 if (roomList && roomList.length > 0) {
                     for (const room of roomList) {
                         const roomDiv = document.createElement("div");
+                roomDiv.className = "room-preview-card";
+                roomDiv.tabIndex = 0;
 
                         const image = document.createElement("img");
+                image.className = "room-preview-card__image";
+                image.loading = "lazy";
+                image.alt = "";
                         image.src = room.roomImageUrl || DEFAULT_FALLBACK_IMAGE;
                         image.width = 150;
                         image.height = 150;
                         image.onerror = function() { this.onerror = null; this.src = DEFAULT_FALLBACK_IMAGE; };
 
                         const name = document.createElement("div");
+                name.className = "room-preview-card__name";
                         name.textContent = room.roomName;
 
                         roomDiv.appendChild(image);
@@ -427,14 +450,20 @@
                 if (roomList && roomList.length > 0) {
                     for (const room of roomList) {
                         const roomDiv = document.createElement("div");
+                roomDiv.className = "room-preview-card";
+                roomDiv.tabIndex = 0;
 
                         const image = document.createElement("img");
+                image.className = "room-preview-card__image";
+                image.loading = "lazy";
+                image.alt = "";
                         image.src = room.roomImageUrl || DEFAULT_FALLBACK_IMAGE;
                         image.width = 150;
                         image.height = 150;
                         image.onerror = function() { this.onerror = null; this.src = DEFAULT_FALLBACK_IMAGE; };
 
                         const name = document.createElement("div");
+                name.className = "room-preview-card__name";
                         name.textContent = room.roomName;
 
                         roomDiv.appendChild(image);
@@ -481,9 +510,16 @@
             if (event.target.id === "join-modal") closeJoinModal();
         });
 
+        document.querySelector("#create-modal").addEventListener("click", (event) => {
+            if (event.target.id === "create-modal") closeModal();
+        });
+
         // ========================= ESC 키 입력 시 모달 닫기 =========================
         document.addEventListener("keydown", (event) => {
-            if (event.key === "Escape") closeJoinModal();
+            if (event.key === "Escape") {
+                closeJoinModal();
+                closeModal();
+            }
         });
 
         document.querySelector("#join-cancel-btn").addEventListener("click", closeJoinModal);
@@ -530,6 +566,7 @@
         }
     </script>
 
+<script src="${pageContext.request.contextPath}/app.js"></script>
 </body>
 
 </html>

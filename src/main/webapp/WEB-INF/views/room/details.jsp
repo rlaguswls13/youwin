@@ -19,7 +19,7 @@
             <nav class="site-nav" data-site-nav aria-label="주요 메뉴">
                 <a href="${pageContext.request.contextPath}/">홈</a>
                 <a href="${pageContext.request.contextPath}/board">게시판</a>
-                <a class="is-active" href="${pageContext.request.contextPath}/chatroom">채팅방</a>
+                <a class="is-active" href="${pageContext.request.contextPath}/index">채팅방</a>
                 <a href="${pageContext.request.contextPath}/member/mypage">마이페이지</a>
             </nav>
             <div class="site-header__actions"><span class="chip chip--live">온라인</span><a class="avatar-link" href="${pageContext.request.contextPath}/member/mypage" aria-label="마이페이지">YU</a></div>
@@ -109,7 +109,7 @@
                     </div>
                     <div class="conversation-head__actions">
 
-                        <button id="room-menu-button" class="icon-button" type="button">···</button>
+                        <button id="room-menu-button" class="icon-button" type="button" aria-label="채팅방 메뉴" aria-expanded="false">···</button>
                         <div id="room-menu" class="room-menu">
                             <c:if test="${!joined}">
                                 <button id="join-room-btn" class="room-menu__item" data-room-id="${room.roomId}">가입하기</button>
@@ -170,7 +170,7 @@
                     </div>
                 </div>
 
-                <h4>🟢 참여중</h4>
+                <h4 class="member-section-title">참여 중</h4>
 
                 <div id="online-member-list">
                     <c:forEach var="member" items="${memberList}">
@@ -204,7 +204,7 @@
 
                 <hr>
 
-                <h4>⚪ 오프라인</h4>
+                <h4 class="member-section-title">오프라인</h4>
 
                 <div id="offline-member-list">
 
@@ -237,7 +237,7 @@
                     </c:forEach>
                 </div>
             </aside>
-            <div id="edit-room-modal" class="modal">
+            <div id="edit-room-modal" class="modal" role="dialog" aria-modal="true" aria-label="채팅방 수정">
                 <div class="modal-content">
                     <h2>채팅방 수정</h2>
 

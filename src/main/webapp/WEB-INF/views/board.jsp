@@ -9,20 +9,6 @@
     <title>게시판 | Youwin</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/app.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/board.css">
-    <style>
-        /* 상세조회 시 업로드 프리뷰 양식을 재활용할 때 삭제 버튼을 숨기기 위한 스타일 */
-        .readonly-view .btn-del-img {
-            display: none !important;
-        }
-
-        /* [보완] style="display:none" 대신 클래스 기반의 안전한 뷰 토글 제어 메커니즘 제공 */
-        .board-view {
-            display: none !important;
-        }
-        .board-view.is-active {
-            display: block !important;
-        }
-    </style>
 </head>
 <body>
 <div class="site-shell">
@@ -33,7 +19,7 @@
             <nav class="site-nav" data-site-nav aria-label="주요 메뉴">
                 <a href="${pageContext.request.contextPath}/">홈</a>
                 <a class="is-active" href="${pageContext.request.contextPath}/board">게시판</a>
-                <a href="${pageContext.request.contextPath}/chatroom">채팅방</a>
+                <a href="${pageContext.request.contextPath}/index">채팅방</a>
                 <a href="${pageContext.request.contextPath}/member/mypage">마이페이지</a>
             </nav>
             <div class="site-header__actions"><a class="button button--secondary" href="${pageContext.request.contextPath}/member/login">로그인</a><a class="avatar-link" href="${pageContext.request.contextPath}/member/mypage" aria-label="마이페이지">YU</a></div>
@@ -75,24 +61,24 @@
                         <div class="form-field"><label for="post-content">내용</label><textarea id="post-content" name="content" placeholder="내용을 입력해 주세요" required></textarea></div>
 
                         <!-- 선택된 파일들의 썸네일 미리보기가 가로선 윗부분에 띄워지도록 빈 박스 추가 -->
-                        <div id="previewContainer" style="display: flex; gap: 10px; flex-wrap: wrap; width: 100%;"></div>
+                        <div id="previewContainer" class="image-preview-list" aria-live="polite"></div>
 
                         <!-- 가로선 하단 이미지 업로드 및 액션 버튼 병렬 배치 라인 -->
-                        <div class="form-actions" style="display: flex; justify-content: space-between; align-items: center; width: 100%; width: -webkit-fill-available;">
+                        <div class="form-actions form-actions--upload">
 
                             <!-- [좌측] 이미지 컴포넌트 -->
-                            <div class="image-upload-trigger-wrap" style="display: flex; align-items: center; gap: 12px;">
+                            <div class="image-upload-trigger-wrap">
                                 <input type="file" id="imageInput" name="files" multiple accept="image/*" style="display: none;">
-                                <div id="btnUploadTrigger" style="display: flex; align-items: center; gap: 6px; padding: 8px 14px; border: 1px dashed #ced4da; border-radius: 6px; cursor: pointer; background-color: #f8f9fa; user-select: none;">
-                                    <span style="font-weight: bold; color: #495057; font-size: 14px;">+ 이미지 업로드</span>
-                                    <span style="font-size: 13px; color: #6c757d;">(<span id="imageCount">0</span>/5)</span>
+                                <div id="btnUploadTrigger" class="image-upload-trigger" role="button" tabindex="0">
+                                    <span class="image-upload-trigger__label">＋ 이미지 업로드</span>
+                                    <span class="image-upload-trigger__count"><span id="imageCount">0</span>/5</span>
                                 </div>
-                                <span style="font-size: 13px; color: #868e96; pointer-events: none;">* 장당 최대 5MB 이하</span>
+                                <span class="image-upload-help">장당 최대 5MB · 최대 5장</span>
                             </div>
 
                             <!-- [우측] 기존 액션 버튼 컴포넌트 -->
                             <!-- [해결] form 내부 button의 새로고침/튕김 버그 차단을 위해 onclick 기본이벤트 완벽 물리 격리 적용 -->
-                            <div style="display: flex; gap: 8px;">
+                            <div class="form-action-buttons">
                                 <button class="button button--secondary" type="button" data-cancel-editor onclick="event.preventDefault(); event.stopPropagation();">취소</button>
                                 <button id="submit-btn" class="button" type="submit">등록하기</button>
                             </div>
@@ -107,7 +93,7 @@
 
                     <!-- [1. 등록 진입 버튼] -->
                     <div class="board-heading">
-                        <div class="page-heading"><p class="page-eyebrow">Community board</p><h1 class="page-title" id="notice-title">공지사항</h1><p class="page-description">Youwin의 새로운 소식과 소식을 확인하세요.</p></div>
+                        <div class="page-heading"><p class="page-eyebrow">Community board</p><h1 class="page-title" id="notice-title">공지사항</h1><p class="page-description">Youwin의 새로운 소식과 중요한 안내를 확인하세요.</p></div>
                         <button class="button" type="button" data-open-editor>새 글 작성</button>
                     </div>
 
@@ -160,7 +146,7 @@
                                             <td class="board-table__meta" style="text-align: center;">${notice.count}</td>
 
                                             <td onclick="event.stopPropagation();" style="text-align: center;">
-                                                <div style="display: flex; gap: 4px; justify-content: center; align-items: center;">
+                                                <div class="board-row-actions">
                                                     <button type="button" class="board-filter btn-edit" style="min-height:28px; padding:0 10px; margin:0; border-color:#2f54eb; color:#2f54eb; background:none; font-size:11px; cursor:pointer;">수정</button>
 
                                                     <!-- [수정 완료] 삭제 폼 method 속성 누락 및 엔드포인트 경로 수정 -->
@@ -202,15 +188,15 @@
                         <h1 class="page-title" id="detail-title">공지사항 상세보기</h1>
                         <p class="page-description" id="detail-meta-info">작성자: 운영팀 | 작성일: -</p>
                     </div>
-                    <div class="surface editor-card" style="padding: 24px; min-height: 200px;">
+                    <div class="surface editor-card board-detail-card">
 
                         <!-- 업로드되어 보관 중이던 이미지가 수직 순차 배치 형태로 렌더링될 영역 선언 -->
-                        <div id="detail-images" style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; max-width: 100%;"></div>
+                        <div id="detail-images" class="board-detail-images"></div>
 
-                        <div id="detail-content" style="white-space: pre-wrap; line-height: 1.6; font-size: 14px; color: #333;">
+                        <div id="detail-content" class="board-detail-content">
                             내용을 불러오는 중입니다...
                         </div>
-                        <div class="form-actions" style="margin-top: 24px; justify-content: flex-end;">
+                        <div class="form-actions board-detail-actions">
                             <!-- [해결] 버튼 튕김 및 홈 화면 백 현상 방지를 위해 인라인 인트러럽트 캡처 바인딩 조치 -->
                             <button class="button" type="button" id="btn-close-detail" data-cancel-editor onclick="event.preventDefault(); event.stopPropagation();">목록으로 돌아가기</button>
                         </div>
