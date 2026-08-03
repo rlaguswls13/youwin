@@ -22,6 +22,8 @@ public interface MemberRepository {
                                       @Param("memberEmail") String memberEmail);
     // 로그인용 회원 정보 단건 조회
     MemberDto findByMemberId(@Param("memberId") String memberId);
+    // 로그인 아이디(member_id)로 실제 회원 PK(id) 조회
+    Integer findIdByMemberId(@Param("memberId") String memberId);
     // 회원 존재 여부 확인 (비밀번호 찾기)
     boolean existsByIdAndEmail(@Param("memberId") String memberId,
                                @Param("memberEmail") String memberEmail);
@@ -49,4 +51,5 @@ public interface MemberRepository {
     int activateDormantAccount(@Param("memberId") String memberId);
 
     int cancelDeleteMember(@Param("memberId") String memberId);
+
 }

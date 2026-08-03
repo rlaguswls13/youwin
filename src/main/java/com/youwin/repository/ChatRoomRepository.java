@@ -9,7 +9,7 @@ import java.util.List;
 @Mapper
 public interface ChatRoomRepository {
 
-     // --------- 아티스트 -------
+    // --------- 아티스트 -------
     List<ArtistDto> findArtistList();
 
     List<ArtistDto> searchArtist(String keyword);
@@ -31,6 +31,9 @@ public interface ChatRoomRepository {
     ThemeDto findTheme(Integer themeId);
 
     // -------------- 채팅방 -------------
+
+    Integer findMemberPkByLoginId(String memberId);
+
     List<ChatRoomDto> searchChatRooms(String keyword);
 
     List<ChatRoomDto> findRoomList(Integer memberId);
@@ -57,8 +60,11 @@ public interface ChatRoomRepository {
 
     void deleteRoomMembers(Integer roomId);
 
+    List<ChatRoomDto> findRoomsByType(@Param("roomType") String roomType);
 
     int updateRoom(ChatRoomDto dto);
+
+    Integer findMemberPkByMemberId(String memberId);
 
     //----- 현재 사용자의 채팅방 가입 상태 조회 -------
     boolean isJoined(@Param("roomId") Integer roomId, @Param("memberId") Integer memberId);
@@ -86,4 +92,12 @@ public interface ChatRoomRepository {
     // ---------- 현재 접속중인 참여자 -------------
 
     List<ChatRoomMemberDto> findMembersByIds(List<Integer> memberIds);
+
+    // ---------- 신고 ----------
+
+    void saveReport(ChatReportDto dto);
+
+    Integer findArtistIdByName(String artistName);
+
+    Integer findSongIdByTitle(String songTitle);
 }

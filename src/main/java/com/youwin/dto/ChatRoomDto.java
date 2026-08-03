@@ -17,12 +17,18 @@ public class ChatRoomDto {
     private String roomDescription;
     private String roomType;
 
+    private String artistName;
+    private String songTitle;
     private Integer targetId;
     private Integer themeId;
 
     private String roomImageUrl;
     private String ownerName;
+    private Integer ownerId;
     private Integer memberCount;
     private LocalDateTime createdAt;
+
+
+
 
 }

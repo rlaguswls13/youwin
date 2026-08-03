@@ -1,13 +1,15 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
-<!-- 프로필 이미지 섹션 -->
+<c:set var="ctx" value="${pageContext.request.contextPath}" scope="request" />
+
+<!-- 프로필 이미지 업로드 섹션 -->
 <div class="form-group profile-group">
   <label>프로필 이미지</label>
   <div class="profile-section">
-    <!-- 마이페이지 프로필과 동일한 규격 적용 및 기본 프로필 SVG 설정 -->
     <div class="profile-img-preview" id="image-preview">
       <img id="preview-img"
-           src="${pageContext.request.contextPath}/upload/profile/default-profile.svg"
+           src="${ctx}/upload/profile/default-profile.svg"
            alt="프로필 미리보기">
     </div>
     <label for="profile-file" class="file-upload-btn">파일 올리기</label>
@@ -15,7 +17,7 @@
   </div>
 </div>
 
-<!-- 닉네임 섹션 (중복확인 버튼 포함) -->
+<!-- 닉네임 입력 및 중복 확인 -->
 <div class="form-group">
   <label for="nickname">닉네임</label>
   <div class="input-with-btn">
@@ -33,20 +35,19 @@
 <script>
   let isNicknameChecked = false;
 
-  // 🟢 프로필 이미지 미리보기 (원형 보라색 테두리 보존)
+  // 프로필 이미지 미리보기 함수
   function previewImage(input) {
     const previewImg = document.getElementById('preview-img');
     if (input.files && input.files[0]) {
       const reader = new FileReader();
       reader.onload = function(e) {
-        // img 태그의 src만 교체하여 감싸는 원형 테두리 스타일이 유지됨
-        previewImg.src = e.target.result;
+        previewImg.src = e.result;
       }
       reader.readAsDataURL(input.files[0]);
     }
   }
 
-  // 닉네임 유효성 검사 (원래 코드 100% 유지)
+  // 닉네임 유효성 검사 규칙
   function validateNickname(nicknameValue) {
     if (!nicknameValue || nicknameValue.trim() === '') return '닉네임을 입력해 주세요.';
     if (/\s/.test(nicknameValue)) return '닉네임에는 공백(띄어쓰기)을 포함할 수 없습니다.';
@@ -54,7 +55,7 @@
     return '';
   }
 
-  // 닉네임 중복 체크 (Ajax 연동 - 원래 코드 100% 유지)
+  // 닉네임 중복 확인 (Ajax)
   function checkDuplicateNickname() {
     const nicknameInput = document.getElementById('nickname');
     const errNickname = document.getElementById('err-nickname');
@@ -67,7 +68,7 @@
       return;
     }
 
-    fetch('/api/member/check-nickname?nickname=' + encodeURIComponent(nicknameValue))
+    fetch('${ctx}/api/member/check-nickname?nickname=' + encodeURIComponent(nicknameValue))
             .then(response => {
               if (!response.ok) throw new Error('서버 응답 오류');
               return response.json();
@@ -88,13 +89,13 @@
             });
   }
 
-  // 닉네임 변경 시 초기화 (원래 코드 100% 유지)
+  // 닉네임 수정 시 인증 상태 초기화
   document.getElementById('nickname').addEventListener('input', function() {
     isNicknameChecked = false;
     clearError(this, document.getElementById('err-nickname'));
   });
 
-  // 최종 폼 제출 처리 (원래 코드 100% 유지)
+  // 최종 가입 Submit
   function submitForm() {
     const nicknameInput = document.getElementById('nickname');
     const errNickname = document.getElementById('err-nickname');
@@ -112,7 +113,7 @@
       return;
     }
 
-    // 모든 검사 통과 시 서브밋 실행
+    // 전체 유효성 검사 통과 시 서브밋
     document.getElementById('joinForm').submit();
   }
 </script>

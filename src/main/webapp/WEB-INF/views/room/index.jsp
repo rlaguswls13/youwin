@@ -52,10 +52,13 @@
                          </select>
                          <br><br>
 
-                         <label id="targetLabel">대상 선택 (아티스트/노래)</label><br>
-                         <select id="targetId">
-                             <option value="">선택 안함</option>
-                         </select>
+                         <label id="artistInputArea">아티스트
+                             <input type="text" id="artistName" placeholder="아티스트를 입력하세요">
+                         </label>
+
+                         <label id="songInputArea" style="display:none;">노래
+                             <input type="text" id="songTitle" placeholder="노래 제목을 입력하세요">
+                         </label>
                          <br><br>
 
                          <label>장르</label>
@@ -220,62 +223,62 @@
 
         function openModal() { document.querySelector("#create-modal").style.display = "block"; }
 
-        document.querySelector("#roomType").addEventListener("change", loadTargetOptions);
+        document.querySelector("#roomType").addEventListener("change", changeRoomType);
 
-        // 모달 열릴 때 목록 로드
-        function openModal() {
-            document.querySelector("#create-modal").style.display = "block";
-            loadTargetOptions(); // [추가] 모달 열릴 때 옵션 불러오기
-        }
+        function changeRoomType() {
 
-        // targetId 드롭다운 옵션 채우는 함수
-        async function loadTargetOptions() {
             const roomType = document.querySelector("#roomType").value;
-            const targetSelect = document.querySelector("#targetId");
-            if (!targetSelect) return;
 
-            targetSelect.innerHTML = "<option value=''>선택 안함</option>";
+            const artistArea = document.querySelector("#artistInputArea");
+            const songArea = document.querySelector("#songInputArea");
 
             if (roomType === "artist") {
-                try {
-                    const response = await fetch("/chat/artist/list");
-                    const list = await response.json();
-                    for (const artist of list) {
-                        const option = document.createElement("option");
-                        option.value = artist.artistId; // 백엔드의 artistId
-                        option.textContent = artist.artistName || artist.name;
-                        targetSelect.appendChild(option);
-                    }
-                } catch (e) { console.error("아티스트 목록 로드 실패", e); }
-            } else if (roomType === "song") {
-                try {
-                    const response = await fetch("/chat/song/list");
-                    const list = await response.json();
-                    for (const song of list) {
-                        const option = document.createElement("option");
-                        option.value = song.songId; // 백엔드의 songId
-                        option.textContent = song.songTitle || song.title;
-                        targetSelect.appendChild(option);
-                    }
-                } catch (e) { console.error("노래 목록 로드 실패", e); }
+
+                artistArea.style.display = "block";
+                songArea.style.display = "none";
+
+                document.querySelector("#songTitle").value = "";
+
+            } else {
+
+                artistArea.style.display = "none";
+                songArea.style.display = "block";
+
+                document.querySelector("#artistName").value = "";
             }
         }
-
         function closeModal() { document.querySelector("#create-modal").style.display = "none"; }
 
         // 방 생성 데이터 전송
         async function createRoom() {
+
             const roomName = document.querySelector("#roomName").value.trim();
             const roomDescription = document.querySelector("#roomDescription").value.trim();
             const roomType = document.querySelector("#roomType").value;
-            const targetId = document.querySelector("#targetId").value;
+            const artistName = document.querySelector("#artistName").value.trim();
+            const songTitle = document.querySelector("#songTitle").value.trim();
             const themeId = document.querySelector("#themeId").value;
 
+
+            // 방 이름 검사
             if (roomName === "") {
                 alert("방 이름을 입력해주세요.");
                 return;
             }
 
+            // 아티스트방 검사
+            if (roomType === "artist" && artistName === "") {
+                alert("아티스트를 입력해주세요.");
+                return;
+            }
+
+            // 노래방 검사
+            if (roomType === "song" && songTitle === "") {
+                alert("노래 제목을 입력해주세요.");
+                return;
+            }
+
+            // 장르 검사
             if (themeId === "") {
                 alert("장르를 선택해주세요.");
                 return;
@@ -285,29 +288,41 @@
                 roomName: roomName,
                 roomDescription: roomDescription,
                 roomType: roomType,
-                themeId: themeId,
-                targetId: targetId === "" ? null : targetId
+
+                artistName: roomType === "artist" ? artistName : null,
+                songTitle: roomType === "song" ? songTitle : null,
+                themeId: themeId
             };
+
 
             const imageFile = document.querySelector("#roomImage").files[0];
             const formData = new FormData();
 
-            formData.append("room", new Blob([JSON.stringify(data)], { type: "application/json" }));
+
+            formData.append(
+                "room",
+                new Blob(
+                    [JSON.stringify(data)],
+                    { type: "application/json" }
+                )
+            );
+
+
             if (imageFile) {
                 formData.append("image", imageFile);
             }
 
-            const response = await fetch("/chat/room/create", {
-                method: "POST",
-                body: formData
-            });
+            const response =
+                await fetch("/chat/room/create", {
+                    method: "POST",
+                    body: formData
+                });
 
             if (!response.ok) {
                 const message = await response.text();
                 alert(message);
                 return;
             }
-
             alert("채팅방이 생성되었습니다.");
             closeModal();
             location.reload();
@@ -349,31 +364,25 @@
 
         // ========================= 메인 화면 목록 조회 섹션 (아티스트별 / 노래별) =========================
 
-        //  ========================= 아티스트별 방 목록 =========================
+        // ========================= 아티스트별 방 목록 =========================
         async function findArtistList() {
             const artistList = document.querySelector("#artistList");
             if (!artistList) return;
             artistList.innerHTML = "";
 
             try {
-                const response = await fetch("/chat/room/search?keyword=");
+                const response = await fetch("/chat/room/type/artist");
                 const roomList = await response.json();
 
                 if (roomList && roomList.length > 0) {
                     for (const room of roomList) {
-
-                        if (room.roomType !== "artist") continue;
                         const roomDiv = document.createElement("div");
 
                         const image = document.createElement("img");
                         image.src = room.roomImageUrl || DEFAULT_FALLBACK_IMAGE;
                         image.width = 150;
                         image.height = 150;
-
-                        image.onerror = function() {
-                            this.onerror = null;
-                            this.src = DEFAULT_FALLBACK_IMAGE;
-                        };
+                        image.onerror = function() { this.onerror = null; this.src = DEFAULT_FALLBACK_IMAGE; };
 
                         const name = document.createElement("div");
                         name.textContent = room.roomName;
@@ -383,59 +392,47 @@
 
                         roomDiv.addEventListener("click", async (e) => {
                             e.stopPropagation();
-                            try {
-                                const res = await fetch("/chat/room/" + room.roomId + "/joined");
-                                const joined = await res.json();
+                            const res = await fetch("/chat/room/" + room.roomId + "/joined");
+                            const joined = await res.json();
 
-                                if (joined) {
-                                    enterRoom(room.roomId);
-                                } else {
-                                    selectedRoomId = room.roomId;
-                                    await loadRoomInfo(room.roomId);
-                                    openJoinModal();
-                                }
-                            } catch (err) {
-                                console.error(err);
+                            if (joined) {
+                                enterRoom(room.roomId);
+                            } else {
+                                selectedRoomId = room.roomId;
+                                await loadRoomInfo(room.roomId);
+                                openJoinModal();
                             }
                         });
 
                         artistList.appendChild(roomDiv);
                     }
-                }
-
-                if (artistList.children.length === 0) {
+                } else {
                     artistList.innerHTML = "개설된 아티스트 채팅방이 없습니다.";
                 }
             } catch (error) {
                 console.error("아티스트 목록 조회 실패:", error);
             }
         }
-        // ========================= 노래별 방 목록 =========================
+
+        // ========================= 노래별 방 목록  =========================
         async function findSongList() {
             const songList = document.querySelector("#songList");
             if (!songList) return;
             songList.innerHTML = "";
 
             try {
-                const response = await fetch("/chat/room/search?keyword=");
+                const response = await fetch("/chat/room/type/song");
                 const roomList = await response.json();
 
                 if (roomList && roomList.length > 0) {
                     for (const room of roomList) {
-                        // 💡 핵심: roomType이 song이 아닌 방은 노래 목록에서 제외!
-                        if (room.roomType !== "song") continue;
-
                         const roomDiv = document.createElement("div");
 
                         const image = document.createElement("img");
                         image.src = room.roomImageUrl || DEFAULT_FALLBACK_IMAGE;
                         image.width = 150;
                         image.height = 150;
-
-                        image.onerror = function() {
-                            this.onerror = null;
-                            this.src = DEFAULT_FALLBACK_IMAGE;
-                        };
+                        image.onerror = function() { this.onerror = null; this.src = DEFAULT_FALLBACK_IMAGE; };
 
                         const name = document.createElement("div");
                         name.textContent = room.roomName;
@@ -445,28 +442,22 @@
 
                         roomDiv.addEventListener("click", async (e) => {
                             e.stopPropagation();
-                            try {
-                                const res = await fetch("/chat/room/" + room.roomId + "/joined");
-                                const joined = await res.json();
+                            const res = await fetch("/chat/room/" + room.roomId + "/joined");
+                            const joined = await res.json();
 
-                                if (joined) {
-                                    enterRoom(room.roomId);
-                                } else {
-                                    selectedRoomId = room.roomId;
-                                    await loadRoomInfo(room.roomId);
-                                    openJoinModal();
-                                }
-                            } catch (error) {}
+                            if (joined) {
+                                enterRoom(room.roomId);
+                            } else {
+                                selectedRoomId = room.roomId;
+                                await loadRoomInfo(room.roomId);
+                                openJoinModal();
+                            }
                         });
 
                         songList.appendChild(roomDiv);
                     }
-                }
-
-                if (songList.children.length === 0) {
-                    const empty = document.createElement("div");
-                    empty.textContent = "개설된 노래 채팅방이 없습니다.";
-                    songList.appendChild(empty);
+                } else {
+                    songList.innerHTML = "개설된 노래 채팅방이 없습니다.";
                 }
             } catch (error) {
                 console.error("노래 목록 조회 실패:", error);

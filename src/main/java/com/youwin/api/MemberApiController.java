@@ -1,10 +1,13 @@
 package com.youwin.api;
 
+import com.youwin.dto.MemberDto;
+import com.youwin.security.CustomUserDetails;
 import com.youwin.service.EmailVerificationService;
 import com.youwin.service.MemberService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -201,5 +204,23 @@ public class MemberApiController {
         } catch (Exception e) {
             return ResponseEntity.ok("FAIL");
         }
+    }
+
+    @PostMapping("/api/posts")
+    public ResponseEntity<?> createPost(
+            @AuthenticationPrincipal CustomUserDetails userDetails // <-- 여기에 담겨 들어옵니다!
+    ) {
+        // 1. userDetails가 잘 들어왔는지 확인
+        System.out.println("userDetails = " + userDetails);
+
+        // 2. 내부에 담긴 MemberDto 추출
+        MemberDto memberDto = userDetails.getMemberDto();
+
+        // 3. 저장된 회원 상세 정보 출력해보기
+        System.out.println("로그인한 회원 아이디: " + memberDto.getMemberId());
+        System.out.println("로그인한 회원 상태: " + memberDto.getMemberStatus());
+        // ... MemberDto에 있는 필드들 다 찍어볼 수 있습니다.
+
+        return ResponseEntity.ok().build();
     }
 }

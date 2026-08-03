@@ -13,7 +13,4 @@ INSERT INTO member (
       ('qwe123', '$2a$10$Kx/bnLuX5tlBqFtnI86IzOxL87lIt4jbsOYMZ7f902i6TvsuPCa7C', '스울부싼', '김해산', '010-1111-1112', 'kim1234@example.com', NULL, 'USER', 'ACTIVE'),
       ('zxc123', '$2a$10$GRzpZXsxJHoNHGsHU4A9weBAzhDQKDOWR6k6UXIPNiR6rHx1Fwd/m', '제주도왕귤', '김강산', '010-1111-1113', 'kim12345@example.com', NULL, 'USER', 'ACTIVE');
 
--- 사용 가능한 Id/Pwd
--- ID : qwe123 PASSWORD : qwer123$
--- ID : asd123 PASSWORD : asdf123$
--- ID : zxc123 PASSWORD : zxcv123$
+-- asdf123$ qwer123$, zxcv123$

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.youwin.repository.MemberSecurityRepository">
+    <!-- ======================================================== -->
+    <!--       [Member Security] 회원 로그인 실패 및 보안 관리         -->
+    <!-- ======================================================== -->
+    <!-- 실패 횟수 증가 (UPSERT 구문) -->
+    <insert id="increaseLoginFailCount">
+        INSERT INTO member_security (member_id, login_fail_count)
+        VALUES (#{memberId}, 1)
+            ON DUPLICATE KEY UPDATE
+                                 login_fail_count = login_fail_count + 1
+    </insert>
+
+    <!-- 계정 잠금 처리 -->
+    <update id="lockAccount">
+        UPDATE member_security
+        SET is_locked = 1,
+            locked_at = NOW()
+        WHERE member_id = #{memberId}
+    </update>
+
+    <!-- 성공 및 해제 시 초기화 -->
+    <update id="resetLoginFailCount">
+        UPDATE member_security
+        SET login_fail_count = 0,
+            is_locked = 0,
+            locked_at = NULL
+        WHERE member_id = #{memberId}
+    </update>
+
+    <!-- 잠금 여부 조회 -->
+    <select id="isLocked" resultType="boolean">
+        SELECT IFNULL(
+                       (SELECT is_locked FROM member_security WHERE member_id = #{memberId}),
+                       0
+               )
+    </select>
+
+    <!-- 현재 실패 횟수 조회 -->
+    <select id="getLoginFailCount" resultType="int">
+        SELECT IFNULL(
+                       (SELECT login_fail_count FROM member_security WHERE member_id = #{memberId}),
+                       0
+               )
+    </select>
+
+</mapper>

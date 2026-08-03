@@ -764,3 +764,30 @@
     margin-bottom:5px;
 
 }
+
+.edit-room-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding-bottom: 10px;
+}
+
+#edit-room-cancel,
+#edit-room-save {
+    display: inline-block;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+#edit-room-save {
+    background: #222;
+    color: white;
+}
+
+#edit-room-modal .modal-content {
+    max-height: 85vh;
+    overflow-y: auto;
+}

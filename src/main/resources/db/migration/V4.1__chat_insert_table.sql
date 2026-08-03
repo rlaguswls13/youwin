@@ -42,22 +42,22 @@ VALUES
     ('Love Lee',6,2,'/images/song/lovelee.jpg','2023-08-21');
 
 -- Chat Room 데이터
-
 INSERT INTO chat_rooms
 (
     room_name,
+    room_type,
     room_description,
     target_id,
-    theme_id
+    theme_id,
+    owner_id
 )
 VALUES
-    ('아이유 팬톡','아이유 음악을 좋아하는 사람들의 채팅방',1,1),
-    ('뉴진스 채팅방','뉴진스 음악을 좋아하는 사람들의 채팅방',2,2),
-    ('DAY6 같이 듣기','DAY6 음악을 좋아하는 사람들의 채팅방',3,5),
-    ('QWER 이야기','QWER 음악을 좋아하는 사람들의 채팅방',4,5),
-    ('잔나비 감성방','잔나비 음악을 좋아하는 사람들의 채팅방',5,4),
-    ('AKMU 노래 추천','AKMU 음악을 좋아하는 사람들의 채팅방',6,2);
-
+    ('아이유 팬톡', 'artist', '아이유 음악을 좋아하는 사람들의 채팅방', 1, 1, 1),
+    ('뉴진스 채팅방', 'artist', '뉴진스 음악을 좋아하는 사람들의 채팅방', 2, 2, 1),
+    ('DAY6 같이 듣기', 'artist', 'DAY6 음악을 좋아하는 사람들의 채팅방', 3, 5, 1),
+    ('QWER 이야기', 'artist', 'QWER 음악을 좋아하는 사람들의 채팅방', 4, 5, 1),
+    ('잔나비 감성방', 'artist', '잔나비 감성방 설명', 5, 4, 1),
+    ('AKMU 노래 추천', 'artist', 'AKMU 노래 추천 방', 6, 2, 1);
 -- Chat Room Member 데이터 member 테이블의 id 값을 사용
 
 INSERT INTO chat_room_members

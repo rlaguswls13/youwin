@@ -14,7 +14,9 @@ public class ChatMessageDto {
     private Integer messageId;
     private Integer roomId;
     private Integer memberId;
-    private String nickname;
     private String message;
-    private LocalDateTime sentAt;
+    private String sentAt;
+    private String nickname;
+    public String getNickname() { return nickname; }
+    public void setNickname(String nickname) { this.nickname = nickname; }
 }

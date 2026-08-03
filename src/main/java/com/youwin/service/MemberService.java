@@ -26,6 +26,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class MemberService {
 
     private final MemberRepository memberRepository;
@@ -152,6 +153,7 @@ public class MemberService {
     }
 
     // 자동 로그인 전용: 비밀번호 검증 없이 아이디로 회원 정보 조회
+    @Transactional
     public MemberDto getMemberById(String memberId) {
         MemberDto memberDto = memberRepository.findByMemberId(memberId);
 
@@ -365,4 +367,6 @@ public class MemberService {
         memberRepository.cancelDeleteMember(memberId);
         emailVerificationService.removeVerification(memberEmail);
     }
+
+
 }
