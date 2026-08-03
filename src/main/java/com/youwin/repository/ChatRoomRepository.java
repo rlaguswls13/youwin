@@ -64,6 +64,8 @@ public interface ChatRoomRepository {
 
     int updateRoom(ChatRoomDto dto);
 
+    Integer findMemberPkByMemberId(String memberId);
+
     //----- 현재 사용자의 채팅방 가입 상태 조회 -------
     boolean isJoined(@Param("roomId") Integer roomId, @Param("memberId") Integer memberId);
 

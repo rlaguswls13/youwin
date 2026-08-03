@@ -8,6 +8,8 @@ import com.youwin.service.ChatRoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
+import com.youwin.repository.MemberRepository;
+import java.security.Principal;
 
 import java.util.List;
 
@@ -18,7 +20,7 @@ public class ChatSocketController {
     private final ChatRoomService service;
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatRoomSessiongManager sessiongManager;
-
+    private final MemberRepository memberRepository;
     // 메시지 전송
     @MessageMapping("/message")
     public void send(ChatMessageDto dto) {
@@ -32,36 +34,56 @@ public class ChatSocketController {
     }
 
     @MessageMapping("/member/join")
-    public void join(ChatRoomMemberDto dto) {
+    public void join(ChatRoomMemberDto dto, Principal principal) {
+
+        if (principal == null) {
+            return;
+        }
+
+        String loginId = principal.getName();
+        Integer memberId = memberRepository.findIdByMemberId(loginId);
+
+        if (memberId == null) {
+            return;
+        }
 
         Integer lastMessageId = service.findLastMessageId(dto.getRoomId());
-
-        // 메모리에 접속자 등록
-        sessiongManager.join(dto.getRoomId(), dto.getMemberId(), lastMessageId);
+        sessiongManager.join(
+                dto.getRoomId(),
+                memberId,
+                lastMessageId
+        );
 
         List<ChatRoomMemberDto> members = service.findMembers(dto.getRoomId());
-
         messagingTemplate.convertAndSend(
-               "/topic/member/" + dto.getRoomId(),
-               members
-       );
+                "/topic/member/" + dto.getRoomId(),
+                members
+        );
     }
 
     @MessageMapping("/member/leave")
-    public void leave(ChatRoomMemberDto dto) {
+    public void leave(ChatRoomMemberDto dto, Principal principal) {
 
+        if (principal == null) {
+            return;
+        }
 
-        System.out.println("===== LEAVE =====");
-        System.out.println(dto);
+        String loginId = principal.getName();
 
-        // 메모리에서 제거
-        sessiongManager.leave(dto.getRoomId(), dto.getMemberId());
+        Integer memberId = memberRepository.findIdByMemberId(loginId);
+        if (memberId == null) {
+            return;
+        }
 
-       List<ChatRoomMemberDto> members = service.findMembers(dto.getRoomId());
+        sessiongManager.leave(
+                dto.getRoomId(),
+                memberId
+        );
 
-       messagingTemplate.convertAndSend(
-               "/topic/member/" + dto.getRoomId(),
-               members
-       );
+        List<ChatRoomMemberDto> members = service.findMembers(dto.getRoomId());
+        messagingTemplate.convertAndSend(
+                "/topic/member/" + dto.getRoomId(),
+                members
+        );
     }
 }

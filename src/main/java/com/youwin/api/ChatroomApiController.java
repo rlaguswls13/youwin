@@ -137,19 +137,33 @@ public class ChatroomApiController {
     }
 
     @PostMapping("/room/update")
-    public void updateRoom(
-            @RequestBody ChatRoomDto dto,
+    public ResponseEntity<?> updateRoom(
+            @RequestPart("room") ChatRoomDto dto,
+            @RequestPart(value = "image", required = false) MultipartFile image,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        String loginId =
-                userDetails.getMemberDto().getMemberId();
+        if (userDetails == null) {
+            return ResponseEntity
+                    .status(401)
+                    .body("로그인이 필요합니다.");
+        }
 
-        Integer memberId =
-                chatRoomService.findMemberPkByLoginId(loginId);
+        // 로그인 아이디
+        String loginId = userDetails.getMemberDto().getMemberId();
 
-        chatRoomService.updateRoom(dto, memberId);
+        // 로그인 아이디 → 실제 member PK
+        Integer memberId = memberRepository.findIdByMemberId(loginId);
+
+        if (memberId == null) {
+            return ResponseEntity
+                    .status(401)
+                    .body("회원 정보를 찾을 수 없습니다.");
+        }
+
+        chatRoomService.updateRoom(dto, image, memberId);
+
+        return ResponseEntity.ok().build();
     }
-
     @PostMapping("/room/join")
     public Boolean joinRoom(
             @RequestBody ChatRoomMemberDto dto,

@@ -51,4 +51,5 @@ public interface MemberRepository {
     int activateDormantAccount(@Param("memberId") String memberId);
 
     int cancelDeleteMember(@Param("memberId") String memberId);
+
 }

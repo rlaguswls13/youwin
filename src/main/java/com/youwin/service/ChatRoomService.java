@@ -216,21 +216,57 @@ public class ChatRoomService {
 
     }
 
-    public void updateRoom(
-            ChatRoomDto dto,
-            Integer loginMemberId) {
+    @Transactional
+    public void updateRoom(ChatRoomDto dto, MultipartFile image, Integer memberId) {
 
+        // 1. 수정하려는 채팅방 조회
         ChatRoomDto room = chatRoomRepository.findRoom(dto.getRoomId());
 
         if (room == null) {
-            throw new IllegalArgumentException("존재하지 않는 채팅방입니다.");
+            throw new RuntimeException("채팅방이 존재하지 않습니다.");
         }
 
-        if (!loginMemberId.equals(room.getOwnerId())) {
-            throw new IllegalArgumentException("방장만 채팅방을 수정할 수 있습니다.");
+        // 2. 현재 로그인 회원이 방장인지 확인
+        if (!memberId.equals(room.getOwnerId())) {
+            throw new RuntimeException("방장만 채팅방을 수정할 수 있습니다.");
         }
 
-        int result = chatRoomRepository.updateRoom(dto);
+        // 3. 새 이미지가 있으면 이미지 변경
+        if (image != null && !image.isEmpty()) {
+
+            String fileName = UUID.randomUUID() + "_" + image.getOriginalFilename();
+            String uploadPath = "D:/project/youwin/upload/chatroom/";
+            File dir = new File(uploadPath);
+
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+
+            try {
+
+                image.transferTo(new File(dir, fileName)
+                );
+
+                dto.setRoomImageUrl("/upload/chatroom/" + fileName
+                );
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        } else {
+
+            // 새 이미지가 없으면 기존 이미지 유지
+            dto.setRoomImageUrl(room.getRoomImageUrl()
+            );
+        }
+
+        // 4. UPDATE에 사용할 실제 방장 PK
+        dto.setOwnerId(memberId);
+
+        // 5. 수정
+        int result =
+                chatRoomRepository.updateRoom(dto);
 
         if (result == 0) {
             throw new RuntimeException("채팅방 수정 실패");

@@ -229,33 +229,110 @@
                         </div>
             </aside>
             <div id="edit-room-modal" class="modal">
+
                 <div class="modal-content">
+
                     <h2>채팅방 수정</h2>
 
-                    <label for="edit-room-btn">채팅방 이름</label>
+                    <!-- 방 이름 -->
+                    <label>채팅방 이름</label>
                     <input type="text" id="edit-room-name" value="${room.roomName}">
 
-                    <label for="edit-room-description">방 설명</label>
+                    <br><br>
+
+                    <!-- 방 설명 -->
+                    <label>방 설명</label>
                     <textarea id="edit-room-description">${room.roomDescription}</textarea>
+                    <br><br>
 
-                    <label for="edit-room-artist">아티스트</label>
-                    <select id="edit-room-artist"></select>
+                    <!-- 방 이미지 -->
+                    <label>채팅방 이미지</label>
+                    <input type="file" id="edit-room-image" accept="image/*">
+                    <br><br>
 
-                    <label for="edit-room-theme">장르</label>
+                    <!-- 방 종류 -->
+                    <label>채팅방 종류</label>
+                    <select id="edit-room-type">
+                        <option value="artist"${room.roomType == 'artist' ? 'selected' : ''}>아티스트</option>
+                        <option value="song"${room.roomType == 'song' ? 'selected' : ''}>노래</option>
+                    </select>
+                    <br><br>
+
+                    <!-- 아티스트 또는 노래 -->
+                    <label id="edit-target-label">아티스트 선택</label>
+                    <select id="edit-target-id"><option value="">선택해주세요</option>
+                    </select>
+                    <br><br>
+
+                    <!-- 장르 -->
+                    <label>장르</label>
                     <select id="edit-room-theme">
-                        <c:forEach var="theme" items="${themeList}">
+                        <option value="">장르 선택</option>
 
-                            <option value="${theme.themeId}" ${theme.themeId == room.themeId ? 'selected' : ''}>
+                        <c:forEach var="theme" items="${themeList}">
+                            <option value="${theme.themeId}"
+                                ${theme.themeId == room.themeId ? 'selected' : ''}>
                                     ${theme.themeName}
                             </option>
-
                         </c:forEach>
-
                     </select>
-
-                    <div class="modal-buttons"></div>
+                    <br><br>
+                    <div class="edit-room-buttons">
                     <button type="button" id="edit-room-cancel">취소</button>
                     <button type="button" id="edit-room-save">수정</button>
+                    </div>
+                 </div>
+            </div>
+            <div id="report-modal" class="modal">
+
+                <div class="modal-content">
+
+                    <h2>참여자 신고</h2>
+                    <p>신고 사유를 선택해주세요.</p>
+
+                    <label>
+                        <input type="radio" name="reportReason" value="욕설 / 비속어">욕설 / 비속어
+                    </label>
+                    <br>
+
+                    <label>
+                        <input type="radio" name="reportReason" value="도배 / 반복 메시지">도배 / 반복 메시지
+                    </label>
+                    <br>
+
+                    <label>
+                        <input type="radio" name="reportReason" value="비방 / 인신공격">비방 / 인신공격
+                    </label>
+                    <br>
+
+                    <label>
+                        <input type="radio" name="reportReason" value="음란 / 부적절한 내용">음란 / 부적절한 내용
+                    </label>
+                    <br>
+
+                    <label>
+                        <input type="radio" name="reportReason" value="광고 / 홍보">광고 / 홍보
+                    </label>
+                    <br>
+
+                    <label>
+                        <input type="radio" name="reportReason" value="기타">
+                        기타
+                    </label>
+                    <br><br>
+
+                    <textarea id="report-etc" placeholder="기타 신고 사유를 입력해주세요." maxlength="300" style="display:none;"></textarea>
+
+                    <div class="modal-buttons">
+
+                        <button type="button" id="report-cancel">
+                            취소
+                        </button>
+
+                        <button type="button" id="report-submit">
+                            신고하기
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -266,34 +343,16 @@
 <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.2.0/bundles/stomp.umd.min.js"></script>
 
 <script src="${pageContext.request.contextPath}/app.js"></script>
-<script> const loginMemberId = ${empty loginMemberId ? 0 : loginMemberId};
-async function reportMember(reportedId) {
+<script>
+    const loginMemberId = ${empty loginMemberId ? 0 : loginMemberId};
+    const roomOwnerId = ${empty room.ownerId ? 0 : room.ownerId};
+    let selectedReportedId = null;
 
-    const reason = prompt("신고 사유를 입력하세요.");
-
-    if (!reason || reason.trim() === "") {
-        return;
+    function reportMember(reportedId) {
+        selectedReportedId = reportedId;
+        document.querySelector("#report-modal").style.display = "flex";
     }
 
-    const response =
-        await fetch("/chat/report", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                roomId: ${empty room ? 0 : room.roomId},
-                reportedId: reportedId,
-                reason: reason.trim()
-            })
-        });
-
-    if (!response.ok) {
-        alert("신고에 실패했습니다.");
-        return;
-    }
-    alert("신고되었습니다.");
-}
 </script>
 <script src="${pageContext.request.contextPath}/chatroom.js"></script>
 </body>

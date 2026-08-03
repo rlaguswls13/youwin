@@ -22,7 +22,10 @@
     const editRoomName = document.querySelector("#edit-room-name");
     const editRoomDescription = document.querySelector("#edit-room-description");
     const editRoomTheme = document.querySelector("#edit-room-theme");
-
+    const editRoomType = document.querySelector("#edit-room-type");
+    const editTargetLabel = document.querySelector("#edit-target-label");
+    const editTargetId = document.querySelector("#edit-target-id");
+    const editRoomImage = document.querySelector("#edit-room-image");
 
     let stompClient = null;
     let isConnected = false;
@@ -138,10 +141,7 @@
                     destination: "/app/member/join",
 
                     body: JSON.stringify({
-
-                        roomId: Number(roomId),
-                        memberId: myMemberId
-
+                        roomId: Number(roomId)
                     })
                 });
             },
@@ -341,9 +341,72 @@
 
     }
 
-    if(editRoomButton && editRoomModal) {
-        editRoomButton.addEventListener("click", function (){
+    if (editRoomButton && editRoomModal) {
+        editRoomButton.addEventListener("click", async function () {
             editRoomModal.classList.add("show");
+            await loadEditTarget();
+        });
+    }
+    async function loadEditTarget() {
+
+        if (!editRoomType || !editTargetId) {
+            return;
+        }
+
+        const roomType = editRoomType.value;
+
+        editTargetId.innerHTML = `<option value="">선택해주세요</option>`;
+
+        // 아티스트 방
+        if (roomType === "artist") {
+
+            editTargetLabel.textContent = "아티스트 선택";
+
+            const response = await fetch("/chat/artist/list");
+            const artists = await response.json();
+
+            artists.forEach(function (artist) {
+
+                const option = document.createElement("option");
+
+                option.value = artist.artistId;
+                option.textContent = artist.artistName;
+
+                editTargetId.appendChild(option);
+            });
+
+        }
+
+        // 노래 방
+        else if (roomType === "song") {
+            editTargetLabel.textContent = "노래 선택";
+
+            const response = await fetch("/chat/song/list");
+            const songs = await response.json();
+
+            songs.forEach(function (song) {
+
+                const option = document.createElement("option");
+
+                option.value = song.songId;
+                option.textContent = song.songTitle;
+                editTargetId.appendChild(option);
+            });
+        }
+
+        // 현재 방의 targetId 가져오기
+        const response = await fetch("/chat/room/" + roomId);
+        const room = await response.json();
+
+        // 기존 아티스트 또는 노래 선택
+        if (room.roomType === roomType) {
+            editTargetId.value = room.targetId;
+        }
+    }
+
+    if (editRoomType) {
+        editRoomType.addEventListener("change", function () {
+            loadEditTarget();
         });
     }
 
@@ -365,36 +428,87 @@
         });
     }
 
-    if(editRoomSave) {
+    if (editRoomSave) {
 
-        editRoomSave.addEventListener("click", async function(){
+        editRoomSave.addEventListener("click", async function () {
 
-            const roomId = Number(new URLSearchParams(location.search).get("roomId"));
+            const roomName = editRoomName.value.trim();
+            const roomDescription = editRoomDescription.value.trim();
+            const roomType = editRoomType.value;
+            const targetId = Number(editTargetId.value);
+            const themeId = Number(editRoomTheme.value);
 
-            const response = await fetch("/chat/room/update",{
 
-                method:"POST",
-                headers:{
-                    "Content-Type":"application/json"
-                },
-
-                body:JSON.stringify({
-
-                    roomId:roomId,
-                    roomName:editRoomName.value,
-                    roomDescription:editRoomDescription.value,
-                    themeId:Number(editRoomTheme.value)
-                })
-            });
-
-            if(!response.ok){
-
-                alert("채팅방 수정에 실패했습니다.");
+            // 입력 확인
+            if (roomName === "") {
+                alert("채팅방 이름을 입력해주세요.");
                 return;
             }
-            alert("수정되었습니다.");
-            location.reload();
 
+            if (roomDescription === "") {
+                alert("방 설명을 입력해주세요.");
+                return;
+            }
+
+            if (!targetId) {
+                alert("아티스트 또는 노래를 선택해주세요.");
+                return;
+            }
+
+            if (!themeId) {
+                alert("장르를 선택해주세요.");
+                return;
+            }
+
+
+            // 서버로 보낼 채팅방 정보
+            const data = {
+
+                roomId: roomId,
+                roomName: roomName,
+                roomDescription: roomDescription,
+                roomType: roomType,
+                targetId: targetId,
+                themeId: themeId
+            };
+
+
+            // FormData 생성
+            const formData = new FormData();
+
+
+            // 채팅방 정보 JSON
+            formData.append("room", new Blob([JSON.stringify(data)], {type: "application/json"}
+                )
+            );
+
+
+            // 새 이미지가 있으면 추가
+            const imageFile = editRoomImage.files[0];
+
+            if (imageFile) {
+
+                formData.append("image", imageFile
+                );
+            }
+
+            // 서버 전송
+            const response =
+                await fetch("/chat/room/update", {
+                    method: "POST",
+                    body: formData
+                });
+
+            if (!response.ok) {
+
+                const message = await response.text();
+
+                alert(message || "채팅방 수정에 실패했습니다.");
+
+                return;
+            }
+            alert("채팅방이 수정되었습니다.");
+            location.reload();
         });
     }
 
@@ -424,8 +538,7 @@
 
                 body: JSON.stringify({
 
-                    roomId: roomId,
-                    memberId: myMemberId
+                    roomId: roomId
                 })
             });
         });
@@ -439,7 +552,7 @@
         const memberCount = document.querySelector("#member-count");
         const roomMemberCount = document.querySelector("#room-member-count");
 
-        if(!onlineList || !offlineList) {
+        if (!onlineList || !offlineList) {
             return;
         }
 
@@ -448,45 +561,187 @@
 
         let onlineCount = 0;
 
-        members.forEach(function (member){
+        // 방장이 항상 먼저 오도록 정렬
+        members.sort(function(a, b) {
+
+            if (a.memberId === roomOwnerId) {
+                return -1;
+            }
+            if (b.memberId === roomOwnerId) {
+                return 1;
+            }
+            return 0;
+        });
+
+
+        members.forEach(function(member) {
+
+            // 방장 표시
+            let ownerText = "";
+
+            if (member.memberId === roomOwnerId) {
+                ownerText = `<span style="color: blue; font-weight: bold;">[방장]</span>`;
+            }
+
+
+            // 자기 자신에게는 신고 버튼 안 보이게
+            let reportButton = "";
+
+            if (member.memberId !== loginMemberId) {
+
+                reportButton = `
+                <button
+                    type="button"
+                    onclick="reportMember(${member.memberId})"
+                    style="margin-left:auto; font-size:11px;">
+                    신고
+                </button>
+            `;
+            }
+
 
             const html = `
-                        <div class="member-item">
-                        
-                        <span class="avatar">
-                            ${member.nickname.substring(0,1)}
-                        </span>
-                        
-                        <span>
-                        
-                            <strong class="member-item__name">
-                                ${member.nickname}
-                            </strong>    
-                            
-                            <span class="member-item__status">
-                                ${member.online ? "🟢 참여중" : "⚪ 오프라인"}
-                            </span>
-                            
-                          </span>
-                          
-                       </div>         
-                    
-                    `;
+            <div class="member-item">
 
-            if(member.online) {
+                <span class="avatar">
+                    ${member.nickname.substring(0, 1)}
+                </span>
+
+                <span>
+
+                    <strong class="member-item__name">
+                       ${member.nickname}
+                    </strong>
+
+                    ${ownerText}
+
+                    <span class="member-item__status">
+                        ${member.online ? "🟢 참여중" : "⚪ 오프라인"}
+                    </span>
+
+                </span>
+                
+                ${reportButton}
+                
+            </div>
+        `;
+
+
+            if (member.online) {
                 onlineCount++;
                 onlineList.innerHTML += html;
-            }else{
+            } else {
                 offlineList.innerHTML += html;
             }
         });
 
-        if(memberCount){
-            memberCount.textContent = onlineCount + "명";
+        if (memberCount) {memberCount.textContent = onlineCount + "명";}
+        if (roomMemberCount) {roomMemberCount.textContent = onlineCount + "명";}
+    }
+    // 신고 사유 선택
+    document.querySelectorAll("input[name='reportReason']").forEach(function(radio) {
+
+        radio.addEventListener("change", function() {
+
+            const etcInput = document.querySelector("#report-etc");
+
+            if (this.value === "기타") {
+                etcInput.style.display = "block";
+            } else {
+                etcInput.style.display = "none";
+                etcInput.value = "";
+            }
+        });
+
+    });
+
+        // 취소 버튼
+        document.querySelector("#report-cancel").addEventListener("click", function() {
+        closeReportModal();
+    });
+
+
+        // 신고하기 버튼
+        document.querySelector("#report-submit").addEventListener("click", async function() {
+        const selectedReason = document.querySelector("input[name='reportReason']:checked");
+        // 신고 사유 선택 안 함
+        if (!selectedReason) {
+            alert("신고 사유를 선택해주세요.");
+            return;
         }
 
-        if(roomMemberCount) {
-            roomMemberCount.textContent = onlineCount + "명";
+        let reason = selectedReason.value;
+
+        // 기타 선택했을 경우
+        if (reason === "기타") {
+
+            const etcReason = document.querySelector("#report-etc").value.trim();
+
+
+            if (etcReason === "") {
+
+                alert("기타 신고 사유를 입력해주세요.");
+                return;
+            }
+            reason = "기타: " + etcReason;
         }
+
+
+        // 현재 채팅방 번호
+        const roomId = new URLSearchParams(location.search).get("roomId");
+
+        // 서버로 신고 전송
+        const response = await fetch("/chat/report", {
+
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                roomId: Number(roomId),
+                reportedId: selectedReportedId,
+                reason: reason
+            })
+        });
+
+
+        if (response.ok) {
+
+            alert("신고가 접수되었습니다.");
+            closeReportModal();
+
+        } else {
+
+            const message = await response.text();
+            alert(message || "신고 처리에 실패했습니다.");
+        }
+    });
+
+
+    // 신고 모달 닫기
+    function closeReportModal() {
+
+        const modal = document.querySelector("#report-modal");
+        modal.style.display = "none";
+
+        // 신고 대상 초기화
+        selectedReportedId = null;
+
+        // 체크했던 신고 사유 초기화
+        document
+            .querySelectorAll("input[name='reportReason']")
+            .forEach(function(radio) {
+
+                radio.checked = false;
+
+            });
+        // 기타 내용 초기화
+        const etcInput =
+            document.querySelector("#report-etc");
+
+        etcInput.value = "";
+        etcInput.style.display = "none";
+
     }
 })();
