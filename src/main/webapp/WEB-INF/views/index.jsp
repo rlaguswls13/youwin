@@ -24,7 +24,7 @@
             <nav class="site-nav" data-site-nav aria-label="주요 메뉴">
                 <a class="is-active" href="${pageContext.request.contextPath}/">홈</a>
                 <a href="${pageContext.request.contextPath}/board">게시판</a>
-                <a href="${pageContext.request.contextPath}/chatroom">채팅방</a>
+                <a href="${pageContext.request.contextPath}/index">채팅방</a>
 
                 <!-- 🟢 로그인 상태일 때만 마이페이지 노출 -->
                 <sec:authorize access="isAuthenticated()">
@@ -73,7 +73,7 @@
                     <h1 id="hero-title">같이 들으면<br>더 선명해지는 음악</h1>
                     <p class="hero__description">좋아하는 아티스트와 노래를 중심으로 대화하고, 오늘의 플레이리스트를 발견하세요.</p>
                     <div class="hero__actions">
-                        <a class="button" href="${pageContext.request.contextPath}/chatroom">지금 대화 참여하기</a>
+                        <a class="button" href="${pageContext.request.contextPath}/index">지금 대화 참여하기</a>
                         <a class="button button--secondary" href="#open-rooms">인기 채팅방 보기</a>
                     </div>
                 </div>
@@ -97,7 +97,7 @@
                         <h2 class="section-title" id="room-title">지금 활발한 오픈 톡</h2>
                         <p class="section-copy">같은 곡을 듣고 있는 사람들과 바로 이야기해 보세요.</p>
                     </div>
-                    <a class="text-link" href="${pageContext.request.contextPath}/chatroom">전체 채팅방 보기 →</a>
+                    <a class="text-link" href="${pageContext.request.contextPath}/index">전체 채팅방 보기 →</a>
                 </div>
                 <div class="room-grid">
                     <a class="room-card" href="${pageContext.request.contextPath}/chatroom">

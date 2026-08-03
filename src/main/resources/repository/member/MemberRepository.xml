@@ -57,6 +57,15 @@
         WHERE member_id = #{memberId}
     </select>
 
+    <!-- 로그인 아이디로 실제 회원 PK 조회 -->
+    <select id="findIdByMemberId" parameterType="string" resultType="int">
+
+        SELECT id
+        FROM member
+        WHERE member_id = #{memberId}
+
+    </select>
+
     <!-- 1. 아이디찾기 : 존재 여부 확인 (COUNT > 0 이면 true 반환) -->
     <select id="existsByNameAndEmail" resultType="boolean">
         SELECT COUNT(*) > 0

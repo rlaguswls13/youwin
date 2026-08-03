@@ -43,10 +43,17 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(
                                 "/member/mypage", "/member/settings", "/member/update**", "/member/delete"
+
                         ).authenticated()
 //                        .requestMatchers(
 //                                "/member/**")
 //                        .anonymous()
+                        .requestMatchers(
+                                "/index",
+                                "/chatroom",
+                                "/chatroom/**",
+                                "/chat/**"
+                        ).authenticated()
                         .anyRequest().permitAll()
                 )
                 .formLogin(form -> form

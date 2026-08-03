@@ -69,6 +69,19 @@ public class ChatRoomService {
 
     // ---------------------- 채팅방 ---------------------
 
+    public Integer findMemberPkByLoginId(String memberId) {
+
+        Integer memberPk = chatRoomRepository.findMemberPkByLoginId(memberId);
+
+        if (memberPk == null) {
+            throw new IllegalArgumentException(
+                    "로그인 회원 정보를 찾을 수 없습니다."
+            );
+        }
+
+        return memberPk;
+    }
+
     public List<ChatRoomDto> findRoomList(Integer memberId) {
         return chatRoomRepository.findRoomList(memberId);
     }
@@ -77,12 +90,23 @@ public class ChatRoomService {
         return chatRoomRepository.findRoom(roomId);
     }
 
-    public Integer createRoom(ChatRoomDto dto, MultipartFile image) {
 
+    @Transactional
+    public Integer createRoom(
+            ChatRoomDto dto,
+            MultipartFile image,
+            Integer loginMemberId) {
+
+        // =========================
+        // 1. 이미지 저장
+        // =========================
         if (image != null && !image.isEmpty()) {
 
-            String fileName = UUID.randomUUID() + "_" + image.getOriginalFilename();
-            String uploadPath = "D:/project/youwin/upload/chatroom/";
+            String fileName =
+                    UUID.randomUUID() + "_" + image.getOriginalFilename();
+
+            String uploadPath =
+                    "D:/project/youwin/upload/chatroom/";
 
             File dir = new File(uploadPath);
 
@@ -91,22 +115,69 @@ public class ChatRoomService {
             }
 
             try {
+
                 image.transferTo(new File(dir, fileName));
+
                 dto.setRoomImageUrl("/upload/chatroom/" + fileName);
+
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+
+        } else {
+
+            String defaultImage = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'><rect width='100%' height='100%' fill='%23cccccc'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%23333333'>No Image</text></svg>";
+            dto.setRoomImageUrl(defaultImage);
         }
 
-        // 채팅방 생성
+
+        // =========================
+        // 2. 로그인 회원을 방장으로 설정
+        // =========================
+        dto.setOwnerId(loginMemberId);
+
+
+        // =========================
+        // 3. 입력한 아티스트/노래로 targetId 찾기
+        // =========================
+        if ("artist".equals(dto.getRoomType())) {
+
+            Integer artistId = chatRoomRepository.findArtistIdByName(
+                    dto.getArtistName()
+                    );
+
+            if (artistId == null) {
+                throw new IllegalArgumentException("등록되어 있지 않은 아티스트입니다.");
+            }
+            dto.setTargetId(artistId);
+
+        } else if ("song".equals(dto.getRoomType())) {
+
+            Integer songId =
+                    chatRoomRepository.findSongIdByTitle(dto.getSongTitle());
+
+            if (songId == null) {
+                throw new IllegalArgumentException("등록되어 있지 않은 노래입니다.");
+            }
+            dto.setTargetId(songId);
+        } else {
+            throw new IllegalArgumentException("잘못된 채팅방 종류입니다.");
+        }
+
+        // =========================
+        // 4. 채팅방 생성
+        // =========================
         chatRoomRepository.createRoom(dto);
 
-        // 생성자를 채팅방에 자동 참여
+        // =========================
+        // 5. 방장을 참여자로 자동 가입
+        // =========================
         ChatRoomMemberDto memberDto = new ChatRoomMemberDto();
-        memberDto.setRoomId(dto.getRoomId());
-        memberDto.setMemberId(1); // 테스트용
-        chatRoomRepository.joinRoom(memberDto);
 
+        memberDto.setRoomId(dto.getRoomId());
+        memberDto.setMemberId(loginMemberId);
+
+        chatRoomRepository.joinRoom(memberDto);
         return dto.getRoomId();
     }
 
@@ -145,14 +216,25 @@ public class ChatRoomService {
 
     }
 
-    public void updateRoom(ChatRoomDto dto){
+    public void updateRoom(
+            ChatRoomDto dto,
+            Integer loginMemberId) {
+
+        ChatRoomDto room = chatRoomRepository.findRoom(dto.getRoomId());
+
+        if (room == null) {
+            throw new IllegalArgumentException("존재하지 않는 채팅방입니다.");
+        }
+
+        if (!loginMemberId.equals(room.getOwnerId())) {
+            throw new IllegalArgumentException("방장만 채팅방을 수정할 수 있습니다.");
+        }
 
         int result = chatRoomRepository.updateRoom(dto);
 
-        if(result == 0){
+        if (result == 0) {
             throw new RuntimeException("채팅방 수정 실패");
         }
-
     }
 
     public void deleteRoom(Integer roomId){ chatRoomRepository.deleteRoom(roomId);}
@@ -177,6 +259,10 @@ public class ChatRoomService {
         chatRoomRepository.saveMessage(dto);
 
         return chatRoomRepository.findMessage(dto.getMessageId());
+    }
+
+    public List<ChatRoomDto> findRoomsByType(String roomType) {
+        return chatRoomRepository.findRoomsByType(roomType);
     }
 
 
@@ -241,8 +327,21 @@ public class ChatRoomService {
 
         }
 
-        return members;
+        ChatRoomDto room = chatRoomRepository.findRoom(roomId);
 
+        if (room != null && room.getOwnerId() != null) {
+
+            members.sort((member1, member2) -> {
+
+                boolean member1Owner = member1.getMemberId().equals(room.getOwnerId());
+                boolean member2Owner = member2.getMemberId().equals(room.getOwnerId());
+
+                if (member1Owner && !member2Owner) {return -1;}
+                if (!member1Owner && member2Owner) {return 1;}
+                return 0;
+            });
+        }
+        return members;
     }
 
     // ------------- 현재 접속 중인 참여자 조회 -----------
@@ -260,6 +359,28 @@ public class ChatRoomService {
         dto.setMemberId(memberId);
 
         chatRoomRepository.joinRoom(dto);
+    }
+
+    public void saveReport(
+            ChatReportDto dto,
+            Integer loginMemberId) {
+
+        if (loginMemberId.equals(dto.getReportedId())) {
+            throw new IllegalArgumentException("자기 자신은 신고할 수 없습니다.");
+        }
+
+        boolean joined =
+                chatRoomRepository.isJoined(
+                        dto.getRoomId(),
+                        loginMemberId
+                );
+
+        if (!joined) {
+            throw new IllegalArgumentException("채팅방 참여자만 신고할 수 있습니다.");
+        }
+
+        dto.setReporterId(loginMemberId);
+        chatRoomRepository.saveReport(dto);
     }
 }
 

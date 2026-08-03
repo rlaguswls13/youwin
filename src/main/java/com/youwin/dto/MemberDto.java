@@ -47,5 +47,6 @@ public class MemberDto {
         if (this.deletedAt == null) return "";
         return this.deletedAt.format(DateTimeFormatter.ofPattern("yyyy.MM.dd"));
     }
+
 }
 
