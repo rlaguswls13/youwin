@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 @RequiredArgsConstructor
@@ -88,6 +89,10 @@ public class SecurityConfig {
                             }
                         })
                 )
+                .sessionManagement(session -> session
+                                .maximumSessions(1) // 동시 접속 1명으로 제한
+                                .expiredUrl("/member/login?expired=true") // 기존 세션 만료 시 리다이렉트 페이지
+                )
                 .addFilterBefore(
                         autoLoginFilter,
                         UsernamePasswordAuthenticationFilter.class
@@ -100,5 +105,10 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
     }
 }

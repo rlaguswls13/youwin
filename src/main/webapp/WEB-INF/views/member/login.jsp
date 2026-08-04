@@ -65,5 +65,20 @@
         </section>
     </main>
 </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // URL의 쿼리 파라미터 읽기
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // 다른 곳에서 로그인하여 세션이 만료된 경우 (기존 유저만 해당)
+        if (urlParams.has('expired')) {
+            alert('다른 기기나 브라우저에서 로그인하여 접속이 종료되었습니다.');
+
+            // alert 확인 후 주소창의 ?expired=true 파라미터 깔끔하게 제거
+            history.replaceState(null, null, window.location.pathname);
+        }
+    });
+</script>
 </body>
 </html>
