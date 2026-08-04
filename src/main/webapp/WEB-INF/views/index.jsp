@@ -47,7 +47,7 @@
 
                     <!-- 2. 비로그인(익명) 상태인 경우 -->
                     <sec:authorize access="isAnonymous()">
-                        <a href="${pageContext.request.contextPath}/member/login" class="auth-btn">로그인</a>
+                        <a href="${pageContext.request.contextPath}/login/login" class="auth-btn">로그인</a>
                         <a href="${pageContext.request.contextPath}/member/joinStep1" class="auth-btn">회원가입</a>
                     </sec:authorize>
                 </div>

@@ -23,7 +23,7 @@ public class MemberAccountRecoveryController {
         String memberEmail = (String) session.getAttribute("unlockMemberEmail");
 
         if (memberId == null || memberEmail == null) {
-            return "redirect:/member/login";
+            return "redirect:/login/login";
         }
 
         model.addAttribute("memberId", memberId);
@@ -38,7 +38,7 @@ public class MemberAccountRecoveryController {
         String memberEmail = (String) session.getAttribute("restoreMemberEmail");
 
         if (memberId == null || memberEmail == null) {
-            return "redirect:/member/login";
+            return "redirect:/login/login";
         }
 
         model.addAttribute("memberId", memberId);

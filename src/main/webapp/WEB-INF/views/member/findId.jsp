@@ -31,7 +31,7 @@
                         <a href="${pageContext.request.contextPath}/member/logout">로그아웃</a>
                     </c:if>
                     <c:if test="${empty sessionScope.loginUser}">
-                        <a href="${pageContext.request.contextPath}/member/login">로그인</a>
+                        <a href="${pageContext.request.contextPath}/login/login">로그인</a>
                         <a href="${pageContext.request.contextPath}/member/joinStep1">회원가입</a>
                     </c:if>
                 </div>
@@ -99,7 +99,7 @@
 
                 <div class="account-links">
                     <a class="text-link" href="${pageContext.request.contextPath}/member/findPassword">비밀번호 찾기</a>
-                    <a class="text-link" href="${pageContext.request.contextPath}/member/login">로그인으로 돌아가기</a>
+                    <a class="text-link" href="${pageContext.request.contextPath}/login/login">로그인으로 돌아가기</a>
                 </div>
             </div>
         </div>

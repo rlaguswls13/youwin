@@ -31,7 +31,7 @@ public class MemberController {
     @PostMapping("/join")
     public String join(MemberDto memberDto) {
         memberService.joinMember(memberDto);
-        return "redirect:/member/login";
+        return "redirect:/login/login";
     }
 
     // 닉네임 변경
@@ -137,7 +137,7 @@ public class MemberController {
             RedirectAttributes rttr) {
 
         if (userDetails == null) {
-            return "redirect:/member/login";
+            return "redirect:/login/login";
         }
 
         String memberId = userDetails.getUsername();

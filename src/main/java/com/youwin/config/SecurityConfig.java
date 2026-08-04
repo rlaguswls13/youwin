@@ -37,7 +37,7 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(
                                 "/", "/api/member/**",
-                                "/member/login",
+                                "/login/login",
                                 "/member/unlockDormant",
                                 "/member/restoreAccount"
                         ).permitAll()
@@ -57,8 +57,8 @@ public class SecurityConfig {
                         .anyRequest().permitAll()
                 )
                 .formLogin(form -> form
-                        .loginPage("/member/login")
-                        .loginProcessingUrl("/member/login")
+                        .loginPage("/login/login")
+                        .loginProcessingUrl("/login/login")
                         .usernameParameter("memberId")
                         .passwordParameter("memberPassword")
                         .successHandler(customLoginSuccessHandler)
@@ -91,7 +91,7 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session -> session
                                 .maximumSessions(1) // 동시 접속 1명으로 제한
-                                .expiredUrl("/member/login?expired=true") // 기존 세션 만료 시 리다이렉트 페이지
+                                .expiredUrl("/login/login?expired=true") // 기존 세션 만료 시 리다이렉트 페이지
                 )
                 .addFilterBefore(
                         autoLoginFilter,

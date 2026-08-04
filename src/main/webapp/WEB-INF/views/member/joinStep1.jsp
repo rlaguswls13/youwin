@@ -25,7 +25,7 @@
 
   <main class="auth-main">
     <section class="auth-card join-container" aria-labelledby="pageTitle">
-      <a class="auth-back" href="${pageContext.request.contextPath}/member/login">← 로그인으로 돌아가기</a>
+      <a class="auth-back" href="${pageContext.request.contextPath}/login/login">← 로그인으로 돌아가기</a>
       <div class="join-progress" id="joinProgress" aria-label="가입 진행 단계">
         <span></span><span></span><span class="join-progress__label" id="progressLabel">1 / 2</span>
       </div>

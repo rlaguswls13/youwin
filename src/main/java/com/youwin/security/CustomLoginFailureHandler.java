@@ -60,7 +60,7 @@ public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
         // 3. BANNED (이용 정지 계정)
         if ("BANNED".equals(message)) {
             String errorMsg = URLEncoder.encode("운영 정책 위반으로 이용이 정지된 계정입니다.", StandardCharsets.UTF_8);
-            response.sendRedirect("/member/login?error=true&exception=" + errorMsg);
+            response.sendRedirect("/login/login?error=true&exception=" + errorMsg);
             return;
         }
 
@@ -76,7 +76,7 @@ public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
                     session.setAttribute("unlockMemberEmail", memberDto.getMemberEmail());
                 }
                 String errorMsg = URLEncoder.encode("지속적인 로그인 실패로 계정이 잠겼습니다. 30분 후 다시 시도하거나 이메일 인증으로 해제해 주세요.", StandardCharsets.UTF_8);
-                response.sendRedirect("/member/login?error=true&exception=" + errorMsg + "&isLocked=true");
+                response.sendRedirect("/login/login?error=true&exception=" + errorMsg + "&isLocked=true");
                 return;
             }*/
 
@@ -97,7 +97,7 @@ public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
                     session.setAttribute("unlockMemberEmail", memberDto.getMemberEmail());
 
                     String errorMsg = URLEncoder.encode("비밀번호를 5회 이상 틀려 계정이 잠겼습니다. 30분 후 다시 시도하거나 이메일 인증으로 해제해 주세요.", StandardCharsets.UTF_8);
-                    response.sendRedirect("/member/login?error=true&exception=" + errorMsg + "&isLocked=true");
+                    response.sendRedirect("/login/login?error=true&exception=" + errorMsg + "&isLocked=true");
                     return;
                 }
             }*/
@@ -105,6 +105,6 @@ public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
 
         // 5. 회원 정보가 없거나, 1~4회 실패 시 공통 실패 응답 (계정 존재 여부 노출 방지!)
         String errorMsg = URLEncoder.encode("아이디 또는 비밀번호가 올바르지 않습니다.", StandardCharsets.UTF_8);
-        response.sendRedirect("/member/login?error=true&exception=" + errorMsg);
+        response.sendRedirect("/login/login?error=true&exception=" + errorMsg);
     }
 }

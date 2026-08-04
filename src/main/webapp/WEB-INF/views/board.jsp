@@ -22,7 +22,7 @@
                 <a href="${pageContext.request.contextPath}/index">채팅방</a>
                 <a href="${pageContext.request.contextPath}/member/mypage">마이페이지</a>
             </nav>
-            <div class="site-header__actions"><a class="button button--secondary" href="${pageContext.request.contextPath}/member/login">로그인</a><a class="avatar-link" href="${pageContext.request.contextPath}/member/mypage" aria-label="마이페이지">YU</a></div>
+            <div class="site-header__actions"><a class="button button--secondary" href="${pageContext.request.contextPath}/login/login">로그인</a><a class="avatar-link" href="${pageContext.request.contextPath}/member/mypage" aria-label="마이페이지">YU</a></div>
             <button class="menu-toggle" type="button" data-menu-toggle aria-label="메뉴 열기" aria-expanded="false"></button>
         </div>
     </header>

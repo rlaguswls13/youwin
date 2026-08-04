@@ -46,7 +46,7 @@ public class ChatroomController {
             Model model) {
 
         if (userDetails == null) {
-            return "redirect:/member/login";
+            return "redirect:/login/login";
         }
 
         String memberId = userDetails.getMemberDto().getMemberId();

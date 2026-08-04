@@ -31,7 +31,7 @@
                         <a href="${pageContext.request.contextPath}/member/logout">로그아웃</a>
                     </c:if>
                     <c:if test="${empty sessionScope.loginUser}">
-                        <a href="${pageContext.request.contextPath}/member/login">로그인</a>
+                        <a href="${pageContext.request.contextPath}/login/login">로그인</a>
                         <a href="${pageContext.request.contextPath}/member/joinStep1">회원가입</a>
                     </c:if>
                 </div>
@@ -107,7 +107,7 @@
 
                 <div class="account-links">
                     <a class="text-link" href="${pageContext.request.contextPath}/member/findId">아이디 찾기</a>
-                    <a class="text-link" href="${pageContext.request.contextPath}/member/login">로그인으로 돌아가기</a>
+                    <a class="text-link" href="${pageContext.request.contextPath}/login/login">로그인으로 돌아가기</a>
                 </div>
             </div>
         </div>
@@ -247,7 +247,7 @@
             .then(data => {
                 if (data.success) {
                     alert('비밀번호가 성공적으로 변경되었습니다. 로그인 페이지로 이동합니다.');
-                    location.href = '${pageContext.request.contextPath}/member/login';
+                    location.href = '${pageContext.request.contextPath}/login/login';
                 } else {
                     alert(data.message || '비밀번호 변경에 실패했습니다.');
                 }
