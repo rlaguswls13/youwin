@@ -68,7 +68,7 @@ public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
         if (memberId != null && !memberId.trim().isEmpty()) {
 
             // ① 이미 30분 일시 잠금 또는 3회 누적 영구 잠금 상태인지 확인!
-            if (memberSecurityRepository.isLocked(memberId)) {
+            /*if (memberSecurityRepository.isLocked(memberId)) {
                 MemberDto memberDto = memberService.getMemberById(memberId);
                 if (memberDto != null) {
                     HttpSession session = request.getSession();
@@ -78,17 +78,17 @@ public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
                 String errorMsg = URLEncoder.encode("지속적인 로그인 실패로 계정이 잠겼습니다. 30분 후 다시 시도하거나 이메일 인증으로 해제해 주세요.", StandardCharsets.UTF_8);
                 response.sendRedirect("/member/login?error=true&exception=" + errorMsg + "&isLocked=true");
                 return;
-            }
+            }*/
 
             // ② DB에 실제 존재하는 회원인지 확인
             MemberDto memberDto = memberService.getMemberById(memberId);
 
-            if (memberDto != null) {
+            /*if (memberDto != null) {
                 // 실패 카운트 1 증가
                 memberSecurityRepository.increaseLoginFailCount(memberId);
                 int failCount = memberSecurityRepository.getLoginFailCount(memberId);
 
-                // 5회 실패 달성 시 -> 계정 잠금 처리 (lock_count + 1, locked_at = NOW())
+                // 5회 실패 달성 시 -> 계정 잠금 처리 (lock_count + 1)
                 if (failCount >= 5) {
                     memberSecurityRepository.lockAccount(memberId);
 
@@ -100,7 +100,7 @@ public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
                     response.sendRedirect("/member/login?error=true&exception=" + errorMsg + "&isLocked=true");
                     return;
                 }
-            }
+            }*/
         }
 
         // 5. 회원 정보가 없거나, 1~4회 실패 시 공통 실패 응답 (계정 존재 여부 노출 방지!)

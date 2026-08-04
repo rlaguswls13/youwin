@@ -14,7 +14,7 @@
 </head>
 <body>
 
-<!-- 🟢 Spring Security principal 및 memberDto 변수 바인딩 -->
+<!-- 🟢 Spring Security principal 및 memberDto 변수 안전하게 바인딩 -->
 <sec:authorize access="isAuthenticated()">
     <sec:authentication property="principal" var="principal"/>
     <c:set var="member" value="${not empty principal.memberDto ? principal.memberDto : member}"/>
@@ -35,8 +35,14 @@
             </nav>
             <div class="site-header__actions">
                 <a class="button button--secondary" href="${pageContext.request.contextPath}/member/settings">프로필 설정</a>
-                <!-- 아바타에 닉네임 첫 글자 표시 -->
-                <span class="avatar">${not empty member.nickname ? fn:substring(member.nickname, 0, 1) : 'YU'}</span>
+                <span class="avatar">
+                    <c:choose>
+                        <c:when test="${not empty member.nickname}">
+                            <c:out value="${fn:substring(member.nickname, 0, 1)}"/>
+                        </c:when>
+                        <c:otherwise>YU</c:otherwise>
+                    </c:choose>
+                </span>
             </div>
             <button class="menu-toggle" type="button" data-menu-toggle aria-label="메뉴 열기" aria-expanded="false"></button>
         </div>
@@ -45,21 +51,31 @@
     <main class="page-main">
         <div class="site-container">
             <section class="surface profile-hero" aria-labelledby="profile-title">
-                <!-- 1. 프로필 사진 (클래스 조합으로 인라인 스타일 불필요) -->
+                <!-- 1. 프로필 사진 (경로 안전 바인딩) -->
                 <div class="profile-avatar">
-                        <img id="mainAvatarImg"
-                             src="${not empty member.profileImage ? pageContext.request.contextPath.concat(member.profileImage) : pageContext.request.contextPath.concat('/upload/profile/default-profile.svg')}"
-                             class="profile-img"
-                             alt="사용자 프로필 사진">
-                    </div>
+                    <c:choose>
+                        <c:when test="${not empty member.profileImage}">
+                            <img id="mainAvatarImg"
+                                 src="${pageContext.request.contextPath}${member.profileImage}"
+                                 class="profile-img"
+                                 alt="사용자 프로필 사진">
+                        </c:when>
+                        <c:otherwise>
+                            <img id="mainAvatarImg"
+                                 src="${pageContext.request.contextPath}/upload/profile/default-profile.svg"
+                                 class="profile-img"
+                                 alt="기본 프로필 사진">
+                        </c:otherwise>
+                    </c:choose>
+                </div>
 
                 <div class="profile-copy">
                     <p class="profile-copy__label">MY MUSIC PROFILE</p>
-                    <h1 id="profile-title">${member.nickname}</h1>
+                    <h1 id="profile-title"><c:out value="${member.nickname}"/></h1>
                     <div class="profile-copy__meta">
-                        <span>@${member.memberId}</span>
-                        <span>가입일 ${member.formattedCreatedAt}</span>
-                        <span>수정일 ${member.formattedUpdatedAt}</span>
+                        <span>@<c:out value="${member.memberId}"/></span>
+                        <span>가입일 <c:out value="${member.formattedCreatedAt}"/></span>
+                        <span>수정일 <c:out value="${member.formattedUpdatedAt}"/></span>
                     </div>
                 </div>
 

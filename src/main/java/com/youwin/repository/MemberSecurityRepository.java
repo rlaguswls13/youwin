@@ -12,7 +12,7 @@ public interface MemberSecurityRepository {
     void increaseLoginFailCount(@Param("memberId") String memberId);
 
     /**
-     * 계정 잠금 처리 (실패 5회 도달 시: lock_count + 1, locked_at = NOW(), 3회 이상 시 is_locked = 1)
+     * 계정 잠금 처리 (실패 5회 도달 시: lock_count + 1, 3회 이상 시 is_locked = 1)
      */
     void lockAccount(@Param("memberId") String memberId);
 

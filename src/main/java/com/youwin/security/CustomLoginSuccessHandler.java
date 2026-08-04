@@ -5,6 +5,7 @@ import com.youwin.service.MemberService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
@@ -33,7 +34,7 @@ public class CustomLoginSuccessHandler
         String memberId = user.getUsername();
 
         // 1. 로그인 성공했으므로 보안 테이블 전체 리셋 (실패/잠금 카운트 = 0)
-        memberSecurityRepository.resetLoginFailCount(memberId);
+        //memberSecurityRepository.resetLoginFailCount(memberId);
 
         // 2. 마지막 로그인 시간 갱신
         memberService.updateLastLoginAt(memberId);
@@ -46,6 +47,11 @@ public class CustomLoginSuccessHandler
 
         // 4. 기본 이동할 URL 설정
         setDefaultTargetUrl("/");
+
+        // 5. 유저 기본 정보
+        HttpSession session = request.getSession();
+        session.setAttribute("nickname", user.getMemberDto().getNickname());
+        session.setAttribute("profile", user.getMemberDto().getProfileImage());
 
         super.onAuthenticationSuccess(request, response, authentication);
     }
