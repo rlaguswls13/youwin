@@ -27,6 +27,34 @@
     const editTargetId = document.querySelector("#edit-target-id");
     const editRoomImage = document.querySelector("#edit-room-image");
 
+    if (roomMenuButton && roomMenu) {
+        function closeRoomMenu() {
+            roomMenu.classList.remove("show");
+            roomMenuButton.setAttribute("aria-expanded", "false");
+        }
+
+        roomMenuButton.addEventListener("click", function (event) {
+            event.stopPropagation();
+            const isOpen = roomMenu.classList.toggle("show");
+            roomMenuButton.setAttribute("aria-expanded", String(isOpen));
+        });
+
+        document.addEventListener("click", function (event) {
+            if (!roomMenu.contains(event.target) && !roomMenuButton.contains(event.target)) {
+                closeRoomMenu();
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                closeRoomMenu();
+                if (editRoomModal) editRoomModal.classList.remove("show");
+                const reportModal = document.querySelector("#report-modal");
+                if (reportModal) reportModal.style.display = "none";
+            }
+        });
+    }
+
     let stompClient = null;
     let isConnected = false;
 

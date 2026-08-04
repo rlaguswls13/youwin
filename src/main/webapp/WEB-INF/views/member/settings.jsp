@@ -9,84 +9,9 @@
   <title>프로필 설정 | Youwin</title>
   <link rel="stylesheet" href="${pageContext.request.contextPath}/app.css">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/mypage.css">
-  <style>
-    .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      display: none; justify-content: center; align-items: center; z-index: 1000;
-    }
-    .modal-overlay.is-active { display: flex; }
-    .modal-content {
-      background: #fff; padding: 2rem; border-radius: 12px; width: 100%; max-width: 400px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative;
-    }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-    .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
-    .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid #eee; }
-    .setting-info label { display: block; font-size: 0.85rem; color: #666; }
-    .setting-info p { font-size: 1rem; font-weight: 600; margin: 0.2rem 0 0 0; }
-
-    /* 기본 가이드 상태일 때 (회색) */
-    .error-msg {
-      font-size: 12px;
-      color: #888888;
-      min-height: 18px;
-      line-height: 18px;
-      display: block;
-      margin-top: 4px;
-      transition: color 0.2s ease;
-    }
-    /* 에러 상태일 때 (빨간색) */
-    .error-msg.has-error {
-      color: #e53e3e;
-    }
-    /* 성공/중복확인 통과 상태일 때 (초록색) */
-    .error-msg.success-msg {
-      color: #21a675;
-    }
-
-    /* ==========================================
-   프로필 이미지 규격 통일 스타일
-   ========================================== */
-
-    /* 1. 프로필 아바타 기본 레이아웃 (원형 & 120px 규격) */
-    .profile-avatar {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #f0f0f0;
-      border: 4px solid #6366f1; /* 맘에 들어 하신 원형 테두리 라인 */
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
-      flex-shrink: 0;
-    }
-
-    /* 2. 내부 이미지 규격 및 비율 유지 */
-    .profile-avatar .profile-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    /* 3. 메인 설정 카드 내 프로필 정렬 및 간격 */
-    .profile-avatar-edit {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1.25rem;
-      padding: 1rem 0;
-    }
-
-    /* 4. 모달 내부 프로필 미리보기 중앙 정렬 */
-    .modal-avatar-wrapper {
-      margin: 0 auto 1.5rem auto;
-    }
-  </style>
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/account.css">
 </head>
-<body>
+<body class="settings-page">
 
 <%-- Security Context의 memberDto 객체를 member 변수로 안전하게 바인딩 --%>
 <sec:authorize access="isAuthenticated()">
@@ -98,21 +23,24 @@
   <header class="site-header">
     <div class="site-container site-header__inner">
       <a class="brand" href="${pageContext.request.contextPath}/"><span class="brand__mark">YW</span><span>Youwin</span></a>
-      <nav class="site-nav">
+      <nav class="site-nav" data-site-nav aria-label="설정 메뉴">
         <a href="${pageContext.request.contextPath}/member/mypage">마이페이지</a>
       </nav>
+      <button class="menu-toggle" type="button" data-menu-toggle aria-label="메뉴 열기" aria-expanded="false"></button>
     </div>
   </header>
 
   <main class="page-main">
-    <div class="site-container" style="max-width: 600px;">
-      <section class="section-head page-head">
-        <h1 class="section-title">계정 및 프로필 설정</h1>
+    <div class="site-container settings-container">
+      <section class="settings-head page-heading">
+        <p class="page-eyebrow">Account settings</p>
+        <h1 class="page-title">계정 및 프로필 설정</h1>
+        <p class="page-description">프로필과 로그인 정보를 안전하게 관리하세요.</p>
       </section>
 
       <!-- 1. 프로필 사진 카드 -->
-      <section class="surface mypage-card">
-        <h2 class="section-title">프로필 사진</h2>
+      <section class="surface settings-card">
+        <div class="settings-card__head"><h2 class="section-title">프로필 사진</h2><span class="chip">PROFILE</span></div>
         <div class="profile-avatar-edit">
           <!-- 인라인 style 없이 class만 사용 -->
           <div class="profile-avatar" id="avatarPreviewContainer">
@@ -125,8 +53,8 @@
       </section>
 
       <!-- 2. 계정 정보 리스트 카드 -->
-      <section class="surface mypage-card" style="margin-bottom: 1.5rem;">
-        <h2 class="section-title">계정 정보</h2>
+      <section class="surface settings-card">
+        <div class="settings-card__head"><h2 class="section-title">계정 정보</h2><span class="chip">SECURITY</span></div>
 
         <div class="setting-row">
           <div class="setting-info"><label>닉네임</label><p>${member.nickname}</p></div>
@@ -150,9 +78,7 @@
       </section>
 
       <!-- 3. 계정 삭제(탈퇴) -->
-      <div style="text-align: right;">
-        <a href="javascript:void(0);" style="color: #e53e3e; font-size: 0.9rem;" onclick="openModal('modalDelete')">계정 삭제 (회원 탈퇴)</a>
-      </div>
+      <div class="settings-danger"><p>더 이상 서비스를 이용하지 않는 경우 계정을 삭제할 수 있습니다.</p><a href="javascript:void(0);" onclick="openModal('modalDelete')">계정 삭제</a></div>
     </div>
   </main>
 </div>
@@ -296,7 +222,7 @@
       <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
 
       <!-- 안내문 박스 -->
-      <div style="background: #fff5f5; border: 1px solid #fed7d7; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; text-align: left;">
+      <div class="settings-delete-note">
         <p style="font-size: 0.85rem; color: #c53030; font-weight: 600; margin-bottom: 0.5rem;">⚠️ 삭제 전 반드시 확인해 주세요</p>
         <ul style="font-size: 0.8rem; color: #4a5568; padding-left: 1.2rem; margin: 0; line-height: 1.5;">
           <li>계정 삭제 신청 후 30일간 보관되며, 이후 영구 삭제됩니다.</li>
@@ -306,7 +232,7 @@
       </div>
 
       <!-- 동의 체크박스 -->
-      <div style="margin-bottom: 1rem; text-align: left;">
+      <div class="settings-delete-agree">
         <label style="font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
           <input type="checkbox" id="agreeDelete" style="width: 16px; height: 16px;">
           <span>안내문을 확인했으며, 계정 삭제에 동의합니다.</span>
@@ -847,5 +773,6 @@
     alert("${errorMessage}");
   </script>
 </c:if>
+  <script src="${pageContext.request.contextPath}/app.js"></script>
 </body>
 </html>

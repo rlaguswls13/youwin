@@ -11,33 +11,6 @@
     <title>마이페이지 | Youwin</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/app.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/mypage.css">
-    <style>
-        /* ==========================================
-   프로필 이미지 규격 통일 스타일
-   ========================================== */
-
-        /* 1. 프로필 아바타 기본 레이아웃 (원형 & 120px 규격) */
-        .profile-avatar {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #f0f0f0;
-            border: 4px solid #6366f1; /* 맘에 들어 하신 원형 테두리 포인트 */
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
-            flex-shrink: 0;
-        }
-
-        /* 2. 내부 이미지 규격 및 비율 유지 */
-        .profile-avatar .profile-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-    </style>
 </head>
 <body>
 
@@ -57,7 +30,7 @@
             <nav class="site-nav" data-site-nav aria-label="주요 메뉴">
                 <a href="${pageContext.request.contextPath}/">홈</a>
                 <a href="${pageContext.request.contextPath}/board">게시판</a>
-                <a href="${pageContext.request.contextPath}/chatroom">채팅방</a>
+                <a href="${pageContext.request.contextPath}/index">채팅방</a>
                 <a class="is-active" href="${pageContext.request.contextPath}/member/mypage">마이페이지</a>
             </nav>
             <div class="site-header__actions">
@@ -73,15 +46,12 @@
         <div class="site-container">
             <section class="surface profile-hero" aria-labelledby="profile-title">
                 <!-- 1. 프로필 사진 (클래스 조합으로 인라인 스타일 불필요) -->
-                <div class="profile-avatar" aria-hidden="true">
-                    <!-- mypage.jsp 프로필 영역 -->
-                    <div class="profile-avatar" aria-hidden="true">
+                <div class="profile-avatar">
                         <img id="mainAvatarImg"
                              src="${not empty member.profileImage ? pageContext.request.contextPath.concat(member.profileImage) : pageContext.request.contextPath.concat('/upload/profile/default-profile.svg')}"
                              class="profile-img"
-                             alt="프로필 사진">
+                             alt="사용자 프로필 사진">
                     </div>
-                </div>
 
                 <div class="profile-copy">
                     <p class="profile-copy__label">MY MUSIC PROFILE</p>
@@ -95,7 +65,7 @@
 
                 <div class="profile-hero__actions">
                     <a class="button button--secondary" href="${pageContext.request.contextPath}/member/settings">프로필 수정</a>
-                    <a class="button" href="${pageContext.request.contextPath}/chatroom">채팅방 가기</a>
+                    <a class="button" href="${pageContext.request.contextPath}/index">채팅방 가기</a>
                 </div>
             </section>
 

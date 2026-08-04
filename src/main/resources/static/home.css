@@ -405,3 +405,7 @@
         display: none;
     }
 }
+.feed-item,
+.schedule-item { border-radius: 10px; transition: background-color 150ms ease, padding 150ms ease; }
+.feed-item:hover { padding-inline: 8px; background: #fafafd; }
+.schedule-item:hover { background: #fafafd; }

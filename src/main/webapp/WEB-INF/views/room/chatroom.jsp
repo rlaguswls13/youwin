@@ -156,7 +156,7 @@
                     </div>
                 </div>
 
-                <h4>🟢 참여중</h4>
+                <h4 class="member-section-title">참여 중</h4>
 
                 <div id="online-member-list">
                     <c:forEach var="member" items="${memberList}">
@@ -175,7 +175,7 @@
                                             </strong>
 
                                         <c:if test="${member.memberId == room.ownerId}">
-                                            <span style="color: blue; font-weight: bold;">[방장]</span>
+                                            <span class="owner-badge">HOST</span>
                                         </c:if>
 
                                          <span class="member-item__status">
@@ -184,7 +184,7 @@
                                          </span>
                                       </span>
                                         <c:if test="${member.memberId != loginMemberId}">
-                                         <button type="button" onclick="reportMember(${member.memberId})" style="margin-left: auto; font-size: 11px;">신고</button>
+                                         <button type="button" class="report-member-btn" onclick="reportMember(${member.memberId})">신고</button>
                                         </c:if>
                                 </div>
                             </c:if>
@@ -193,7 +193,7 @@
 
                 <hr>
 
-                <h4>⚪ 오프라인</h4>
+                <h4 class="member-section-title">오프라인</h4>
 
                 <div id="offline-member-list">
 
@@ -214,21 +214,21 @@
                                         </strong>
 
                                          <c:if test="${member.memberId == room.ownerId}">
-                                         <span style="color: blue; font-weight: bold;">[방장]</span>
+                                         <span class="owner-badge">HOST</span>
                                          </c:if>
                                         <span class="member-item__status">
                                             오프라인
                                         </span>
                                     </span>
                                         <c:if test="${member.memberId != loginMemberId}">
-                                            <button type="button" onclick="reportMember(${member.memberId})" style="margin-left: auto; font-size: 11px;">신고</button>
+                                            <button type="button" class="report-member-btn" onclick="reportMember(${member.memberId})">신고</button>
                                         </c:if>
                                     </div>
                                 </c:if>
                             </c:forEach>
                         </div>
             </aside>
-            <div id="edit-room-modal" class="modal">
+            <div id="edit-room-modal" class="modal" role="dialog" aria-modal="true" aria-label="채팅방 수정">
 
                 <div class="modal-content">
 
@@ -283,7 +283,7 @@
                     </div>
                  </div>
             </div>
-            <div id="report-modal" class="modal">
+            <div id="report-modal" class="modal" role="dialog" aria-modal="true" aria-label="참여자 신고">
 
                 <div class="modal-content">
 

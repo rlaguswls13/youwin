@@ -18,7 +18,7 @@ public class CustomLoginSuccessHandler
         extends SavedRequestAwareAuthenticationSuccessHandler {
 
     private final MemberService memberService;
-    private final MemberSecurityRepository memberSecurityRepository; // 👈 추가 주입!
+    private final MemberSecurityRepository memberSecurityRepository;
 
     @Override
     public void onAuthenticationSuccess(
@@ -32,7 +32,7 @@ public class CustomLoginSuccessHandler
 
         String memberId = user.getUsername();
 
-        // 1. [보안] 로그인 성공했으므로 누적 실패 카운트 및 잠금 상태 0으로 리셋!
+        // 1. 로그인 성공했으므로 보안 테이블 전체 리셋 (실패/잠금 카운트 = 0)
         memberSecurityRepository.resetLoginFailCount(memberId);
 
         // 2. 마지막 로그인 시간 갱신
@@ -44,7 +44,7 @@ public class CustomLoginSuccessHandler
             memberService.setupAutoLogin(memberId, response);
         }
 
-        // 4. 로그인 성공 시 기본 이동할 URL 설정 (이전 페이지가 없을 시 홈으로)
+        // 4. 기본 이동할 URL 설정
         setDefaultTargetUrl("/");
 
         super.onAuthenticationSuccess(request, response, authentication);

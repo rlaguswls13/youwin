@@ -47,18 +47,37 @@
   let isNicknameChecked = false;
   const DEFAULT_PROFILE_URL = "${ctx}/upload/profile/default-profile.svg";
 
-  // 프로필 이미지 미리보기 함수
+  // 프로필 이미지 미리보기 함수 (완전 수정본)
   function previewImage(input) {
     const previewImg = document.getElementById('preview-img');
     const deleteInput = document.getElementById('deleteProfile');
 
-    if (input.files && input.files[0]) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        previewImg.src = e.result;
+    // 선택된 파일이 존재할 때만 실행
+    if (input && input.files && input.files[0]) {
+      const file = input.files[0];
+
+      // 이미지 파일인지 1차 검증
+      if (!file.type.startsWith('image/')) {
+        alert('이미지 파일만 선택 가능합니다.');
+        input.value = '';
+        return;
       }
-      reader.readAsDataURL(input.files[0]);
-      if (deleteInput) deleteInput.value = "false";
+
+      const reader = new FileReader();
+
+      // 파일 읽기가 완료된 '후'에 src를 교체하도록 안전하게 작성
+      reader.onload = function(e) {
+        if (previewImg && e.target && e.target.result) {
+          previewImg.src = e.target.result;
+        }
+      };
+
+      // DataURL 형태로 파일 읽기 시작
+      reader.readAsDataURL(file);
+
+      if (deleteInput) {
+        deleteInput.value = "false";
+      }
     }
   }
 
@@ -68,7 +87,7 @@
     const previewImg = document.getElementById('preview-img');
     const deleteInput = document.getElementById('deleteProfile');
 
-    fileInput.value = ''; // 파일 선택 해제
+    fileInput.value = ''; // file input 값 초기화
     previewImg.src = DEFAULT_PROFILE_URL; // 기본 이미지로 교체
     if (deleteInput) deleteInput.value = "true";
   }

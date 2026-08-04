@@ -178,6 +178,7 @@ public class MemberService {
     }
 
     // 2. [인증 완료 후] 아이디 최종 조회
+    @Transactional
     public String findMemberId(String memberName, String memberEmail) {
         // 1) 이메일 인증 완료 여부 확인
         if (!emailVerificationService.isVerified(memberEmail)) {

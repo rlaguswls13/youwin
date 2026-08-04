@@ -1,157 +1,45 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="jakarta.tags.core" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
-
-<c:set var="ctx" value="${pageContext.request.contextPath}" scope="request" />
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>회원가입 | Youwin</title>
-
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background-color: #f0f0f0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
-    .join-container {
-      width: 100%;
-      max-width: 450px;
-      padding: 40px 20px;
-      text-align: center;
-    }
-    .join-title {
-      font-size: 32px;
-      font-weight: bold;
-      color: #1a1a1a;
-      margin-bottom: 30px;
-    }
-    .join-form, .form-step {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      text-align: left;
-    }
-    .hidden { display: none !important; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
-    .form-group label { font-size: 14px; font-weight: bold; color: #333; }
-    .input-with-btn { display: flex; gap: 8px; position: relative; }
-    .input-with-btn input[type="text"],
-    .input-with-btn input[type="email"] { flex: 1; }
-
-    .form-group input[type="text"],
-    .form-group input[type="password"],
-    .form-group input[type="email"],
-    .form-group input[type="tel"] {
-      width: 100%;
-      height: 45px;
-      padding: 0 15px;
-      background-color: #dbdbdb;
-      border: 1px solid transparent;
-      outline: none;
-      font-size: 15px;
-      color: #333;
-      transition: background-color 0.2s, border-color 0.2s;
-    }
-    .form-group input.input-error { border-color: #e74c3c; background-color: #fdeded; }
-    .form-group input.input-success { border-color: #2ecc71; background-color: #eafaf1; }
-    .form-group input:focus { background-color: #cfcfcf; }
-
-    .error-msg {
-      font-size: 12px;
-      color: #e74c3c;
-      min-height: 18px;
-      line-height: 18px;
-      opacity: 0;
-      transition: opacity 0.2s ease;
-    }
-    .error-msg.show { opacity: 1; }
-    .error-msg.success-msg { color: #27ae60; }
-
-    /* 타이머 스타일 */
-    .timer-text {
-      position: absolute;
-      right: 105px;
-      top: 13px;
-      font-size: 13px;
-      color: #e74c3c;
-      font-weight: bold;
-    }
-
-    .btn-container { margin-top: 10px; display: flex; justify-content: center; }
-    .btn {
-      width: 120px;
-      height: 45px;
-      background-color: #dbdbdb;
-      border: none;
-      outline: none;
-      font-size: 16px;
-      font-weight: bold;
-      color: #333;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .btn-check {
-      width: 90px;
-      height: 45px;
-      background-color: #dbdbdb;
-      border: none;
-      outline: none;
-      font-size: 13px;
-      font-weight: bold;
-      color: #333;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.2s ease;
-    }
-    .btn:hover, .btn-check:hover { background-color: #c5c5c5; color: #000; }
-
-    /* 프로필 이미지 스타일 */
-    .profile-group { text-align: center; margin-bottom: 10px; }
-    .profile-section { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-    .profile-img-preview {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #f0f0f0;
-      border: 4px solid #6366f1;
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
-      flex-shrink: 0;
-    }
-    .profile-img-preview img { width: 100%; height: 100%; object-fit: cover; }
-    .file-upload-btn {
-      font-size: 13px;
-      color: #6366f1;
-      font-weight: bold;
-      cursor: pointer;
-      transition: color 0.2s ease;
-    }
-    .file-upload-btn:hover { text-decoration: underline; color: #4f46e5; }
-    input[type="file"] { display: none; }
-  </style>
+  <title>회원가입</title>
+  <meta name="description" content="Youwin 음악 커뮤니티 회원가입">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/app.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/auth.css">
 </head>
 <body>
+<div class="auth-page">
+  <aside class="auth-aside" aria-label="Youwin 소개">
+    <a class="brand auth-brand" href="${pageContext.request.contextPath}/" aria-label="Youwin 홈">
+      <span class="brand__mark">YW</span><span>Youwin</span>
+    </a>
+    <div class="auth-aside__copy">
+      <p class="auth-aside__eyebrow">Create your profile</p>
+      <h2>나의 취향으로<br>새로운 연결을 시작해요</h2>
+      <p class="auth-aside__description">간단한 정보와 프로필을 등록하면 취향에 맞는 채팅방과 커뮤니티를 만날 수 있어요.</p>
+    </div>
+    <p class="auth-aside__note">안전한 커뮤니티를 위해 이메일 인증을 진행합니다.</p>
+  </aside>
 
-<div class="join-container">
-  <h1 class="join-title" id="pageTitle">회원 정보</h1>
+  <main class="auth-main">
+    <section class="auth-card join-container" aria-labelledby="pageTitle">
+      <a class="auth-back" href="${pageContext.request.contextPath}/member/login">← 로그인으로 돌아가기</a>
+      <div class="join-progress" id="joinProgress" aria-label="가입 진행 단계">
+        <span></span><span></span><span class="join-progress__label" id="progressLabel">1 / 2</span>
+      </div>
+      <div class="auth-heading">
+        <p class="auth-heading__eyebrow">Join Youwin</p>
+        <h1 class="join-title" id="pageTitle">회원 정보</h1>
+        <p class="auth-description" id="stepDescription">로그인과 본인 확인에 사용할 정보를 입력해 주세요.</p>
+      </div>
 
-  <form id="joinForm" action="${ctx}/member/join" method="post" enctype="multipart/form-data" class="join-form" onsubmit="return false;">
+  <form id="joinForm" action="/member/join" method="post" enctype="multipart/form-data" class="join-form" onsubmit="return false;">
 
-    <!-- ==================== Step 1: 기본 회원 정보 ==================== -->
+    <!-- Step 1: 회원 정보 -->
     <div id="step1" class="form-step">
 
-      <!-- 아이디 -->
       <div class="form-group">
         <label for="member-id">아이디</label>
         <div class="input-with-btn">
@@ -161,21 +49,19 @@
         <span class="error-msg" id="err-id"></span>
       </div>
 
-      <!-- 비밀번호 -->
       <div class="form-group">
         <label for="member-password">비밀번호</label>
         <input type="password" id="member-password" name="memberPassword" placeholder="8~20자, 특수문자 포함 3가지 이상 조합">
         <span class="error-msg" id="err-password"></span>
       </div>
 
-      <!-- 이름 -->
       <div class="form-group">
         <label for="member-name">이름</label>
         <input type="text" id="member-name" name="memberName" placeholder="이름">
         <span class="error-msg" id="err-name"></span>
       </div>
 
-      <!-- 이메일 및 인증 요청 -->
+      <!-- 이메일 및 인증번호 발송 -->
       <div class="form-group">
         <label for="member-email">이메일</label>
         <div class="input-with-btn">
@@ -185,7 +71,7 @@
         <span class="error-msg" id="err-email"></span>
       </div>
 
-      <!-- 이메일 인증번호 입력 (기본 hidden) -->
+      <!-- 인증번호 입력란 (기본 hidden 처리) -->
       <div class="form-group hidden" id="auth-code-group">
         <label for="auth-code">인증번호</label>
         <div class="input-with-btn">
@@ -196,7 +82,6 @@
         <span class="error-msg" id="err-auth-code"></span>
       </div>
 
-      <!-- 휴대전화번호 -->
       <div class="form-group">
         <label for="member-phone">휴대전화번호</label>
         <input type="tel" id="member-phone" name="memberPhone" maxlength="11" placeholder="숫자만 입력 (예: 01012345678)">
@@ -208,22 +93,22 @@
       </div>
     </div>
 
-    <!-- ==================== Step 2: 프로필 & 닉네임 설정 (Include) ==================== -->
+    <!-- Step 2: 회원 설정 -->
     <div id="step2" class="form-step hidden">
       <jsp:include page="joinStep2.jsp" />
     </div>
 
   </form>
+    </section>
+  </main>
 </div>
 
 <script>
   let isIdChecked = false;
-  let isEmailVerified = false;
+  let isEmailVerified = false; // 이메일 최종 인증 성공 여부
   let timerInterval = null;
 
-  /* ----------------------------------------------------
-   * 공통 에러/성공 메시지 바인딩 헬퍼
-   * ---------------------------------------------------- */
+  // 공통 메시지 표시 함수
   function showError(inputElem, errElem, message) {
     inputElem.classList.remove('input-success');
     inputElem.classList.add('input-error');
@@ -246,6 +131,7 @@
     errElem.classList.remove('show', 'success-msg');
   }
 
+  // 입력 요소 1개를 검사하고 화면 에러 처리를 전담하는 헬퍼 함수
   function checkField(inputElem, errElem, validateFn) {
     const msg = validateFn(inputElem.value);
     if (msg) {
@@ -257,9 +143,7 @@
     }
   }
 
-  /* ----------------------------------------------------
-   * 유효성 검증 정규식 규칙
-   * ---------------------------------------------------- */
+  // 유효성 검사 규칙들
   function validateId(idValue) {
     if (!idValue || idValue.trim() === '') return '아이디를 입력해 주세요.';
     if (/\s/.test(idValue)) return '아이디에는 공백(띄어쓰기)을 포함할 수 없습니다.';
@@ -309,10 +193,7 @@
     return '';
   }
 
-  /* ----------------------------------------------------
-   * Ajax 연동 로직
-   * ---------------------------------------------------- */
-  // 아이디 중복 확인
+  // 아이디 중복 체크 (Ajax)
   function checkDuplicateId() {
     const idInput = document.getElementById('member-id');
     const errId = document.getElementById('err-id');
@@ -325,7 +206,7 @@
       return;
     }
 
-    fetch('${ctx}/api/member/check-id?memberId=' + encodeURIComponent(idValue))
+    fetch('/api/member/check-id?memberId=' + encodeURIComponent(idValue))
             .then(response => {
               if (!response.ok) throw new Error('서버 응답 오류');
               return response.json();
@@ -346,7 +227,7 @@
             });
   }
 
-  // 이메일 인증번호 발송
+  // [이메일 관련] 1. 인증번호 발송 요청
   function sendAuthCode() {
     const emailInput = document.getElementById('member-email');
     const errEmail = document.getElementById('err-email');
@@ -358,7 +239,7 @@
       return;
     }
 
-    fetch('${ctx}/api/member/check-email?memberEmail=' + encodeURIComponent(emailVal))
+    fetch('/api/member/check-email?memberEmail=' + encodeURIComponent(emailVal))
             .then(res => res.json())
             .then(isDuplicate => {
               if (isDuplicate) {
@@ -366,7 +247,7 @@
               } else {
                 showSuccess(emailInput, errEmail, '인증번호 발송 중...');
 
-                fetch('${ctx}/api/member/send-code', {
+                fetch('/api/member/send-code', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ memberEmail: emailVal })
@@ -376,8 +257,8 @@
                           if (data.success) {
                             showSuccess(emailInput, errEmail, '인증번호가 발송되었습니다.');
                             document.getElementById('auth-code-group').classList.remove('hidden');
-                            document.getElementById('auth-code').focus();
-                            startTimer(300); // 5분
+                            document.getElementById('auth-code').focus(); // 발송 성공 시 인증번호 입력창으로 포커스
+                            startTimer(300); // 5분 타이머
                           } else {
                             showError(emailInput, errEmail, data.message);
                           }
@@ -386,7 +267,7 @@
             });
   }
 
-  // 인증번호 검증
+  // [이메일 관련] 2. 인증번호 대조 확인
   function verifyAuthCode() {
     const emailVal = document.getElementById('member-email').value;
     const codeInput = document.getElementById('auth-code');
@@ -397,7 +278,7 @@
       return;
     }
 
-    fetch('${ctx}/api/member/verify-code', {
+    fetch('/api/member/verify-code', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ memberEmail: emailVal, code: codeInput.value })
@@ -411,7 +292,7 @@
                 document.getElementById('timer').innerText = '';
                 document.getElementById('member-email').readOnly = true;
                 codeInput.readOnly = true;
-                document.getElementById('member-phone').focus();
+                document.getElementById('member-phone').focus(); // 인증 성공 시 다음 칸(휴대전화)으로 이동
               } else {
                 showError(codeInput, errCode, data.message);
                 isEmailVerified = false;
@@ -419,9 +300,7 @@
             });
   }
 
-  /* ----------------------------------------------------
-   * 타이머 & 이벤트 핸들러
-   * ---------------------------------------------------- */
+  // 타이머 헬퍼
   function startTimer(duration) {
     let timer = duration, minutes, seconds;
     clearInterval(timerInterval);
@@ -441,6 +320,7 @@
     }, 1000);
   }
 
+  // input 변경 시 초기화
   document.getElementById('member-id').addEventListener('input', function() {
     isIdChecked = false;
     clearError(this, document.getElementById('err-id'));
@@ -451,7 +331,7 @@
     clearError(this, document.getElementById('err-email'));
   });
 
-  // 다음 단계 이동 처리
+  // 다음 단계 이동 및 전체 유효성 검사
   function goToNextStep() {
     const idInput = document.getElementById('member-id');
     const pwInput = document.getElementById('member-password');
@@ -491,10 +371,13 @@
       document.getElementById('step1').classList.add('hidden');
       document.getElementById('step2').classList.remove('hidden');
       document.getElementById('pageTitle').innerText = '회원 설정';
+      document.getElementById('joinProgress').classList.add('is-step-2');
+      document.getElementById('progressLabel').innerText = '2 / 2';
+      document.getElementById('stepDescription').innerText = '커뮤니티에서 사용할 프로필을 완성해 주세요.';
     }
   }
 
-  // 엔터키 연속 입력 처리
+  // 엔터키 순차 포커스 이동 처리 (이메일 인증 로직 반영)
   document.getElementById('joinForm').addEventListener('keydown', function(event) {
     if (event.key === 'Enter') {
       event.preventDefault();
@@ -502,27 +385,50 @@
       const target = event.target;
       const step1 = document.getElementById('step1');
 
+      // ----------------------------------------------------
+      // [Step 1] 회원정보 입력 단계
+      // ----------------------------------------------------
       if (!step1.classList.contains('hidden')) {
+
         const pwInput = document.getElementById('member-password');
         const nameInput = document.getElementById('member-name');
         const emailInput = document.getElementById('member-email');
+        const authCodeInput = document.getElementById('auth-code');
         const phoneInput = document.getElementById('member-phone');
 
         if (target.id === 'member-id') {
-          if (isIdChecked) pwInput.focus();
-          else checkDuplicateId();
-        } else if (target.id === 'member-password') {
-          if (checkField(pwInput, document.getElementById('err-password'), validatePassword)) nameInput.focus();
-        } else if (target.id === 'member-name') {
-          if (checkField(nameInput, document.getElementById('err-name'), validateName)) emailInput.focus();
-        } else if (target.id === 'member-email') {
-          sendAuthCode();
-        } else if (target.id === 'auth-code') {
-          verifyAuthCode();
-        } else if (target.id === 'member-phone') {
-          if (checkField(phoneInput, document.getElementById('err-phone'), validatePhone)) goToNextStep();
+          if (isIdChecked) {
+            pwInput.focus();
+          } else {
+            checkDuplicateId();
+          }
         }
-      } else {
+        else if (target.id === 'member-password') {
+          if (checkField(pwInput, document.getElementById('err-password'), validatePassword)) {
+            nameInput.focus();
+          }
+        }
+        else if (target.id === 'member-name') {
+          if (checkField(nameInput, document.getElementById('err-name'), validateName)) {
+            emailInput.focus();
+          }
+        }
+        else if (target.id === 'member-email') {
+          sendAuthCode(); // 엔터치면 인증번호 발송 요청
+        }
+        else if (target.id === 'auth-code') {
+          verifyAuthCode(); // 엔터치면 인증번호 대조 확인
+        }
+        else if (target.id === 'member-phone') {
+          if (checkField(phoneInput, document.getElementById('err-phone'), validatePhone)) {
+            goToNextStep();
+          }
+        }
+      }
+              // ----------------------------------------------------
+              // [Step 2] 회원설정 단계 (joinStep2.jsp 연동)
+      // ----------------------------------------------------
+      else {
         if (target.id === 'nickname') {
           if (typeof isNicknameChecked !== 'undefined' && isNicknameChecked) {
             submitForm();

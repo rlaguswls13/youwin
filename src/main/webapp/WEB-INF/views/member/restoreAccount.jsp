@@ -1,39 +1,55 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>탈퇴 신청 계정 복구</title>
-  <style>
-    .container { width: 400px; margin: 50px auto; text-align: center; font-family: sans-serif; }
-    .info-box { background-color: #fff3cd; border: 1px solid #ffeeba; padding: 15px; margin-bottom: 20px; color: #856404; }
-    .input-group { margin-bottom: 15px; }
-    input[type="text"] { width: 70%; padding: 8px; }
-    button { padding: 8px 15px; cursor: pointer; }
-    .btn-submit { width: 100%; background: #28a745; color: white; border: none; padding: 10px; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="탈퇴 신청 계정 복구">
+  <title>탈퇴 신청 계정 복구 | Youwin</title>
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/app.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/auth.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/account.css">
 </head>
 <body>
-<div class="container">
-  <h2>⚠️ 탈퇴 신청 계정 안내</h2>
-  <div class="info-box">
-    <p>회원님의 계정(<strong>${memberId}</strong>)은 현재 <strong>탈퇴 유예(대기) 상태</strong>입니다.</p>
-    <p>이메일 인증을 완료하시면 탈퇴 신청이 취소되어 즉시 계정이 복구됩니다.</p>
-  </div>
-
-  <form id="restoreForm">
-    <div class="input-group">
-      <p>등록된 이메일: <strong>${memberEmail}</strong></p>
-      <button type="button" id="btnSendCode">인증번호 발송</button>
+<div class="auth-page">
+  <aside class="auth-aside" aria-label="Youwin 계정 보호">
+    <a class="brand auth-brand" href="${pageContext.request.contextPath}/" aria-label="Youwin 홈"><span class="brand__mark">YW</span><span>Youwin</span></a>
+    <div class="auth-aside__copy">
+      <p class="auth-aside__eyebrow">Secure your account</p>
+      <h2>소중한 계정을<br>안전하게 다시 연결해요</h2>
+      <p class="auth-aside__description">등록된 이메일 인증을 통해 본인 확인 후 계정 이용을 이어갈 수 있습니다.</p>
     </div>
+    <p class="auth-aside__note">인증번호는 타인에게 공유하지 마세요.</p>
+  </aside>
+  <main class="auth-main">
+    <section class="auth-card recovery-card" aria-labelledby="recovery-title">
+      <a class="auth-back" href="${pageContext.request.contextPath}/member/login">← 로그인으로 돌아가기</a>
+      <div class="auth-heading">
+        <p class="auth-heading__eyebrow">Restore account</p>
+        <h1 class="auth-title" id="recovery-title">계정을 다시 복구할 수 있어요</h1>
+        <p class="auth-description">탈퇴 유예 기간에는 이메일 인증을 완료하면 기존 계정을 그대로 복구할 수 있습니다.</p>
+      </div>
 
-    <div class="input-group">
-      <input type="text" id="authCode" placeholder="인증번호 6자리 입력" disabled>
-      <button type="button" id="btnVerify" class="btn-submit" style="margin-top: 10px;">탈퇴 취소 및 계정 복구</button>
-    </div>
-  </form>
+      <div class="recovery-note is-warning">
+        <strong>현재 탈퇴 대기 상태입니다</strong>
+        <p>회원님의 계정(<strong>${memberId}</strong>)은 아직 삭제되지 않았으며 인증 후 복구됩니다.</p>
+      </div>
+
+      <form id="restoreForm" class="auth-form" onsubmit="return false;">
+        <div class="recovery-email">
+          <span>등록된 이메일</span>
+          <strong>${memberEmail}</strong>
+        </div>
+        <button type="button" id="btnSendCode" class="button button--secondary">인증번호 발송</button>
+        <div class="input-group">
+          <label for="authCode">인증번호</label>
+          <input type="text" id="authCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="인증번호 6자리" disabled>
+        </div>
+        <button type="button" id="btnVerify" class="btn-submit">탈퇴 취소 및 계정 복구</button>
+      </form>
+    </section>
+  </main>
 </div>
-
 <script>
   // 1. 인증번호 발송 요청
   document.getElementById('btnSendCode').addEventListener('click', function() {

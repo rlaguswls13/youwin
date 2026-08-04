@@ -15,6 +15,41 @@
     const contentTextarea = document.getElementById('post-content');
     const isPinnedCheckbox = document.getElementById('post-isPinned');
     const allowCommentsCheckbox = document.getElementById('post-allowComments');
+    const imageInput = document.getElementById('imageInput');
+    const uploadTrigger = document.getElementById('btnUploadTrigger');
+    const previewContainer = document.getElementById('previewContainer');
+    const imageCount = document.getElementById('imageCount');
+
+    if (uploadTrigger && imageInput) {
+        uploadTrigger.addEventListener('click', function () {
+            imageInput.click();
+        });
+        uploadTrigger.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                imageInput.click();
+            }
+        });
+        imageInput.addEventListener('change', function () {
+            const files = Array.from(imageInput.files || []).slice(0, 5);
+            if (imageCount) imageCount.textContent = String(files.length);
+            if (!previewContainer) return;
+            previewContainer.replaceChildren();
+            files.forEach(function (file) {
+                const item = document.createElement('div');
+                item.className = 'image-preview-item';
+                const image = document.createElement('img');
+                const url = URL.createObjectURL(file);
+                image.src = url;
+                image.alt = file.name;
+                image.onload = function () { URL.revokeObjectURL(url); };
+                const name = document.createElement('span');
+                name.textContent = file.name;
+                item.append(image, name);
+                previewContainer.appendChild(item);
+            });
+        });
+    }
 
 
 
@@ -231,9 +266,9 @@
     //    잠근 채 내용을 보여주고, 내부에서 버튼을 통해 수정 모드로 전환할 수 있게 합니다.
     // ====================================================================
 
-    // 행 리스트 더블클릭 시 상세조회 (잠금 모드) 진입
+    // 행 선택 시 상세조회 (잠금 모드) 진입
     rows.forEach(function (row) {
-        row.addEventListener('dblclick', function () {
+        row.addEventListener('click', function () {
             fillFormData(row);
             setFormReadOnly(true);
 

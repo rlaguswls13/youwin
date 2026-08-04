@@ -436,3 +436,54 @@ textarea:focus-visible {
         animation-iteration-count: 1 !important;
     }
 }
+
+.user-menu {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-left: 6px;
+    padding-left: 12px;
+    border-left: 1px solid var(--color-line);
+}
+.welcome-msg { max-width: 150px; overflow: hidden; color: var(--color-muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.welcome-msg strong { color: var(--color-ink); }
+.user-menu form { display: inline-flex !important; }
+.auth-btn {
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 11px !important;
+    border-radius: 9px !important;
+    background: var(--color-surface-soft);
+    color: var(--color-ink) !important;
+    font-size: 11px !important;
+    font-weight: 850;
+    cursor: pointer;
+}
+.auth-btn:hover { background: var(--color-primary-soft); color: var(--color-primary-dark) !important; }
+.logout-btn,
+.logout-form .logout-btn {
+    min-height: 32px;
+    padding: 0 10px;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+}
+.logout-btn:hover { background: #fff0f2; color: #b24958; }
+button:focus-visible,
+a:focus-visible {
+    outline: 3px solid rgba(89, 87, 229, .22);
+    outline-offset: 2px;
+}
+.surface { transition: border-color 180ms ease, box-shadow 180ms ease; }
+
+@media (max-width: 920px) {
+    .user-menu { align-items: stretch; flex-direction: column; margin: 8px 0 0; padding: 10px 0 0; border-top: 1px solid var(--color-line); border-left: 0; }
+    .welcome-msg { max-width: none; padding: 4px 10px; }
+    .user-menu form { width: 100%; }
+    .user-menu .auth-btn { width: 100%; min-height: 40px; }
+}

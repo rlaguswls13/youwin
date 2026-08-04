@@ -39,7 +39,7 @@ public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
                 session.setAttribute("unlockMemberId", member.getMemberId());
                 session.setAttribute("unlockMemberEmail", member.getMemberEmail());
 
-                response.sendRedirect("/member/unlockDormant"); // 휴면 해제 JSP
+                response.sendRedirect("/member/unlockDormant");
                 return;
             }
         }
@@ -52,7 +52,7 @@ public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
                 session.setAttribute("restoreMemberId", member.getMemberId());
                 session.setAttribute("restoreMemberEmail", member.getMemberEmail());
 
-                response.sendRedirect("/member/restoreAccount"); // 탈퇴 취소 JSP
+                response.sendRedirect("/member/restoreAccount");
                 return;
             }
         }
@@ -64,18 +64,31 @@ public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
             return;
         }
 
-        // 4. 아이디/비밀번호 불일치 등 일반 로그인 실패
+        // 4. 아이디/비밀번호 불일치 등 일반 로그인 실패 영역
         if (memberId != null && !memberId.trim().isEmpty()) {
 
-            // 1) DB에 실제 존재하는 회원인지 먼저 확인!
+            // ① 이미 30분 일시 잠금 또는 3회 누적 영구 잠금 상태인지 확인!
+            if (memberSecurityRepository.isLocked(memberId)) {
+                MemberDto memberDto = memberService.getMemberById(memberId);
+                if (memberDto != null) {
+                    HttpSession session = request.getSession();
+                    session.setAttribute("unlockMemberId", memberDto.getMemberId());
+                    session.setAttribute("unlockMemberEmail", memberDto.getMemberEmail());
+                }
+                String errorMsg = URLEncoder.encode("지속적인 로그인 실패로 계정이 잠겼습니다. 30분 후 다시 시도하거나 이메일 인증으로 해제해 주세요.", StandardCharsets.UTF_8);
+                response.sendRedirect("/member/login?error=true&exception=" + errorMsg + "&isLocked=true");
+                return;
+            }
+
+            // ② DB에 실제 존재하는 회원인지 확인
             MemberDto memberDto = memberService.getMemberById(memberId);
 
-            // 2) 실제 존재하는 회원일 때만 실패 카운트 증가 (외래키 에러 방지)
             if (memberDto != null) {
+                // 실패 카운트 1 증가
                 memberSecurityRepository.increaseLoginFailCount(memberId);
                 int failCount = memberSecurityRepository.getLoginFailCount(memberId);
 
-                // 5회 달성 시 계정 잠금 처리
+                // 5회 실패 달성 시 -> 계정 잠금 처리 (lock_count + 1, locked_at = NOW())
                 if (failCount >= 5) {
                     memberSecurityRepository.lockAccount(memberId);
 
@@ -83,19 +96,14 @@ public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
                     session.setAttribute("unlockMemberId", memberDto.getMemberId());
                     session.setAttribute("unlockMemberEmail", memberDto.getMemberEmail());
 
-                    String errorMsg = URLEncoder.encode("비밀번호를 5회 틀려 계정이 잠겼습니다. 이메일 인증으로 해제해주세요.", StandardCharsets.UTF_8);
+                    String errorMsg = URLEncoder.encode("비밀번호를 5회 이상 틀려 계정이 잠겼습니다. 30분 후 다시 시도하거나 이메일 인증으로 해제해 주세요.", StandardCharsets.UTF_8);
                     response.sendRedirect("/member/login?error=true&exception=" + errorMsg + "&isLocked=true");
                     return;
                 }
-
-                // 1~4회 실패 시 실패 횟수 안내
-                String errorMsg = URLEncoder.encode("아이디 또는 비밀번호가 올바르지 않습니다. (" + failCount + "/5회 실패)", StandardCharsets.UTF_8);
-                response.sendRedirect("/member/login?error=true&exception=" + errorMsg);
-                return;
             }
         }
 
-        // 3) 회원 정보가 없거나 아이디 입력이 비어있는 경우 (카운트 증가 없이 단순 안내)
+        // 5. 회원 정보가 없거나, 1~4회 실패 시 공통 실패 응답 (계정 존재 여부 노출 방지!)
         String errorMsg = URLEncoder.encode("아이디 또는 비밀번호가 올바르지 않습니다.", StandardCharsets.UTF_8);
         response.sendRedirect("/member/login?error=true&exception=" + errorMsg);
     }
