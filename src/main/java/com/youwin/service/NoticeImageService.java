@@ -18,7 +18,8 @@ import java.util.UUID;
 @Service
 public class NoticeImageService {
 
-    private final String uploadPath = "C:/youwin_upload/";
+    // [수정] WebMvcConfig와 경로를 일치시켜 src/main/resources/static/upload/ 에 저장되도록 동적 경로 설정
+    private final String uploadPath = System.getProperty("user.dir").replace("\\", "/") + "/src/main/resources/static/upload/";
     private final NoticeRepository noticeRepository;
 
     @Autowired
@@ -115,13 +116,11 @@ public class NoticeImageService {
             }
         }
 
-        // 3. [핵심 방어] 새로 추가된 파일(MultipartFile)들만 골라서 안전하게 저장
-        // (만약 비어있거나 잘못된 파라미터가 섞여 들어와도 유효한 실제 파일 객체만 걸러내어 업로드합니다)
+        // 3. 새로 추가된 파일(MultipartFile)들만 골라서 안전하게 저장
         if (files != null && files.length > 0) {
             List<MultipartFile> validNewFiles = new java.util.ArrayList<>();
             for (MultipartFile file : files) {
                 if (file != null && !file.isEmpty() && file.getSize() > 0) {
-                    // 클라이언트에서 잘못 매핑되어 가짜 파일 객체가 넘어오는 경우를 방어하기 위한 추가 검증
                     String origName = file.getOriginalFilename();
                     if (origName != null && !origName.toLowerCase().startsWith("http") && !origName.toLowerCase().startsWith("blob")) {
                         validNewFiles.add(file);
