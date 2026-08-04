@@ -7,13 +7,24 @@
 <div class="form-group profile-group">
   <label>프로필 이미지</label>
   <div class="profile-section">
+    <!-- 프로필 이미지 미리보기 -->
     <div class="profile-img-preview" id="image-preview">
       <img id="preview-img"
            src="${ctx}/upload/profile/default-profile.svg"
            alt="프로필 미리보기">
     </div>
-    <label for="profile-file" class="file-upload-btn">파일 올리기</label>
+
+    <!-- 숨김 파일 Input -->
     <input type="file" id="profile-file" name="profile" accept="image/*" onchange="previewImage(this)">
+
+    <!-- 프로필 사진 삭제 여부를 서버로 보낼 hidden input (필요시 사용) -->
+    <input type="hidden" name="deleteProfile" id="deleteProfile" value="false">
+
+    <!-- 선택 / 기본 이미지 버튼 그룹 -->
+    <div class="profile-btn-row">
+      <label for="profile-file" class="btn-secondary">새 사진 선택</label>
+      <button type="button" class="btn-secondary" id="btn-reset-profile" onclick="resetDefaultImage()">기본 이미지로 변경</button>
+    </div>
   </div>
 </div>
 
@@ -34,17 +45,32 @@
 
 <script>
   let isNicknameChecked = false;
+  const DEFAULT_PROFILE_URL = "${ctx}/upload/profile/default-profile.svg";
 
   // 프로필 이미지 미리보기 함수
   function previewImage(input) {
     const previewImg = document.getElementById('preview-img');
+    const deleteInput = document.getElementById('deleteProfile');
+
     if (input.files && input.files[0]) {
       const reader = new FileReader();
       reader.onload = function(e) {
         previewImg.src = e.result;
       }
       reader.readAsDataURL(input.files[0]);
+      if (deleteInput) deleteInput.value = "false";
     }
+  }
+
+  // 기본 이미지로 변경 함수
+  function resetDefaultImage() {
+    const fileInput = document.getElementById('profile-file');
+    const previewImg = document.getElementById('preview-img');
+    const deleteInput = document.getElementById('deleteProfile');
+
+    fileInput.value = ''; // 파일 선택 해제
+    previewImg.src = DEFAULT_PROFILE_URL; // 기본 이미지로 교체
+    if (deleteInput) deleteInput.value = "true";
   }
 
   // 닉네임 유효성 검사 규칙
