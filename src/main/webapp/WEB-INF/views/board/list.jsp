@@ -72,18 +72,27 @@
                     </div>
 
                     <!-- 검색 및 분류 필터 바 -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; flex-wrap: wrap; gap: 10px;">
+                    <form action="${pageContext.request.contextPath}/board" method="get" style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; flex-wrap: wrap; gap: 10px;">
+                        <!-- 현재 탭 유지용 히든 필드 -->
+                        <input type="hidden" name="tab" value="${param.tab}">
+
                         <div style="display: flex; gap: 6px;">
-                            <button type="button" class="board-filter" data-board-filter="all" style="padding: 6px 14px; border-radius: 20px; border: 1px solid #dee2e6; cursor: pointer; font-size: 13px;">전체</button>
-                            <button type="button" class="board-filter" data-board-filter="안내" style="padding: 6px 14px; border-radius: 20px; border: 1px solid #dee2e6; cursor: pointer; font-size: 13px;">안내</button>
-                            <button type="button" class="board-filter" data-board-filter="업데이트" style="padding: 6px 14px; border-radius: 20px; border: 1px solid #dee2e6; cursor: pointer; font-size: 13px;">업데이트</button>
-                            <button type="button" class="board-filter" data-board-filter="이벤트" style="padding: 6px 14px; border-radius: 20px; border: 1px solid #dee2e6; cursor: pointer; font-size: 13px;">이벤트</button>
+                            <button type="submit" name="category" value="all" class="board-filter ${empty param.category || param.category == 'all' ? 'is-active' : ''}" style="padding: 6px 14px; border-radius: 20px; border: 1px solid #dee2e6; cursor: pointer; font-size: 13px;">전체</button>
+                            <button type="submit" name="category" value="안내" class="board-filter ${param.category == '안내' ? 'is-active' : ''}" style="padding: 6px 14px; border-radius: 20px; border: 1px solid #dee2e6; cursor: pointer; font-size: 13px;">안내</button>
+                            <button type="submit" name="category" value="업데이트" class="board-filter ${param.category == '업데이트' ? 'is-active' : ''}" style="padding: 6px 14px; border-radius: 20px; border: 1px solid #dee2e6; cursor: pointer; font-size: 13px;">업데이트</button>
+                            <button type="submit" name="category" value="이벤트" class="board-filter ${param.category == '이벤트' ? 'is-active' : ''}" style="padding: 6px 14px; border-radius: 20px; border: 1px solid #dee2e6; cursor: pointer; font-size: 13px;">이벤트</button>
                         </div>
                         <div class="board-search" style="display: flex; gap: 4px;">
-                            <input type="text" data-board-search placeholder="제목 또는 작성자 검색" style="padding: 6px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 13px; width: 200px;">
-                            <button type="button" class="button button--secondary" style="padding: 6px 12px; font-size: 13px;">검색</button>
+                            <select name="searchType" style="padding: 6px 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 13px; background-color: #fff;">
+                                <option value="titleContent" ${param.searchType == 'titleContent' ? 'selected' : ''}>제목+내용</option>
+                                <option value="title" ${param.searchType == 'title' ? 'selected' : ''}>제목</option>
+                                <option value="content" ${param.searchType == 'content' ? 'selected' : ''}>내용</option>
+                                <option value="writer" ${param.searchType == 'writer' ? 'selected' : ''}>작성자</option>
+                            </select>
+                            <input type="text" name="keyword" value="${param.keyword}" placeholder="검색어를 입력하세요" style="padding: 6px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 13px; width: 180px;">
+                            <button type="submit" class="button button--secondary" style="padding: 6px 12px; font-size: 13px;">검색</button>
                         </div>
-                    </div>
+                    </form>
 
                     <div class="surface board-table-wrap" style="margin-top: 12px;">
                         <table class="board-table">
@@ -99,9 +108,13 @@
                                     <tr><td class="board-empty" colspan="7">등록된 공지사항이 없습니다.</td></tr>
                                 </c:when>
                                 <c:otherwise>
-                                    <c:forEach var="noticeItem" items="${list}">
+                                    <!-- varStatus="status"를 추가하여 순번(status.index)을 활용 -->
+                                    <c:forEach var="noticeItem" items="${list}" varStatus="status">
                                         <tr onclick="location.href='${pageContext.request.contextPath}/board/detail?noticeId=${noticeItem.noticeId}';" style="cursor: pointer;">
-                                            <td class="board-table__number">${noticeItem.noticeId}</td>
+                                            <!-- 역순 게시글 번호 계산식 적용 -->
+                                            <td class="board-table__number">
+                                                    ${pageInfo.totalCount - (pageInfo.page - 1) * pageInfo.size - status.index}
+                                            </td>
                                             <td><span class="chip">${noticeItem.category}</span></td>
                                             <td class="board-table__title">
                                                 <c:if test="${noticeItem.isPinned == 1}">
@@ -129,12 +142,17 @@
                         </table>
                     </div>
 
+                    <!-- 페이징 처리 영역 (검색 조건, 검색 타입, 카테고리, 탭 유지 파라미터 포함) -->
                     <nav class="board-pagination" aria-label="페이지 이동" style="margin-top: 20px;">
-                        <c:if test="${pageInfo.prev}"><a href="${pageContext.request.contextPath}/board?page=${pageInfo.startPage - 1}&category=${param.category}&keyword=${param.keyword}">←</a></c:if>
+                        <c:if test="${pageInfo.prev}">
+                            <a href="${pageContext.request.contextPath}/board?page=${pageInfo.startPage - 1}&tab=${param.tab}&category=${param.category}&searchType=${param.searchType}&keyword=${param.keyword}">←</a>
+                        </c:if>
                         <c:forEach var="num" begin="${pageInfo.startPage}" end="${pageInfo.endPage}">
-                            <a class="${pageInfo.page == num ? 'is-active' : ''}" href="${pageContext.request.contextPath}/board?page=${num}&category=${param.category}&keyword=${param.keyword}">${num}</a>
+                            <a class="${pageInfo.page == num ? 'is-active' : ''}" href="${pageContext.request.contextPath}/board?page=${num}&tab=${param.tab}&category=${param.category}&searchType=${param.searchType}&keyword=${param.keyword}">${num}</a>
                         </c:forEach>
-                        <c:if test="${pageInfo.next}"><a href="${pageContext.request.contextPath}/board?page=${pageInfo.endPage + 1}&category=${param.category}&keyword=${param.keyword}">→</a></c:if>
+                        <c:if test="${pageInfo.next}">
+                            <a href="${pageContext.request.contextPath}/board?page=${pageInfo.endPage + 1}&tab=${param.tab}&category=${param.category}&searchType=${param.searchType}&keyword=${param.keyword}">→</a>
+                        </c:if>
                     </nav>
                 </section>
 

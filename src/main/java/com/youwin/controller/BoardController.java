@@ -1,6 +1,7 @@
 package com.youwin.controller;
 
 import com.youwin.dto.NoticeDto;
+import com.youwin.dto.PageInfo;
 import com.youwin.service.NoticeService;
 import com.youwin.service.NoticeImageService;
 import lombok.RequiredArgsConstructor;
@@ -20,10 +21,11 @@ public class BoardController {
     private final NoticeService noticeService;
     private final NoticeImageService noticeImageService;
 
-    // 1. 공지사항 목록 조회 (페이징 및 검색 포함)
+    // 1. 공지사항 목록 조회 (페이징, 카테고리, 검색조건 포함)
     @GetMapping
     public String boardList(@RequestParam(value = "page", defaultValue = "1") int page,
                             @RequestParam(value = "category", defaultValue = "all") String category,
+                            @RequestParam(value = "searchType", defaultValue = "titleContent") String searchType,
                             @RequestParam(value = "keyword", defaultValue = "") String keyword,
                             Model model) {
 
@@ -34,16 +36,18 @@ public class BoardController {
         params.put("offset", offset);
         params.put("limit", limit);
         params.put("category", category);
+        params.put("searchType", searchType);
         params.put("keyword", keyword);
 
         List<NoticeDto> list = noticeService.getNoticesWithPaging(params);
         int totalCount = noticeService.getTotalCount(params);
 
-        com.youwin.dto.PageInfo pageInfo = new com.youwin.dto.PageInfo(page, totalCount);
+        PageInfo pageInfo = new PageInfo(page, totalCount);
 
         model.addAttribute("list", list);
         model.addAttribute("pageInfo", pageInfo);
         model.addAttribute("category", category);
+        model.addAttribute("searchType", searchType);
         model.addAttribute("keyword", keyword);
 
         return "board/list";
@@ -72,7 +76,7 @@ public class BoardController {
         return "board/detail";
     }
 
-    // 5. 수정 페이지 이동 (데이터와 기존 이미지 목록을 담아서 화면으로 전달)
+    // 5. 수정 페이지 이동
     @GetMapping("/modify")
     public String modifyForm(@RequestParam("noticeId") Long noticeId, Model model) {
         NoticeDto notice = noticeService.getNoticeById(noticeId);
@@ -82,7 +86,7 @@ public class BoardController {
         return "board/form";
     }
 
-    // 6. 수정 처리 (수정 완료 후 상세 페이지 대신 목록 페이지로 이동하도록 변경)
+    // 6. 수정 처리
     @PostMapping("/modify")
     public String modify(@ModelAttribute NoticeDto noticeDto,
                          @RequestParam(value = "existingFiles", required = false) List<String> existingFiles) {

@@ -25,43 +25,58 @@
     // 2. 목록 화면 전용 기능 (list.jsp) - 카테고리 필터 및 검색
     // ====================================================================
     const filterButtons = document.querySelectorAll('[data-board-filter]');
-    const searchInput = document.querySelector('[data-board-search]');
-    const searchButton = document.querySelector('.board-search button');
+    const searchInput = document.querySelector('input[name="keyword"]');
+    const searchTypeSelect = document.querySelector('select[name="searchType"]');
+    const searchButton = document.querySelector('.board-search button[type="submit"]');
 
     if (filterButtons.length > 0 || searchInput) {
-        // 페이지 최초 로드 시 URL 파라미터를 읽어 UI 상태(버튼 활성화, 검색어 입력) 복원
+        // 페이지 최초 로드 시 URL 파라미터를 읽어 UI 상태 복원
         (function initFilterState() {
             const params = new URLSearchParams(window.location.search);
             const currentCategory = params.get('category') || 'all';
             const currentKeyword = params.get('keyword') || '';
+            const currentSearchType = params.get('searchType') || 'titleContent';
 
             filterButtons.forEach(function (button) {
-                const isMatch = button.dataset.boardFilter === currentCategory;
+                const isMatch = button.value === currentCategory;
                 button.classList.toggle('is-active', isMatch);
             });
 
             if (searchInput && currentKeyword) {
                 searchInput.value = currentKeyword;
             }
+
+            if (searchTypeSelect && currentSearchType) {
+                searchTypeSelect.value = currentSearchType;
+            }
         })();
 
-        // 선택된 카테고리 및 검색어를 포함하여 서버로 요청을 보내는 함수
+        // 선택된 탭, 카테고리, 검색 조건 및 검색어를 포함하여 서버로 요청을 보내는 함수
         function searchAndFilterSubmit(targetPage = 1) {
             const activeFilter = document.querySelector('[data-board-filter].is-active');
-            const category = activeFilter ? activeFilter.dataset.boardFilter : 'all';
+            const category = activeFilter ? activeFilter.value : 'all';
+            const searchType = searchTypeSelect ? searchTypeSelect.value : 'titleContent';
             const query = searchInput ? searchInput.value.trim() : '';
 
-            let url = window.location.origin + window.location.pathname;
-            url += '?page=' + targetPage;
-            url += '&category=' + encodeURIComponent(category);
-            url += '&keyword=' + encodeURIComponent(query);
+            const params = new URLSearchParams(window.location.search);
+            const tab = params.get('tab') || '';
 
-            window.location.href = url;
+            let url = window.location.origin + window.location.pathname;
+            let queryParams = [];
+
+            queryParams.push('page=' + targetPage);
+            if (tab) queryParams.push('tab=' + encodeURIComponent(tab));
+            queryParams.push('category=' + encodeURIComponent(category));
+            queryParams.push('searchType=' + encodeURIComponent(searchType));
+            queryParams.push('keyword=' + encodeURIComponent(query));
+
+            window.location.href = url + '?' + queryParams.join('&');
         }
 
-        // 필터 버튼(전체, 안내, 업데이트, 이벤트 등) 클릭 이벤트
+        // 필터 버튼 클릭 이벤트
         filterButtons.forEach(function (button) {
-            button.addEventListener('click', function () {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
                 filterButtons.forEach(function (item) {
                     item.classList.remove('is-active');
                 });
@@ -74,15 +89,9 @@
         if (searchInput) {
             searchInput.addEventListener('keypress', function (event) {
                 if (event.key === 'Enter') {
+                    event.preventDefault();
                     searchAndFilterSubmit(1);
                 }
-            });
-        }
-
-        // 검색 버튼 클릭 이벤트
-        if (searchButton) {
-            searchButton.addEventListener('click', function () {
-                searchAndFilterSubmit(1);
             });
         }
     }
@@ -108,7 +117,7 @@
 
             if (selectedFiles.length + files.length > 5) {
                 alert('이미지는 최대 5장까지 첨부할 수 있습니다.');
-                imageInput.value = ''; // 초과 시 입력값 초기화
+                imageInput.value = '';
                 return;
             }
 
@@ -116,7 +125,7 @@
                 const file = files[i];
                 if (file.size > 5 * 1024 * 1024) {
                     alert('장당 최대 5MB 이하의 이미지만 업로드할 수 있습니다.');
-                    imageInput.value = ''; // 용량 초과 시 입력값 초기화
+                    imageInput.value = '';
                     return;
                 }
                 selectedFiles.push(file);
