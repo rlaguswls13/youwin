@@ -29,32 +29,30 @@ public class SecurityConfig {
 
         http
                 .csrf(csrf -> csrf.disable())
-                .userDetailsService(userDetailsService)
-                .authenticationProvider(customAuthenticationProvider)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/css/**", "/js/**", "/images/**", "/upload/**", "/error"
-                        ).permitAll()
-                        .requestMatchers(
-                                "/", "/api/member/**",
-                                "/login/login",
-                                "/member/unlockDormant",
-                                "/member/restoreAccount"
-                        ).permitAll()
-                        .requestMatchers(
-                                "/member/mypage", "/member/settings", "/member/update**", "/member/delete"
+                                .requestMatchers(
+                                        "/css/**", "/js/**", "/images/**", "/upload/**", "/error"
+                                ).permitAll()
+                                .requestMatchers(
+                                        "/", "/api/member/**",
+                                        "/login/login",
+                                        "/member/unlockDormant",
+                                        "/member/restoreAccount"
+                                ).permitAll()
+                                .requestMatchers(
+                                        "/member/mypage", "/member/settings", "/member/update**", "/member/delete"
 
-                        ).authenticated()
+                                ).authenticated()
 //                        .requestMatchers(
 //                                "/member/**")
 //                        .anonymous()
-                        .requestMatchers(
-                                "/index",
-                                "/chatroom",
-                                "/chatroom/**",
-                                "/chat/**"
-                        ).authenticated()
-                        .anyRequest().permitAll()
+                                .requestMatchers(
+                                        "/index",
+                                        "/chatroom",
+                                        "/chatroom/**",
+                                        "/chat/**"
+                                ).authenticated()
+                                .anyRequest().permitAll()
                 )
                 .formLogin(form -> form
                         .loginPage("/login/login")
@@ -90,8 +88,8 @@ public class SecurityConfig {
                         })
                 )
                 .sessionManagement(session -> session
-                                .maximumSessions(1) // 동시 접속 1명으로 제한
-                                .expiredUrl("/login/login?expired=true") // 기존 세션 만료 시 리다이렉트 페이지
+                        .maximumSessions(1) // 동시 접속 1명으로 제한
+                        .expiredUrl("/login/login?expired=true") // 기존 세션 만료 시 리다이렉트 페이지
                 )
                 .addFilterBefore(
                         autoLoginFilter,

@@ -78,6 +78,12 @@
             // alert 확인 후 주소창의 ?expired=true 파라미터 깔끔하게 제거
             history.replaceState(null, null, window.location.pathname);
         }
+
+        // 2. 로그인 실패 / 차단 관련 알림 팝업 (추가)
+        if (urlParams.has('error')) {
+            // 새로고침 시 에러 메시지가 다시 렌더링되거나 중복 처리되는 것을 방지하기 위해 URL만 깔끔하게 뒤로 넘김
+            history.replaceState(null, null, window.location.pathname);
+        }
     });
 </script>
 </body>

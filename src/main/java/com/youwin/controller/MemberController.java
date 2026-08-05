@@ -195,11 +195,6 @@ public class MemberController {
         return "member/joinStep2";
     }
 
-    @GetMapping("/login")
-    public String loginForm() {
-        return "member/login";
-    }
-
     @GetMapping("/mypage")
     public String mypageForm(
             @AuthenticationPrincipal CustomUserDetails user,
