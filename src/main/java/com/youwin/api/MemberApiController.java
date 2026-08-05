@@ -1,16 +1,13 @@
 package com.youwin.api;
 
-import com.youwin.dto.MemberDto;
-import com.youwin.security.CustomUserDetails;
 import com.youwin.service.EmailVerificationService;
 import com.youwin.service.MemberService;
+import com.youwin.service.MemberService.AccountRestoreType;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -20,6 +17,8 @@ public class MemberApiController {
 
     private final MemberService memberService;
     private final EmailVerificationService emailVerificationService;
+
+    /* ================= 중복 체크 API ================= */
 
     @GetMapping("/check-id")
     public boolean checkDuplicateId(@RequestParam("memberId") String memberId) {
@@ -36,19 +35,21 @@ public class MemberApiController {
         return memberService.isEmailDuplicate(memberEmail);
     }
 
-    // 1. 이메일 인증번호 발송 API
+    /* ================= 이메일 인증 공통 API ================= */
+
+    // 1. 단순 이메일 인증번호 발송 (회원가입 등)
     @PostMapping("/send-code")
     public ResponseEntity<?> sendVerificationCode(@RequestBody Map<String, String> request) {
         String email = request.get("memberEmail");
         try {
             emailVerificationService.sendVerificationCode(email);
-            return ResponseEntity.ok().body(Map.of("success", true, "message", "인증번호가 발송되었습니다."));
+            return ResponseEntity.ok(Map.of("success", true, "message", "인증번호가 발송되었습니다."));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", "메일 발송에 실패했습니다."));
         }
     }
 
-    // 2. 이메일 인증번호 대조/확인 API
+    // 2. 인증번호 검증 API
     @PostMapping("/verify-code")
     public ResponseEntity<?> verifyCode(@RequestBody Map<String, String> request) {
         String email = request.get("memberEmail");
@@ -57,170 +58,107 @@ public class MemberApiController {
         try {
             boolean isMatched = emailVerificationService.verifyCode(email, code);
             if (isMatched) {
-                return ResponseEntity.ok().body(Map.of("success", true, "message", "인증에 성공하였습니다."));
-            } else {
-                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "인증번호가 일치하지 않습니다."));
+                return ResponseEntity.ok(Map.of("success", true, "message", "인증에 성공하였습니다."));
             }
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "인증번호가 일치하지 않습니다."));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
         }
     }
 
-    // 1. 아이디 찾기용 이메일 인증번호 발송 요청
+    /* ================= 아이디 / 비밀번호 찾기 API ================= */
+
+    // 아이디 찾기용 인증번호 발송
     @PostMapping("/find-id/send-code")
     public ResponseEntity<?> sendCodeForFindId(@RequestBody Map<String, String> request) {
-        String name = request.get("memberName");
-        String email = request.get("memberEmail");
-
-        // DB에 해당 이름+이메일을 가진 회원이 존재하는지 boolean으로 먼저 확인!
-        if (!memberService.existsByNameAndEmail(name, email)) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "일치하는 회원 정보가 없습니다."));
+        try {
+            memberService.sendCodeForFindId(request.get("memberName"), request.get("memberEmail"));
+            return ResponseEntity.ok(Map.of("success", true, "message", "인증번호가 발송되었습니다."));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
         }
-
-        // 존재하면 인증번호 발송
-        emailVerificationService.sendVerificationCode(email);
-        return ResponseEntity.ok(Map.of("success", true, "message", "인증번호가 발송되었습니다."));
     }
 
-    // 2. 이메일 인증 완료 후 최종 아이디 찾기 요청
+    // 아이디 최종 조회
     @PostMapping("/find-id")
     public ResponseEntity<?> findId(@RequestBody Map<String, String> request) {
-        String name = request.get("memberName");
-        String email = request.get("memberEmail");
-
         try {
-            String memberId = memberService.findMemberId(name, email);
+            String memberId = memberService.findMemberId(request.get("memberName"), request.get("memberEmail"));
             return ResponseEntity.ok(Map.of("success", true, "memberId", memberId));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
         }
     }
 
-    // 1. 비밀번호 찾기용 인증번호 발송 (아이디 + 이메일 검증)
+    // 비밀번호 찾기용 인증번호 발송
     @PostMapping("/find-pw/send-code")
     public ResponseEntity<?> sendCodeForFindPw(@RequestBody Map<String, String> request) {
-        String memberId = request.get("memberId");
-        String memberEmail = request.get("memberEmail");
-
-        if (!memberService.existsByIdAndEmail(memberId, memberEmail)) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "일치하는 회원 정보가 없습니다."));
+        try {
+            memberService.sendCodeForFindPw(request.get("memberId"), request.get("memberEmail"));
+            return ResponseEntity.ok(Map.of("success", true, "message", "인증번호가 발송되었습니다."));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
         }
-
-        emailVerificationService.sendVerificationCode(memberEmail);
-        return ResponseEntity.ok(Map.of("success", true, "message", "인증번호가 발송되었습니다."));
     }
 
-    // 2. 비밀번호 재설정 요청
+    // 비밀번호 재설정
     @PostMapping("/reset-pw")
     public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
-        String memberId = request.get("memberId");
-        String memberEmail = request.get("memberEmail");
-        String newPassword = request.get("newPassword");
-
         try {
-            memberService.updatePassword(memberId, memberEmail, newPassword);
+            memberService.resetPassword(request.get("memberId"), request.get("memberEmail"), request.get("newPassword"));
             return ResponseEntity.ok(Map.of("success", true, "message", "비밀번호가 성공적으로 변경되었습니다."));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
         }
     }
 
-    // 1. [공통] 복구/휴면해제 인증번호 발송 API
-    @PostMapping("/send-recovery-code")
-    public ResponseEntity<Map<String, Object>> sendRecoveryCode(@RequestBody Map<String, String> request) {
-        Map<String, Object> result = new HashMap<>();
-        String email = request.get("memberEmail");
+    /* ================= 계정 복구 / 휴면 해제 API ================= */
 
-        try {
-            // EmailVerificationService의 발송 메서드 직접 호출
-            emailVerificationService.sendVerificationCode(email);
-            result.put("success", true);
-            result.put("message", "인증번호가 발송되었습니다.");
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            result.put("success", false);
-            result.put("message", "인증번호 발송에 실패했습니다.");
-            return ResponseEntity.badRequest().body(result);
-        }
+    // [복구/휴면 공통] 인증번호 발송
+    @PostMapping("/send-recovery-code")
+    public ResponseEntity<?> sendRecoveryCode(@RequestBody Map<String, String> request) {
+        return sendVerificationCode(request); // 기존 sendVerificationCode 재활용
     }
 
-    // 2. 휴면 계정 해제 처리 API
+    // 휴면 계정 해제
     @PostMapping("/unlockDormant")
     public ResponseEntity<String> unlockDormant(@RequestBody Map<String, String> request, HttpSession session) {
-        String code = request.get("code");
-        String memberId = (String) session.getAttribute("unlockMemberId");
-        String memberEmail = (String) session.getAttribute("unlockMemberEmail");
-
-        if (memberId == null || memberEmail == null) {
-            return ResponseEntity.ok("EXPIRED"); // 세션 만료
-        }
-
-        try {
-            // 1) 인증번호 검증
-            boolean isCodeValid = emailVerificationService.verifyCode(memberEmail, code);
-
-            if (isCodeValid) {
-                // 2) 휴면 해제 실행 (DB ACTIVE 전환 + 인증데이터 삭제)
-                memberService.activateDormantAccount(memberId, memberEmail);
-
-                // 세션 정리
-                session.removeAttribute("unlockMemberId");
-                session.removeAttribute("unlockMemberEmail");
-                return ResponseEntity.ok("SUCCESS");
-            } else {
-                return ResponseEntity.ok("FAIL"); // 인증번호 불일치
-            }
-        } catch (Exception e) {
-            return ResponseEntity.ok("FAIL");
-        }
+        return processAccountRestore(request, session, "unlockMemberId", "unlockMemberEmail", AccountRestoreType.DORMANT);
     }
 
-    // 3. 탈퇴 유예 계정 복구 처리 API
+    // 탈퇴 유예 계정 복구
     @PostMapping("/restoreAccount")
     public ResponseEntity<String> restoreAccount(@RequestBody Map<String, String> request, HttpSession session) {
+        return processAccountRestore(request, session, "restoreMemberId", "restoreMemberEmail", AccountRestoreType.RESTORE_DELETE);
+    }
+
+    // [보조 메서드] 휴면해제 & 탈퇴복구 공통 루틴 처리
+    private ResponseEntity<String> processAccountRestore(
+            Map<String, String> request,
+            HttpSession session,
+            String sessionKeyId,
+            String sessionKeyEmail,
+            AccountRestoreType restoreType
+    ) {
         String code = request.get("code");
-        String memberId = (String) session.getAttribute("restoreMemberId");
-        String memberEmail = (String) session.getAttribute("restoreMemberEmail");
+        String memberId = (String) session.getAttribute(sessionKeyId);
+        String memberEmail = (String) session.getAttribute(sessionKeyEmail);
 
         if (memberId == null || memberEmail == null) {
-            return ResponseEntity.ok("EXPIRED"); // 세션 만료
+            return ResponseEntity.ok("EXPIRED");
         }
 
         try {
-            // 1) 인증번호 검증
             boolean isCodeValid = emailVerificationService.verifyCode(memberEmail, code);
-
             if (isCodeValid) {
-                // 2) 탈퇴 복구 실행 (DB ACTIVE 전환, deleted_at=NULL + 인증데이터 삭제)
-                memberService.cancelDeleteMember(memberId, memberEmail);
-
-                // 세션 정리
-                session.removeAttribute("restoreMemberId");
-                session.removeAttribute("restoreMemberEmail");
+                memberService.restoreAccountStatus(memberId, memberEmail, restoreType);
+                session.removeAttribute(sessionKeyId);
+                session.removeAttribute(sessionKeyEmail);
                 return ResponseEntity.ok("SUCCESS");
-            } else {
-                return ResponseEntity.ok("FAIL"); // 인증번호 불일치
             }
+            return ResponseEntity.ok("FAIL");
         } catch (Exception e) {
             return ResponseEntity.ok("FAIL");
         }
-    }
-
-    @PostMapping("/api/posts")
-    public ResponseEntity<?> createPost(
-            @AuthenticationPrincipal CustomUserDetails userDetails // <-- 여기에 담겨 들어옵니다!
-    ) {
-        // 1. userDetails가 잘 들어왔는지 확인
-        System.out.println("userDetails = " + userDetails);
-
-        // 2. 내부에 담긴 MemberDto 추출
-        MemberDto memberDto = userDetails.getMemberDto();
-
-        // 3. 저장된 회원 상세 정보 출력해보기
-        System.out.println("로그인한 회원 아이디: " + memberDto.getMemberId());
-        System.out.println("로그인한 회원 상태: " + memberDto.getMemberStatus());
-        // ... MemberDto에 있는 필드들 다 찍어볼 수 있습니다.
-
-        return ResponseEntity.ok().build();
     }
 }
