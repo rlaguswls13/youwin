@@ -7,7 +7,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,8 +28,12 @@ public class MemberController {
     private final MemberService memberService;
 
     @PostMapping("/join")
-    public String join(MemberDto memberDto) {
-        memberService.joinMember(memberDto);
+    public String join(
+            MemberDto memberDto,
+            @RequestParam(value = "profile", required = false) MultipartFile profileFile) {
+
+        // Service에 DTO와 파일 파라미터를 따로 전달
+        memberService.joinMember(memberDto, profileFile);
         return "redirect:/login/login";
     }
 
@@ -73,31 +76,22 @@ public class MemberController {
         return "redirect:/member/settings";
     }
 
-    // 프로필 이미지 변경
+    // 프로필 이미지 변경 (컨트롤러 코드 다이어트)
     @PostMapping("/updateProfileImage")
     public String updateProfileImage(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam("deleteProfile") boolean deleteProfile,
+            @RequestParam(value = "deleteProfile", defaultValue = "false") boolean deleteProfile,
             @RequestParam(value = "profile", required = false) MultipartFile profileFile,
             RedirectAttributes redirectAttributes) {
 
+        // 1. Service 호출 (Service 내부에서 DB 업데이트 + 파일 저장 + SecurityContext 갱신까지 한 번에 완료됨)
         memberService.updateProfileImage(
                 userDetails.getMemberDto().getMemberId(),
                 profileFile,
-                deleteProfile);
-
-        MemberDto updatedMember = memberService.getMemberById(
-                userDetails.getMemberDto().getMemberId());
-
-        CustomUserDetails newUserDetails = new CustomUserDetails(updatedMember);
-
-        Authentication newAuth = new UsernamePasswordAuthenticationToken(
-                newUserDetails,
-                newUserDetails.getPassword(),
-                newUserDetails.getAuthorities()
+                deleteProfile
         );
-        SecurityContextHolder.getContext().setAuthentication(newAuth);
 
+        redirectAttributes.addFlashAttribute("message", "프로필 이미지가 변경되었습니다.");
         return "redirect:/member/settings";
     }
 

@@ -5,6 +5,7 @@ import com.youwin.dto.MemberDto;
 import com.youwin.repository.AutoLoginRepository;
 import com.youwin.repository.MemberRepository;
 import com.youwin.security.CustomUserDetails;
+import com.youwin.util.FileUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -14,12 +15,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Date;
 import java.util.UUID;
 
@@ -32,6 +29,7 @@ public class MemberService {
     private final AutoLoginRepository autoLoginRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailVerificationService emailVerificationService;
+    private final FileUtil fileUtil; // 🎯 공통 파일 유틸 주입
 
     // SecurityContext 내의 MemberDto 정보 갱신용 보조 메서드
     private void refreshSecurityContext(String memberId) {
@@ -52,15 +50,16 @@ public class MemberService {
     /* ================= 1. 회원가입 및 중복확인 ================= */
 
     @Transactional
-    public void joinMember(MemberDto memberDto) {
+    public void joinMember(MemberDto memberDto, MultipartFile profileFile) {
         validateEmailVerification(memberDto.getMemberEmail());
-
         memberDto.setMemberPassword(passwordEncoder.encode(memberDto.getMemberPassword()));
 
-        saveProfileImageInternal(memberDto, memberDto.getProfile());
+        // 신규 저장이므로 oldFilePath 자리에 null 전달
+        if (profileFile != null && !profileFile.isEmpty()) {
+            memberDto.setProfileImage(fileUtil.saveFile(profileFile, "profile", null));
+        }
 
         memberRepository.insertMember(memberDto);
-
         emailVerificationService.removeVerification(memberDto.getMemberEmail());
     }
 
@@ -78,7 +77,6 @@ public class MemberService {
 
     /* ================= 2. 아이디 / 비밀번호 찾기 ================= */
 
-    // [수정] Repository의 existsByNameAndEmail 삭제 -> findMemberIdByNameAndEmail 단건 조회로 존재 검증
     public void sendCodeForFindId(String name, String email) {
         String memberId = memberRepository.findMemberIdByNameAndEmail(name, email);
         if (memberId == null) {
@@ -87,7 +85,6 @@ public class MemberService {
         emailVerificationService.sendVerificationCode(email);
     }
 
-    // [수정] Repository의 existsByIdAndEmail 삭제 -> findByMemberId 조회 후 이메일 비교로 존재 검증
     public void sendCodeForFindPw(String memberId, String email) {
         MemberDto member = memberRepository.findByMemberId(memberId);
         if (member == null || !email.equals(member.getMemberEmail())) {
@@ -121,7 +118,6 @@ public class MemberService {
 
     /* ================= 3. 회원 정보 수정 (설정 페이지) ================= */
 
-    // [수정] 개별 쿼리 대신 updateMemberFields 동적 쿼리 사용
     @Transactional
     public void updateNickname(String memberId, String nickname) {
         MemberDto updateDto = new MemberDto();
@@ -131,7 +127,6 @@ public class MemberService {
         refreshSecurityContext(memberId);
     }
 
-    // [수정] 개별 쿼리 대신 updateMemberFields 동적 쿼리 사용
     @Transactional
     public void updatePhone(String memberId, String memberPhone) {
         MemberDto updateDto = new MemberDto();
@@ -141,7 +136,6 @@ public class MemberService {
         refreshSecurityContext(memberId);
     }
 
-    // [수정] 개별 쿼리 대신 updateMemberFields 동적 쿼리 사용
     @Transactional
     public void updateEmail(String memberId, String memberEmail) {
         MemberDto updateDto = new MemberDto();
@@ -165,33 +159,24 @@ public class MemberService {
         memberRepository.updatePassword(memberId, passwordEncoder.encode(newPassword));
     }
 
-    // [수정] updateProfileImage 대신 updateMemberFields 동적 쿼리 사용
     @Transactional
     public void updateProfileImage(String memberId, MultipartFile profile, boolean deleteProfile) {
         MemberDto currentMember = memberRepository.findByMemberId(memberId);
         String oldFilePath = currentMember != null ? currentMember.getProfileImage() : null;
 
-        MemberDto updateDto = new MemberDto();
-        updateDto.setMemberId(memberId);
-
         if (deleteProfile) {
-            updateDto.setProfileImage(null);
-            memberRepository.updateMemberFields(updateDto);
-            deletePhysicalFile(oldFilePath);
+            memberRepository.updateProfileImage(memberId, null);
+            fileUtil.deleteFile(oldFilePath);
         } else if (profile != null && !profile.isEmpty()) {
-            saveProfileImageInternal(currentMember, profile);
-            updateDto.setProfileImage(currentMember.getProfileImage());
-            memberRepository.updateMemberFields(updateDto);
+            // 기존 파일 교체이므로 oldFilePath 전달
+            String newFilePath = fileUtil.saveFile(profile, "profile", oldFilePath);
 
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                @Override
-                public void afterCompletion(int status) {
-                    if (status == STATUS_COMMITTED) {
-                        deletePhysicalFile(oldFilePath);
-                    }
-                }
-            });
+            MemberDto updateDto = new MemberDto();
+            updateDto.setMemberId(memberId);
+            updateDto.setProfileImage(newFilePath);
+            memberRepository.updateMemberFields(updateDto);
         }
+
         refreshSecurityContext(memberId);
     }
 
@@ -270,44 +255,6 @@ public class MemberService {
     private void validateEmailVerification(String email) {
         if (!emailVerificationService.isVerified(email)) {
             throw new IllegalStateException("이메일 인증이 완료되지 않았습니다.");
-        }
-    }
-
-    private void saveProfileImageInternal(MemberDto dto, MultipartFile profileFile) {
-        if (profileFile != null && !profileFile.isEmpty()) {
-            String projectPath = System.getProperty("user.dir");
-            String uploadPath = projectPath + File.separator + "upload" + File.separator + "profile" + File.separator;
-
-            File uploadDir = new File(uploadPath);
-            if (!uploadDir.exists()) uploadDir.mkdirs();
-
-            String savedFileName = UUID.randomUUID().toString() + "_" + profileFile.getOriginalFilename();
-            File dest = new File(uploadPath, savedFileName);
-
-            try {
-                profileFile.transferTo(dest);
-                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                    @Override
-                    public void afterCompletion(int status) {
-                        if (status == STATUS_ROLLED_BACK && dest.exists()) {
-                            dest.delete();
-                        }
-                    }
-                });
-                dto.setProfileImage("/upload/profile/" + savedFileName);
-            } catch (IOException e) {
-                throw new RuntimeException("프로필 이미지 저장 중 오류가 발생했습니다.", e);
-            }
-        }
-    }
-
-    private void deletePhysicalFile(String dbFilePath) {
-        if (dbFilePath != null && !dbFilePath.isEmpty()) {
-            String projectPath = System.getProperty("user.dir");
-            File fileToDelete = new File(projectPath + dbFilePath.replace("/", File.separator));
-            if (fileToDelete.exists()) {
-                fileToDelete.delete();
-            }
         }
     }
 }

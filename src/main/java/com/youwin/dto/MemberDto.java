@@ -1,11 +1,6 @@
 package com.youwin.dto;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.AllArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -23,13 +18,11 @@ public class MemberDto {
     private String memberEmail;
     private String memberPhone;
     private String nickname;
-    private String profileImage;
+    private String profileImage; // DB 저장용 파일 경로 (/upload/profile/xxx.png)
     private String memberStatus;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
-
-    private MultipartFile profile;
 
     // JSP에서 ${member.formattedCreatedAt} 으로 부를 때 사용되는 메서드
     public String getFormattedCreatedAt() {

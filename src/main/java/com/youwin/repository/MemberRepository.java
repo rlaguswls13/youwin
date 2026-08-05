@@ -30,6 +30,8 @@ public interface MemberRepository {
     // [통합] 회원 정보 동적 수정 (닉네임, 전화번호, 이메일, 프로필 이미지 등)
     void updateMemberFields(MemberDto member);
 
+    void updateProfileImage(@Param("memberId") String memberId, @Param("profileImage") String profileImage);
+
     // 회원 삭제 (상태 변경)
     void deleteMember(@Param("memberId") String memberId);
 
