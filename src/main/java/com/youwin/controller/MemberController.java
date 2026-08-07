@@ -218,17 +218,4 @@ public class MemberController {
 
         return "member/settings";
     }
-
-    // 아이디 찾기 페이지 이동
-    @GetMapping("/findId")
-    public String findIdForm() {
-        return "member/findId";
-    }
-
-    // 비밀번호 찾기(및 재설정 통합) 페이지 이동
-    @GetMapping("/findPassword")
-    public String findPasswordForm() {
-        return "member/findPassword";
-    }
-
 }

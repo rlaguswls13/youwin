@@ -1,8 +1,9 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}" scope="request" />
+
 <!doctype html>
 <html lang="ko">
 <head>
@@ -12,6 +13,7 @@
     <title>Youwin | 음악으로 연결되는 순간</title>
     <link rel="stylesheet" href="${ctx}/app.css">
     <link rel="stylesheet" href="${ctx}/home.css">
+    <link rel="stylesheet" href="${ctx}/account.css">
 </head>
 <body>
 <div class="site-shell">
@@ -23,13 +25,13 @@
             </a>
 
             <nav class="site-nav" data-site-nav aria-label="주요 메뉴">
-                <a class="is-active" href="${ctx}/">홈</a>
+                <a href="${ctx}/">홈</a>
                 <a href="${ctx}/board">게시판</a>
                 <a href="${ctx}/index">채팅방</a>
 
                 <!-- 🟢 로그인 상태일 때만 마이페이지 노출 -->
                 <sec:authorize access="isAuthenticated()">
-                    <a href="${ctx}/member/mypage">마이페이지</a>
+                    <a href="${ctx}/mypage">마이페이지</a>
                 </sec:authorize>
 
                 <div class="user-menu">
@@ -49,7 +51,7 @@
                     <!-- 2. 비로그인(익명) 상태인 경우 -->
                     <sec:authorize access="isAnonymous()">
                         <a href="${ctx}/auth/login" class="auth-btn">로그인</a>
-                        <a href="${ctx}/member/joinStep1" class="auth-btn">회원가입</a>
+                        <a href="${ctx}/member/join-step1" class="auth-btn">회원가입</a>
                     </sec:authorize>
                 </div>
             </nav>

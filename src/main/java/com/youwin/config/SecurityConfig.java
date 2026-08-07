@@ -34,7 +34,7 @@ public class SecurityConfig {
                                 "/css/**", "/js/**", "/images/**", "/upload/**", "/error"
                         ).permitAll()
                         .requestMatchers(
-                                "/", "/api/member/**",
+                                "/", "/api/**",
                                 "/auth/**",
                                 "/member/unlockDormant",
                                 "/member/restoreAccount"

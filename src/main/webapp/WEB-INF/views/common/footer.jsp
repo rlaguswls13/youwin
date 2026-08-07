@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
     <footer class="site-footer">
         <div class="site-container site-footer__inner">
             <span>© 2026 Youwin. 음악으로 연결되는 커뮤니티.</span>
@@ -16,15 +16,11 @@
 <script src="${ctx}/home.js"></script>
 
 <c:if test="${not empty successMessage}">
-    <script>
-        alert("${successMessage}");
-    </script>
+    <script>alert("${successMessage}");</script>
 </c:if>
 
 <c:if test="${not empty errorMessage}">
-    <script>
-        alert("${errorMessage}");
-    </script>
+    <script>alert("${errorMessage}");</script>
 </c:if>
 </body>
 </html>

@@ -247,7 +247,7 @@
               } else {
                 showSuccess(emailInput, errEmail, '인증번호 발송 중...');
 
-                fetch('/api/member/send-code', {
+                fetch('/api/email/send-code', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ memberEmail: emailVal })
@@ -278,7 +278,7 @@
       return;
     }
 
-    fetch('/api/member/verify-code', {
+    fetch('/api/email/verify-code', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ memberEmail: emailVal, code: codeInput.value })

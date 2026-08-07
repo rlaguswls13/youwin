@@ -55,7 +55,7 @@
   document.getElementById('btnSendCode').addEventListener('click', function() {
     const authInput = document.getElementById('authCode');
 
-    fetch('/api/member/send-recovery-code', {
+    fetch('/api/auth/send-recovery-code', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ memberEmail: '${memberEmail}' })
@@ -86,7 +86,7 @@
       return;
     }
 
-    fetch('/api/member/unlockDormant', {
+    fetch('/api/auth/unlockDormant', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code: code })

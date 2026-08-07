@@ -56,9 +56,9 @@
             </form>
 
             <nav class="footer-links" aria-label="계정 도움말">
-                <a href="${pageContext.request.contextPath}/member/findId">아이디 찾기</a>
+                <a href="${pageContext.request.contextPath}/auth/find-id">아이디 찾기</a>
                 <span class="bar" aria-hidden="true">·</span>
-                <a href="${pageContext.request.contextPath}/member/findPassword">비밀번호 찾기</a>
+                <a href="${pageContext.request.contextPath}/auth/find-password">비밀번호 찾기</a>
                 <span class="bar" aria-hidden="true">·</span>
                 <a href="${pageContext.request.contextPath}/member/joinStep1">회원가입</a>
             </nav>
