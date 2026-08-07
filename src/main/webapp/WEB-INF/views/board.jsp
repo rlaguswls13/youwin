@@ -22,7 +22,7 @@
                 <a href="${pageContext.request.contextPath}/index">채팅방</a>
                 <a href="${pageContext.request.contextPath}/member/mypage">마이페이지</a>
             </nav>
-            <div class="site-header__actions"><a class="button button--secondary" href="${pageContext.request.contextPath}/login/login">로그인</a><a class="avatar-link" href="${pageContext.request.contextPath}/member/mypage" aria-label="마이페이지">YU</a></div>
+            <div class="site-header__actions"><a class="button button--secondary" href="${pageContext.request.contextPath}/member/login">로그인</a><a class="avatar-link" href="${pageContext.request.contextPath}/member/mypage" aria-label="마이페이지">YU</a></div>
             <button class="menu-toggle" type="button" data-menu-toggle aria-label="메뉴 열기" aria-expanded="false"></button>
         </div>
     </header>
@@ -144,93 +144,3 @@
                                             <td class="board-table__meta">${empty notice.memberId ? '운영팀' : notice.memberId}</td>
                                             <td class="board-table__meta" style="text-align: center;">${notice.createAt}</td>
                                             <td class="board-table__meta" style="text-align: center;">${notice.count}</td>
-
-                                            <td onclick="event.stopPropagation();" style="text-align: center;">
-                                                <div class="board-row-actions">
-                                                    <button type="button" class="board-filter btn-edit" style="min-height:28px; padding:0 10px; margin:0; border-color:#2f54eb; color:#2f54eb; background:none; font-size:11px; cursor:pointer;">수정</button>
-
-                                                    <!-- [수정 완료] 삭제 폼 method 속성 누락 및 엔드포인트 경로 수정 -->
-                                                    <form action="${pageContext.request.contextPath}/board/delete" method="POST" class="delete-form" style="margin:0;">
-                                                        <input type="hidden" name="noticeId" value="${notice.noticeId}">
-                                                        <button type="submit" class="board-filter" style="min-height:28px; padding:0 10px; margin:0; border-color:#ff4d4f; color:#ff4d4f; background:none; font-size:11px; cursor:pointer;">삭제</button>
-                                                    </form>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </c:forEach>
-                                </c:otherwise>
-                            </c:choose>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- 2-2. 페이지네이션 바 -->
-                    <nav class="board-pagination" aria-label="페이지 이동">
-                        <c:if test="${pageMaker.prev}">
-                            <a href="${pageContext.request.contextPath}/board?page=${pageMaker.startPage - 1}" aria-label="이전 페이지">←</a>
-                        </c:if>
-                        <c:forEach var="num" begin="${pageMaker.startPage}" end="${pageMaker.endPage}">
-                            <a class="${pageMaker.cri.page == num ? 'is-active' : ''}" href="${pageContext.request.contextPath}/board?page=${num}">${num}</a>
-                        </c:forEach>
-                        <c:if test="${pageMaker.next}">
-                            <a href="${pageContext.request.contextPath}/board?page=${pageMaker.endPage + 1}" aria-label="다음 페이지">→</a>
-                        </c:if>
-                    </nav>
-                </section>
-
-                <!-- ==================================================================== -->
-                <!-- 5. 상세조회 (Detail Read View) -->
-                <!-- ==================================================================== -->
-                <!-- [해결] 스크립트 클래스 제어를 방해하던 style="display: none;" 가드를 제거하고 CSS 상단 오버라이딩 처리 완료 -->
-                <section class="board-view" data-board-view="detail" id="notice-detail-view" aria-labelledby="detail-title">
-                    <div class="page-heading">
-                        <p class="page-eyebrow" id="detail-category-eyebrow">Category</p>
-                        <h1 class="page-title" id="detail-title">공지사항 상세보기</h1>
-                        <p class="page-description" id="detail-meta-info">작성자: 운영팀 | 작성일: -</p>
-                    </div>
-                    <div class="surface editor-card board-detail-card">
-
-                        <!-- 업로드되어 보관 중이던 이미지가 수직 순차 배치 형태로 렌더링될 영역 선언 -->
-                        <div id="detail-images" class="board-detail-images"></div>
-
-                        <div id="detail-content" class="board-detail-content">
-                            내용을 불러오는 중입니다...
-                        </div>
-                        <div class="form-actions board-detail-actions">
-                            <!-- [해결] 버튼 튕김 및 홈 화면 백 현상 방지를 위해 인라인 인트러럽트 캡처 바인딩 조치 -->
-                            <button class="button" type="button" id="btn-close-detail" data-cancel-editor onclick="event.preventDefault(); event.stopPropagation();">목록으로 돌아가기</button>
-                        </div>
-                    </div>
-                </section>
-
-                <!--기타 탭: FAQ (자주 묻는 질문) -->
-                <section class="board-view" data-board-view="faq" aria-labelledby="faq-title">
-                    <div class="page-heading"><p class="page-eyebrow">Help center</p><h1 class="page-title" id="faq-title">자주 묻는 질문</h1><p class="page-description">서비스 이용 중 자주 묻는 내용을 모았습니다.</p></div>
-                    <div class="surface faq-list">
-                        <article class="faq-item"><p class="faq-question"><span class="chip">계정</span>&nbsp; 비밀번호를 잊어버렸어요.</p><p class="faq-answer">로그인 화면의 비밀번호 찾기에서 가입 이메일로 재설정 링크를 받을 수 있습니다.</p></article>
-                        <article class="faq-item"><p class="faq-question"><span class="chip">채팅</span>&nbsp; 채팅방 알림을 끌 수 있나요?</p><p class="faq-answer">채팅방 상단의 설정 메뉴에서 방별 알림을 조정할 수 있습니다.</p></article>
-                        <article class="faq-item"><p class="faq-question"><span class="chip">음악</span>&nbsp; 플레이리스트는 어디에 저장되나요?</p><p class="faq-answer">마이페이지의 내 플레이리스트에서 저장한 곡을 확인할 수 있습니다.</p></article>
-                    </div>
-                </section>
-
-                <!--기타 탭: 1:1 문의 -->
-                <section class="board-view" data-board-view="inquiry" aria-labelledby="inquiry-title">
-                    <div class="page-heading"><p class="page-eyebrow">Contact us</p><h1 class="page-title" id="inquiry-title">1:1 문의</h1><p class="page-description">문의 내용과 답변 받을 이메일을 남겨 주세요.</p></div>
-                    <form class="surface editor-card form-grid" action="#" method="post">
-                        <div class="form-field"><label for="inquiry-category">문의 유형</label><select id="inquiry-category"><option>계정</option><option>서비스 이용</option><option>기타</option></select></div>
-                        <div class="form-field"><label for="inquiry-title-field">제목</label><input id="inquiry-title-field" type="text" placeholder="문의 제목을 입력해 주세요"></div>
-                        <div class="form-field"><label for="inquiry-content">내용</label><textarea id="inquiry-content" placeholder="문의 내용을 입력해 주세요"></textarea></div>
-                        <div class="form-actions"><button class="button" type="submit">문의 접수</button></div>
-                    </form>
-                </section>
-            </div>
-        </div>
-    </main>
-</div>
-<script>
-    window.contextPath = '${pageContext.request.contextPath}';
-</script>
-<script src="${pageContext.request.contextPath}/app.js"></script>
-<script src="${pageContext.request.contextPath}/board.js"></script>
-</body>
-</html>

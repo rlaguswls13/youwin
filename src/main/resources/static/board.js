@@ -1,225 +1,8 @@
 (function () {
-    const viewButtons = document.querySelectorAll('[data-board-target]');
-    const views = document.querySelectorAll('[data-board-view]');
-    const filterButtons = document.querySelectorAll('[data-board-filter]');
-    const searchInput = document.querySelector('[data-board-search]');
-    const searchButton = document.querySelector('.board-search button');
-    const rows = document.querySelectorAll('[data-board-row]');
-
-    const editorForm = document.getElementById('editor-form');
-    const writeTitle = document.getElementById('write-title');
-    const submitBtn = document.getElementById('submit-btn');
-    const noticeIdInput = document.getElementById('post-noticeId');
-    const categorySelect = document.getElementById('category');
-    const titleInput = document.getElementById('post-title');
-    const contentTextarea = document.getElementById('post-content');
-    const isPinnedCheckbox = document.getElementById('post-isPinned');
-    const allowCommentsCheckbox = document.getElementById('post-allowComments');
-    const imageInput = document.getElementById('imageInput');
-    const uploadTrigger = document.getElementById('btnUploadTrigger');
-    const previewContainer = document.getElementById('previewContainer');
-    const imageCount = document.getElementById('imageCount');
-
-    if (uploadTrigger && imageInput) {
-        uploadTrigger.addEventListener('click', function () {
-            imageInput.click();
-        });
-        uploadTrigger.addEventListener('keydown', function (event) {
-            if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                imageInput.click();
-            }
-        });
-        imageInput.addEventListener('change', function () {
-            const files = Array.from(imageInput.files || []).slice(0, 5);
-            if (imageCount) imageCount.textContent = String(files.length);
-            if (!previewContainer) return;
-            previewContainer.replaceChildren();
-            files.forEach(function (file) {
-                const item = document.createElement('div');
-                item.className = 'image-preview-item';
-                const image = document.createElement('img');
-                const url = URL.createObjectURL(file);
-                image.src = url;
-                image.alt = file.name;
-                image.onload = function () { URL.revokeObjectURL(url); };
-                const name = document.createElement('span');
-                name.textContent = file.name;
-                item.append(image, name);
-                previewContainer.appendChild(item);
-            });
-        });
-    }
-
-
-
-    // 공용 유틸리티 함수: 폼 읽기전용 제어 및 데이터 매핑
-    function setFormReadOnly(isReadOnly) {
-        if (!editorForm) return;
-        const elements = [categorySelect, isPinnedCheckbox, allowCommentsCheckbox, titleInput, contentTextarea];
-        elements.forEach(function (el) {
-            if (!el) return;
-            if (el.tagName === 'SELECT' || el.type === 'checkbox') {
-                el.disabled = isReadOnly;
-            } else {
-                el.readOnly = isReadOnly;
-            }
-        });
-    }
-
-    function fillFormData(row) {
-        if (!row) return;
-        if (noticeIdInput) noticeIdInput.value = row.dataset.id;
-        if (categorySelect) categorySelect.value = row.dataset.category;
-        if (titleInput) titleInput.value = row.dataset.title;
-        if (contentTextarea) contentTextarea.value = row.dataset.content;
-        if (isPinnedCheckbox) isPinnedCheckbox.checked = (row.dataset.pinned === "1");
-        if (allowCommentsCheckbox) allowCommentsCheckbox.checked = (row.dataset.allowComments === "1");
-    }
-
+    const currentPath = window.location.pathname;
 
     // ====================================================================
-    // 0. 레이아웃 (Layout) : 탭 화면 전환 및 초기 UI 상태 복원
-    // -> 설명: 사이드바 메뉴 클릭 시 화면을 부드럽게 전환하고,
-    //    페이지 로드 시 주소창 파라미터(카테고리, 검색어)를 분석해 UI 상태를 유지합니다.
-    // ====================================================================
-
-    // [함수] 화면 전환 및 스크롤 제어
-    function showView(target) {
-        views.forEach(function (view) {
-            view.classList.toggle('is-active', view.dataset.boardView === target);
-        });
-        viewButtons.forEach(function (button) {
-            button.classList.toggle('is-active', button.dataset.boardTarget === target);
-        });
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // 페이지 최초 로드 시 검색/필터 UI 상태 복원
-    (function initFilterState() {
-        const params = new URLSearchParams(window.location.search);
-        const currentCategory = params.get('category') || 'all';
-        const currentKeyword = params.get('keyword') || '';
-
-        filterButtons.forEach(function (button) {
-            const isMatch = button.dataset.boardFilter === currentCategory;
-            button.classList.toggle('is-active', isMatch);
-        });
-
-        if (searchInput && currentKeyword) {
-            searchInput.value = currentKeyword;
-        }
-    })();
-
-    // 사이드바 메뉴 클릭 핸들러 (공지사항 클릭 시 파라미터 초기화 후 목록 이동)
-    viewButtons.forEach(function (button) {
-        button.addEventListener('click', function () {
-            if (button.dataset.boardTarget === 'notice') {
-                window.location.href = window.location.origin + window.location.pathname;
-            } else {
-                showView(button.dataset.boardTarget);
-            }
-        });
-    });
-
-
-    // ====================================================================
-    // 1. 등록 (Create) : 새 글 작성 폼 활성화 및 에디터 취소 제어
-    // -> 설명: '새 글 작성' 버튼 클릭 시 폼을 초기화하고 액션 주소를 /board/write로
-    //    세팅합니다. 취소 버튼 클릭 시 다시 공지사항 목록으로 돌아갑니다.
-    // ====================================================================
-
-    // '새 글 작성' 단추 클릭 핸들러
-    document.querySelectorAll('[data-open-editor]').forEach(function (button) {
-        button.addEventListener('click', function () {
-            if (editorForm) {
-                editorForm.reset();
-                setFormReadOnly(false);
-                if (noticeIdInput) noticeIdInput.value = "";
-                editorForm.action = editorForm.action.replace('/board/modify', '/board/write');
-                if (writeTitle) writeTitle.textContent = "새 공지 작성";
-                if (submitBtn) {
-                    submitBtn.textContent = "등록하기";
-                    submitBtn.type = "submit";
-                }
-            }
-            showView('write');
-        });
-    });
-
-    // 에디터 폼 내 '취소' 버튼 핸들러
-    document.querySelectorAll('[data-cancel-editor]').forEach(function (button) {
-        button.addEventListener('click', function () {
-            showView('notice');
-        });
-    });
-
-
-    // ====================================================================
-    // 2. 목록 및 페이지네이션 (Read List & Pagination) : 서버 연동 검색/필터링
-    // -> 설명: 카테고리 필터 선택, 키워드 검색, 하단 페이지네이션 클릭 시
-    //    서버단 상태(페이징, 검색어, 카테고리) 유실 없이 동적으로 리다이렉트합니다.
-    // ====================================================================
-
-    // [함수] 페이징/검색/필터 상태를 결합하여 페이지 리다이렉트
-    function searchAndFilterSubmit(targetPage = 1) {
-        const activeFilter = document.querySelector('[data-board-filter].is-active');
-        const category = activeFilter ? activeFilter.dataset.boardFilter : 'all';
-        const query = searchInput ? searchInput.value.trim() : '';
-
-        let url = window.location.origin + window.location.pathname;
-        url += '?page=' + targetPage;
-        url += '&category=' + encodeURIComponent(category);
-        url += '&keyword=' + encodeURIComponent(query);
-
-        window.location.href = url;
-    }
-
-    // 카테고리 필터 버튼 클릭 시 1페이지로 새로고침 검색
-    filterButtons.forEach(function (button) {
-        button.addEventListener('click', function () {
-            filterButtons.forEach(function (item) {
-                item.classList.remove('is-active');
-            });
-            button.classList.add('is-active');
-            searchAndFilterSubmit(1);
-        });
-    });
-
-    // 검색어 입력 후 엔터키 또는 검색 버튼 클릭 연동
-    if (searchInput) {
-        searchInput.addEventListener('keypress', function (event) {
-            if (event.key === 'Enter') {
-                searchAndFilterSubmit(1);
-            }
-        });
-    }
-    if (searchButton) {
-        searchButton.addEventListener('click', function () {
-            searchAndFilterSubmit(1);
-        });
-    }
-
-    // 하단 페이지네이션 바 클릭 시 기존 검색 상태 유지하며 이동 (가로채기)
-    const paginationLinks = document.querySelectorAll('.board-pagination a');
-    paginationLinks.forEach(function (link) {
-        link.addEventListener('click', function (event) {
-            event.preventDefault();
-            const hrefAttr = link.getAttribute('href');
-            if (!hrefAttr || hrefAttr === '#') return;
-
-            const urlObj = new URL(link.href);
-            const targetPage = urlObj.searchParams.get('page') || 1;
-
-            searchAndFilterSubmit(targetPage);
-        });
-    });
-
-
-    // ====================================================================
-    // 3. 삭제 (Delete) : 게시글 삭제 컨펌 제어
-    // -> 설명: 목록 우측의 '삭제' 버튼 클릭 시 폼이 서브밋되기 전에 사용자에게
-    //    정말 삭제할 것인지 묻는 안전장치 팝업을 띄웁니다.
+    // 1. 공통 기능 (삭제 폼 컨펌 등 모든 페이지 공통)
     // ====================================================================
     const deleteForms = document.querySelectorAll('.delete-form');
     deleteForms.forEach(function (form) {
@@ -230,72 +13,163 @@
         });
     });
 
-
-    // ====================================================================
-    // 4. 수정 (Update) : 수정 모드 진입 및 데이터 매핑
-    // -> 설명: 테이블 행 내부의 파란색 '수정' 단독 버튼을 눌렀을 때 실행됩니다.
-    //    해당 글 데이터를 폼에 채우고 액션 주소를 /board/modify로 변경하여 활성화합니다.
-    // ====================================================================
-    const editButtons = document.querySelectorAll('.btn-edit');
-    editButtons.forEach(function (button) {
+    // 에디터(등록/수정) 취소 버튼 공통 처리
+    document.querySelectorAll('[data-cancel-editor]').forEach(function (button) {
         button.addEventListener('click', function () {
-            const row = button.closest('[data-board-row]');
-            if (!row || !editorForm) return;
-
-            fillFormData(row);
-            setFormReadOnly(false);
-
-            if (!editorForm.action.includes('/board/modify')) {
-                editorForm.action = editorForm.action.replace('/board/write', '/board/modify');
-            }
-
-            if (writeTitle) writeTitle.textContent = "공지사항 수정";
-            if (submitBtn) {
-                submitBtn.textContent = "수정하기";
-                submitBtn.type = "submit";
-            }
-
-            showView('write');
+            window.location.href = window.contextPath + '/board';
         });
     });
 
 
     // ====================================================================
-    // 5. 상세조회 (Detail Read) : 더블클릭 상세조회 및 상세조회 내 수정 전환
-    // -> 설명: 목록 행을 '더블클릭'하면 폼 필드들을 전부 읽기 전용(ReadOnly)으로
-    //    잠근 채 내용을 보여주고, 내부에서 버튼을 통해 수정 모드로 전환할 수 있게 합니다.
+    // 2. 목록 화면 전용 기능 (list.jsp) - 카테고리 필터 및 검색
     // ====================================================================
+    const filterButtons = document.querySelectorAll('[data-board-filter]');
+    const searchInput = document.querySelector('input[name="keyword"]');
+    const searchTypeSelect = document.querySelector('select[name="searchType"]');
+    const searchButton = document.querySelector('.board-search button[type="submit"]');
 
-    // 행 선택 시 상세조회 (잠금 모드) 진입
-    rows.forEach(function (row) {
-        row.addEventListener('click', function () {
-            fillFormData(row);
-            setFormReadOnly(true);
+    if (filterButtons.length > 0 || searchInput) {
+        // 페이지 최초 로드 시 URL 파라미터를 읽어 UI 상태 복원
+        (function initFilterState() {
+            const params = new URLSearchParams(window.location.search);
+            const currentCategory = params.get('category') || 'all';
+            const currentKeyword = params.get('keyword') || '';
+            const currentSearchType = params.get('searchType') || 'titleContent';
 
-            if (editorForm && !editorForm.action.includes('/board/modify')) {
-                editorForm.action = editorForm.action.replace('/board/write', '/board/modify');
+            filterButtons.forEach(function (button) {
+                const isMatch = button.value === currentCategory;
+                button.classList.toggle('is-active', isMatch);
+            });
+
+            if (searchInput && currentKeyword) {
+                searchInput.value = currentKeyword;
             }
 
-            if (writeTitle) writeTitle.textContent = "공지사항 상세 조회";
-
-            if (submitBtn) {
-                submitBtn.textContent = "수정하기로 전환";
-                submitBtn.type = "button";
+            if (searchTypeSelect && currentSearchType) {
+                searchTypeSelect.value = currentSearchType;
             }
-            showView('write');
+        })();
+
+        // 선택된 탭, 카테고리, 검색 조건 및 검색어를 포함하여 서버로 요청을 보내는 함수
+        function searchAndFilterSubmit(targetPage = 1) {
+            const activeFilter = document.querySelector('[data-board-filter].is-active');
+            const category = activeFilter ? activeFilter.value : 'all';
+            const searchType = searchTypeSelect ? searchTypeSelect.value : 'titleContent';
+            const query = searchInput ? searchInput.value.trim() : '';
+
+            const params = new URLSearchParams(window.location.search);
+            const tab = params.get('tab') || '';
+
+            let url = window.location.origin + window.location.pathname;
+            let queryParams = [];
+
+            queryParams.push('page=' + targetPage);
+            if (tab) queryParams.push('tab=' + encodeURIComponent(tab));
+            queryParams.push('category=' + encodeURIComponent(category));
+            queryParams.push('searchType=' + encodeURIComponent(searchType));
+            queryParams.push('keyword=' + encodeURIComponent(query));
+
+            window.location.href = url + '?' + queryParams.join('&');
+        }
+
+        // 필터 버튼 클릭 이벤트
+        filterButtons.forEach(function (button) {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+                filterButtons.forEach(function (item) {
+                    item.classList.remove('is-active');
+                });
+                button.classList.add('is-active');
+                searchAndFilterSubmit(1);
+            });
         });
-    });
 
-    // 상세조회 내부에서 '수정하기로 전환' 버튼 클릭 시 잠금 해제 인터랙션
-    if (submitBtn) {
-        submitBtn.addEventListener('click', function (event) {
-            if (submitBtn.type === 'button') {
-                event.preventDefault();
-                setFormReadOnly(false);
-                if (writeTitle) writeTitle.textContent = "공지사항 수정";
-                submitBtn.textContent = "수정하기";
-                submitBtn.type = "submit";
-            }
+        // 검색 입력창 엔터키 이벤트
+        if (searchInput) {
+            searchInput.addEventListener('keypress', function (event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    searchAndFilterSubmit(1);
+                }
+            });
+        }
+    }
+
+
+    // ====================================================================
+    // 3. 등록 및 수정 폼 화면 전용 기능 (form.jsp) - 이미지 업로드 및 미리보기
+    // ====================================================================
+    const imageInput = document.getElementById('imageInput');
+    const btnUploadTrigger = document.getElementById('btnUploadTrigger');
+    const previewContainer = document.getElementById('previewContainer');
+    const imageCountSpan = document.getElementById('imageCount');
+
+    if (imageInput && btnUploadTrigger) {
+        let selectedFiles = [];
+
+        btnUploadTrigger.addEventListener('click', function () {
+            imageInput.click();
         });
+
+        imageInput.addEventListener('change', function (e) {
+            const files = Array.from(e.target.files);
+
+            if (selectedFiles.length + files.length > 5) {
+                alert('이미지는 최대 5장까지 첨부할 수 있습니다.');
+                imageInput.value = '';
+                return;
+            }
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('장당 최대 5MB 이하의 이미지만 업로드할 수 있습니다.');
+                    imageInput.value = '';
+                    return;
+                }
+                selectedFiles.push(file);
+            }
+
+            updatePreview();
+            syncInputFiles();
+        });
+
+        function updatePreview() {
+            if (!previewContainer) return;
+            previewContainer.innerHTML = '';
+
+            if (imageCountSpan) {
+                imageCountSpan.textContent = selectedFiles.length;
+            }
+
+            selectedFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const thumbDiv = document.createElement('div');
+                    thumbDiv.className = 'existing-image-item';
+                    thumbDiv.innerHTML = `
+                        <img src="${e.target.result}" alt="미리보기 이미지">
+                        <button type="button" class="btn-del-existing" data-index="${index}">×</button>
+                    `;
+
+                    thumbDiv.querySelector('button').addEventListener('click', function () {
+                        selectedFiles.splice(index, 1);
+                        updatePreview();
+                        syncInputFiles();
+                    });
+
+                    previewContainer.appendChild(thumbDiv);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function syncInputFiles() {
+            if (!imageInput) return;
+            const dataTransfer = new DataTransfer();
+            selectedFiles.forEach(file => dataTransfer.items.add(file));
+            imageInput.files = dataTransfer.files;
+        }
     }
 })();
