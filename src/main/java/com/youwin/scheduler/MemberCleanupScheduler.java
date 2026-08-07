@@ -20,7 +20,7 @@ public class MemberCleanupScheduler {
      * 매일 새벽 3시에 실행 (Cron 표현식: 초 분 시 일 월 요일)
      * 탈퇴 요청(deleted_at) 후 30일이 지난 회원을 영구 삭제합니다.
      */
-    @Scheduled(cron = "${coustom.cron:*/10 * * * * *}")
+    @Scheduled(cron = "${custom.cron:*/10 * * * * *}")
     @Transactional
     public void deleteExpiredMembersJob() {
         // 기준 시각: 현재로부터 30일 전

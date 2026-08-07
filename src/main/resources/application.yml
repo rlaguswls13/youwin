@@ -40,4 +40,5 @@ mybatis:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 
-coustom.cron: 0 0 3 * * *
+custom:
+  cron: "0 0 3 * * *"

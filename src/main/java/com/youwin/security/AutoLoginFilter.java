@@ -8,6 +8,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -44,7 +45,7 @@ public class AutoLoginFilter extends OncePerRequestFilter {
         if (authentication != null
                 && authentication.isAuthenticated()
                 && !(authentication instanceof AnonymousAuthenticationToken)) {
-            filterChain.doFilter(request, response);
+            filterChain.doFilter(request, response); // 이미 인증된 사용자는 그대로 통과
             return;
         }
 
@@ -70,14 +71,17 @@ public class AutoLoginFilter extends OncePerRequestFilter {
                                             userDetails.getAuthorities());
 
                             // Context 생성 및 저장
-                            // AutoLoginFilter.java 의 context 저장 부분
                             SecurityContext context = SecurityContextHolder.createEmptyContext();
                             context.setAuthentication(auth);
                             SecurityContextHolder.setContext(context);
 
-                            // 세션에도 넣어줘야 다음 페이지 이동해도 로그인이 유지됩니다.
-                            request.getSession(true);
+                            // 1. 세션 가져오기 및 Context 저장
+                            HttpSession session = request.getSession(true);
                             securityContextRepository.saveContext(context, request, response);
+
+                            // 2. 세션에 nickname과 profile 추가 저장
+                            session.setAttribute("nickname", memberDto.getNickname());
+                            session.setAttribute("profile", memberDto.getProfileImage());
                         }
                     } else {
                         // DB에 없는 만료/잘못된 토큰이면 쿠키 지워주기
@@ -91,6 +95,7 @@ public class AutoLoginFilter extends OncePerRequestFilter {
             }
         }
 
+        // 필터 체인 진행 (메서드 최하단에 위치)
         filterChain.doFilter(request, response);
     }
 }
