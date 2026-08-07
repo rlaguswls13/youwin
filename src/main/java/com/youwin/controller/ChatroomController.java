@@ -1,17 +1,17 @@
 package com.youwin.controller;
 
 import com.youwin.dto.ChatRoomDto;
+import com.youwin.security.CustomUserDetails;
 import com.youwin.service.ChatRoomService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import jakarta.servlet.http.HttpSession;
+
 import java.util.List;
-import jakarta.servlet.http.HttpServletRequest;
-import com.youwin.security.CustomUserDetails;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @RequiredArgsConstructor
 @Controller
@@ -46,7 +46,7 @@ public class ChatroomController {
             Model model) {
 
         if (userDetails == null) {
-            return "redirect:/login/login";
+            return "redirect:/auth/login";
         }
 
         String memberId = userDetails.getMemberDto().getMemberId();

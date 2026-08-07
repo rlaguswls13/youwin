@@ -25,7 +25,7 @@
                 <a href="${pageContext.request.contextPath}/chatroom">채팅방</a>
                 <a href="${pageContext.request.contextPath}/member/mypage">마이페이지</a>
             </nav>
-            <div class="site-header__actions"><a class="button button--secondary" href="${pageContext.request.contextPath}/member/login">로그인</a><a class="avatar-link" href="${pageContext.request.contextPath}/member/mypage" aria-label="마이페이지">YU</a></div>
+            <div class="site-header__actions"><a class="button button--secondary" href="${pageContext.request.contextPath}/auth/login">로그인</a><a class="avatar-link" href="${pageContext.request.contextPath}/member/mypage" aria-label="마이페이지">YU</a></div>
         </div>
     </header>
 

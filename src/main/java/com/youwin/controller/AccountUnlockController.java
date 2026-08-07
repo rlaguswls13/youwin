@@ -29,7 +29,7 @@ public class AccountUnlockController {
         if (memberId == null) {
             // 토큰이 만료되었거나 존재하지 않는 경우
             String errorMsg = URLEncoder.encode("만료되었거나 유효하지 않은 해제 링크입니다. 다시 시도해 주세요.", StandardCharsets.UTF_8);
-            return "redirect:/login/login?error=true&exception=" + errorMsg;
+            return "redirect:/auth/login?error=true&exception=" + errorMsg;
         }
 
         // 2. DB 상태 원상 복구 (LOCKED/DORMANT -> ACTIVE)
@@ -43,6 +43,6 @@ public class AccountUnlockController {
 
         // 5. 성공 메시지 전달 및 로그인 페이지 이동
         String successMsg = URLEncoder.encode("계정 잠금이 성공적으로 해제되었습니다. 다시 로그인해 주세요.", StandardCharsets.UTF_8);
-        return "redirect:/login/login?error=true&exception=" + successMsg;
+        return "redirect:/auth/login?error=true&exception=" + successMsg;
     }
 }

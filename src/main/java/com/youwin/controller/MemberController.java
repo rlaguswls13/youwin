@@ -37,7 +37,7 @@ public class MemberController {
 
         // Service에 DTO와 파일 파라미터를 따로 전달
         memberService.joinMember(memberDto, profileFile);
-        return "redirect:/login/login";
+        return "redirect:/auth/login";
     }
 
     // 닉네임 변경
@@ -134,7 +134,7 @@ public class MemberController {
             RedirectAttributes rttr) {
 
         if (userDetails == null) {
-            return "redirect:/login/login";
+            return "redirect:/auth/login";
         }
 
         String memberId = userDetails.getUsername();

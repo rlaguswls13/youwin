@@ -35,7 +35,7 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(
                                 "/", "/api/member/**",
-                                "/login/login",
+                                "/auth/**",
                                 "/member/unlockDormant",
                                 "/member/restoreAccount"
                         ).permitAll()
@@ -51,8 +51,8 @@ public class SecurityConfig {
                         .anyRequest().permitAll()
                 )
                 .formLogin(form -> form
-                        .loginPage("/login/login")
-                        .loginProcessingUrl("/login/login")
+                        .loginPage("/auth/login")
+                        .loginProcessingUrl("/auth/login")
                         .usernameParameter("memberId")
                         .passwordParameter("memberPassword")
                         .successHandler(customLoginSuccessHandler)
@@ -84,7 +84,7 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session -> session
                         .maximumSessions(1)
-                        .expiredUrl("/login/login?expired=true")
+                        .expiredUrl("/auth/login?expired=true")
                 )
                 .addFilterBefore(
                         autoLoginFilter,
