@@ -17,42 +17,38 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final CustomUserDetailsService userDetailsService;
-    private final CustomAuthenticationProvider customAuthenticationProvider;
     private final CustomLoginSuccessHandler customLoginSuccessHandler;
     private final CustomLoginFailureHandler customLoginFailureHandler;
     private final AutoLoginFilter autoLoginFilter;
-    private final AutoLoginRepository autoLoginRepository; // DB 토큰 삭제용 추가
+    private final AutoLoginRepository autoLoginRepository;
+    private final CustomAuthenticationProvider customAuthenticationProvider;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
                 .csrf(csrf -> csrf.disable())
+                .authenticationProvider(customAuthenticationProvider)
                 .authorizeHttpRequests(auth -> auth
-                                .requestMatchers(
-                                        "/css/**", "/js/**", "/images/**", "/upload/**", "/error"
-                                ).permitAll()
-                                .requestMatchers(
-                                        "/", "/api/member/**",
-                                        "/login/login",
-                                        "/member/unlockDormant",
-                                        "/member/restoreAccount"
-                                ).permitAll()
-                                .requestMatchers(
-                                        "/member/mypage", "/member/settings", "/member/update**", "/member/delete"
-
-                                ).authenticated()
-//                        .requestMatchers(
-//                                "/member/**")
-//                        .anonymous()
-                                .requestMatchers(
-                                        "/index",
-                                        "/chatroom",
-                                        "/chatroom/**",
-                                        "/chat/**"
-                                ).authenticated()
-                                .anyRequest().permitAll()
+                        .requestMatchers(
+                                "/css/**", "/js/**", "/images/**", "/upload/**", "/error"
+                        ).permitAll()
+                        .requestMatchers(
+                                "/", "/api/member/**",
+                                "/login/login",
+                                "/member/unlockDormant",
+                                "/member/restoreAccount"
+                        ).permitAll()
+                        .requestMatchers(
+                                "/member/mypage", "/member/settings", "/member/update**", "/member/delete"
+                        ).authenticated()
+                        .requestMatchers(
+                                "/index",
+                                "/chatroom",
+                                "/chatroom/**",
+                                "/chat/**"
+                        ).authenticated()
+                        .anyRequest().permitAll()
                 )
                 .formLogin(form -> form
                         .loginPage("/login/login")
@@ -76,7 +72,6 @@ public class SecurityConfig {
                                     if ("remember-me".equals(cookie.getName())) {
                                         autoLoginRepository.deleteByToken(cookie.getValue());
 
-                                        // 브라우저 쿠키 확실하게 만료시키기
                                         Cookie deleteCookie = new Cookie("remember-me", null);
                                         deleteCookie.setPath("/");
                                         deleteCookie.setMaxAge(0);
@@ -88,8 +83,8 @@ public class SecurityConfig {
                         })
                 )
                 .sessionManagement(session -> session
-                        .maximumSessions(1) // 동시 접속 1명으로 제한
-                        .expiredUrl("/login/login?expired=true") // 기존 세션 만료 시 리다이렉트 페이지
+                        .maximumSessions(1)
+                        .expiredUrl("/login/login?expired=true")
                 )
                 .addFilterBefore(
                         autoLoginFilter,

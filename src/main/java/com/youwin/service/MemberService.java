@@ -4,6 +4,7 @@ import com.youwin.dto.AutoLoginDto;
 import com.youwin.dto.MemberDto;
 import com.youwin.repository.AutoLoginRepository;
 import com.youwin.repository.MemberRepository;
+import com.youwin.dto.MyActivityDto;
 import com.youwin.security.CustomUserDetails;
 import com.youwin.util.FileUtil;
 import jakarta.servlet.http.Cookie;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -256,5 +258,16 @@ public class MemberService {
         if (!emailVerificationService.isVerified(email)) {
             throw new IllegalStateException("이메일 인증이 완료되지 않았습니다.");
         }
+    }
+
+    // 최근 활동 내역
+    public List<MyActivityDto> getRecentActivities(Long memberId, int limit) {
+        if (memberId <= 0) {
+            return List.of();
+        }
+
+        int fetchLimit = (limit <= 0) ? 5 : limit;
+
+        return memberRepository.findRecentActivitiesByMemberId(memberId, fetchLimit);
     }
 }

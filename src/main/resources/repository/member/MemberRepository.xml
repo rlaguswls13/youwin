@@ -29,6 +29,7 @@
     <!-- 회원 단건 조회 -->
     <select id="findByMemberId" parameterType="string" resultType="com.youwin.dto.MemberDto">
         SELECT
+            id              AS id,
             member_id       AS memberId,
             member_password AS memberPassword,
             nickname,
@@ -130,4 +131,17 @@
         WHERE member_id = #{memberId}
     </update>
 
+    <select id="findRecentActivitiesByMemberId" resultType="com.youwin.dto.MyActivityDto">
+        SELECT
+        act_type,
+        target_id,
+        member_id,
+        content,
+        act_at,
+        link_url
+        FROM my_activity_view  <!-- 생성하신 View 이름 -->
+        WHERE member_id = #{memberId}
+        ORDER BY act_at DESC
+        LIMIT #{limit}
+    </select>
 </mapper>

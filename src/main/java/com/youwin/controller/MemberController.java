@@ -1,6 +1,7 @@
 package com.youwin.controller;
 
 import com.youwin.dto.MemberDto;
+import com.youwin.dto.MyActivityDto;
 import com.youwin.security.CustomUserDetails;
 import com.youwin.service.MemberService;
 import jakarta.servlet.http.Cookie;
@@ -19,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/member")
@@ -195,6 +198,13 @@ public class MemberController {
             Model model) {
 
         MemberDto memberDto = user.getMemberDto();
+
+        // memberDto.getId()가 Integer이므로 별도의 parseInt 없이 바로 사용
+        Long pkId = (memberDto.getId() != null) ? memberDto.getId() : 0;
+
+        List<MyActivityDto> recentActivities = memberService.getRecentActivities(pkId, 5);
+
+        model.addAttribute("recentActivities", recentActivities);
         model.addAttribute("memberDto", memberDto);
 
         return "member/mypage";

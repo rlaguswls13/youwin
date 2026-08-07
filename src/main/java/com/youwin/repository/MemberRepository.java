@@ -1,10 +1,12 @@
 package com.youwin.repository;
 
 import com.youwin.dto.MemberDto;
+import com.youwin.dto.MyActivityDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Mapper
 public interface MemberRepository {
@@ -43,4 +45,8 @@ public interface MemberRepository {
     int convertToDormantAccounts(@Param("cutoffDate") LocalDateTime cutoffDate);
     int activateDormantAccount(@Param("memberId") String memberId);
     int cancelDeleteMember(@Param("memberId") String memberId);
+
+
+    // 최근 내역 N개 조회
+    List<MyActivityDto> findRecentActivitiesByMemberId(@Param("memberId") Long memberId, @Param("limit") int limit);
 }

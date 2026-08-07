@@ -106,14 +106,57 @@
 
                 <aside>
                     <section class="surface mypage-card" aria-labelledby="activity-title">
-                        <div class="section-head"><div><h2 class="section-title" id="activity-title">최근 활동</h2><p class="section-copy">내 커뮤니티 기록</p></div></div>
+                        <div class="section-head">
+                            <div>
+                                <h2 class="section-title" id="activity-title">최근 활동</h2>
+                                <p class="section-copy">내 커뮤니티 기록</p>
+                            </div>
+                        </div>
                         <div class="activity-list">
-                            <article class="activity-item"><p class="activity-item__type">게시글</p><p class="activity-item__title">여름밤에 어울리는 시티팝 추천</p><time datetime="2026-07-21T10:20">오늘 10:20</time></article>
-                            <article class="activity-item"><p class="activity-item__type">채팅</p><p class="activity-item__title">신보 같이 듣기 방에 참여했어요</p><time datetime="2026-07-20T22:10">어제 22:10</time></article>
-                            <article class="activity-item"><p class="activity-item__type">플레이리스트</p><p class="activity-item__title">Blue Hour를 저장했어요</p><time datetime="2026-07-19T18:40">7월 19일</time></article>
+                            <c:forEach var="act" items="${recentActivities}">
+                                <article class="activity-item">
+                                    <p class="activity-item__type">
+                                        <c:choose>
+                                            <c:when test="${act.actType == 'CHAT'}">채팅</c:when>
+                                            <c:when test="${act.actType == 'NOTICE'}">게시글</c:when>
+                                            <c:otherwise>기타</c:otherwise>
+                                        </c:choose>
+                                    </p>
+                                    <p class="activity-item__title">
+                                        <a href="${ctx}${act.linkUrl}">
+                                            <c:out value="${act.content}" />
+                                        </a>
+                                    </p>
+                                    <time datetime="${act.actAt}">
+                                        <fmt:parseDate value="${act.actAt}" pattern="yyyy-MM-dd'T'HH:mm" var="parsedDate" type="both" />
+                                        <fmt:formatDate value="${parsedDate}" pattern="MM월 dd일 HH:mm" />
+                                    </time>
+                                </article>
+                            </c:forEach>
+
+                            <c:if test="${empty recentActivities}">
+                                <article class="activity-item">
+                                    <p class="activity-item__title">최근 활동 내역이 없습니다.</p>
+                                </article>
+                            </c:if>
                         </div>
                     </section>
-                    <section class="surface preference-card" aria-labelledby="preference-title"><div class="section-head"><div><h2 class="section-title" id="preference-title">나의 취향</h2><p class="section-copy">추천에 반영되는 관심 장르</p></div></div><div class="preference-tags"><span class="chip">City Pop</span><span class="chip">Indie</span><span class="chip">Jazz</span><span class="chip">Lo-Fi</span><span class="chip">R&B</span></div></section>
+
+                    <section class="surface preference-card" aria-labelledby="preference-title">
+                        <div class="section-head">
+                            <div>
+                                <h2 class="section-title" id="preference-title">나의 취향</h2>
+                                <p class="section-copy">추천에 반영되는 관심 장르</p>
+                            </div>
+                        </div>
+                        <div class="preference-tags">
+                            <span class="chip">City Pop</span>
+                            <span class="chip">Indie</span>
+                            <span class="chip">Jazz</span>
+                            <span class="chip">Lo-Fi</span>
+                            <span class="chip">R&B</span>
+                        </div>
+                    </section>
                 </aside>
             </div>
         </div>
