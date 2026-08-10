@@ -6,6 +6,8 @@
 
 <!-- 공통 Header Include -->
 <%@ include file="/WEB-INF/views/common/header.jsp" %>
+<!-- 🟢 마이페이지 전용 CSS 불러오기 -->
+<link rel="stylesheet" href="${pageContext.request.contextPath}/mypage.css">
 
 <!-- 🟢 Spring Security principal 및 memberDto 변수 안전하게 바인딩 -->
 <sec:authorize access="isAuthenticated()">
