@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!doctype html>
 <html lang="ko">
 <head>
@@ -58,9 +58,10 @@
             <p class="page-description">작성자: ${empty notice.memberId ? '운영팀' : notice.memberId} | 작성일: ${notice.createAt} | 조회수: ${notice.count}</p>
           </div>
 
+          <!-- 게시글 내용 카드 -->
           <div class="surface editor-card form-grid" style="padding: 24px; margin-top: 20px;">
 
-            <!-- 1. 첨부 이미지 영역 (상단에 크게 배치) -->
+            <!-- 1. 첨부 이미지 영역 -->
             <c:if test="${not empty imageList}">
               <div class="form-field" style="width: 100%; margin-bottom: 24px; text-align: center; border-bottom: 1px solid #f1f3f5; padding-bottom: 20px;">
                 <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
@@ -75,7 +76,7 @@
               </div>
             </c:if>
 
-            <!-- 2. 작성글 내용 영역 (이미지 아래에 배치) -->
+            <!-- 2. 본문 내용 영역 -->
             <div class="form-field">
               <div style="min-height: 150px; white-space: pre-wrap; line-height: 1.8; color: #212529; font-size: 15px;">${notice.content}</div>
             </div>
@@ -85,18 +86,20 @@
               <button class="button button--secondary" type="button" onclick="location.href='${pageContext.request.contextPath}/board';">목록으로</button>
               <div style="display: flex; gap: 8px;">
                 <button class="button button--secondary" type="button" onclick="location.href='${pageContext.request.contextPath}/board/modify?noticeId=${notice.noticeId}';">수정하기</button>
-                <form action="${pageContext.request.contextPath}/board/delete" method="POST" class="delete-form" style="margin: 0;">
+                <form action="${pageContext.request.contextPath}/board/delete" method="POST" class="delete-form" style="margin: 0;" onsubmit="return confirm('정말 삭제하시겠습니까?');">
                   <input type="hidden" name="noticeId" value="${notice.noticeId}">
-                  <button class="button" type="submit" style="background-color: #ff4d4f; border-color: #ff4d4f;">삭제하기</button>
+                  <button class="button" type="submit" style="background-color: #ff4d4f; border-color: #ff4d4f; color: #fff;">삭제하기</button>
                 </form>
               </div>
             </div>
           </div>
+
         </section>
       </div>
     </div>
   </main>
 </div>
+
 <script>window.contextPath = '${pageContext.request.contextPath}';</script>
 <script src="${pageContext.request.contextPath}/app.js"></script>
 <script src="${pageContext.request.contextPath}/board.js"></script>
