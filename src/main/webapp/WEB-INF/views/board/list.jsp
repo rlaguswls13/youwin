@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <!doctype html>
 <html lang="ko">
 <head>
@@ -13,17 +14,52 @@
 <div class="site-shell">
     <header class="site-header">
         <div class="site-container site-header__inner">
-            <a class="brand" href="${pageContext.request.contextPath}/" aria-label="Youwin 홈"><span class="brand__mark">YW</span><span>Youwin</span></a>
+            <a class="brand" href="${pageContext.request.contextPath}/" aria-label="Youwin 홈">
+                <span class="brand__mark">YW</span>
+                <span>Youwin</span>
+            </a>
+
             <nav class="site-nav" data-site-nav aria-label="주요 메뉴">
                 <a href="${pageContext.request.contextPath}/">홈</a>
                 <a class="is-active" href="${pageContext.request.contextPath}/board">게시판</a>
-                <a href="${pageContext.request.contextPath}/chatroom">채팅방</a>
-                <a href="${pageContext.request.contextPath}/mypage/main">마이페이지</a>
+                <a href="${pageContext.request.contextPath}/index">채팅방</a>
+
+                <!-- 🟢 로그인 상태일 때만 마이페이지 노출 -->
+                <sec:authorize access="isAuthenticated()">
+                    <a href="${pageContext.request.contextPath}/member/mypage">마이페이지</a>
+                </sec:authorize>
+
+                <div class="user-menu">
+                    <!-- 1. 로그인 상태인 경우 -->
+                    <sec:authorize access="isAuthenticated()">
+                        <span class="welcome-msg">
+                            <strong><sec:authentication property="principal.memberDto.nickname"/></strong>님 환영합니다!
+                        </span>
+                        <!-- 스프링 시큐리티 로그아웃 (CSRF 설정에 따라 POST 요청 권장) -->
+                        <form action="${pageContext.request.contextPath}/member/logout" method="post" style="display:inline;">
+                            <!-- Spring Security CSRF 토큰 (CSRF 사용 시 필요) -->
+                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+                            <button type="submit" class="auth-btn logout-btn">로그아웃</button>
+                        </form>
+                    </sec:authorize>
+
+                    <!-- 2. 비로그인(익명) 상태인 경우 -->
+                    <sec:authorize access="isAnonymous()">
+                        <a href="${pageContext.request.contextPath}/member/login" class="auth-btn">로그인</a>
+                        <a href="${pageContext.request.contextPath}/member/joinStep1" class="auth-btn">회원가입</a>
+                    </sec:authorize>
+                </div>
             </nav>
+
             <div class="site-header__actions">
-                <a class="button button--secondary" href="${pageContext.request.contextPath}/auth/login">로그인</a>
-                <a class="avatar-link" href="${pageContext.request.contextPath}/mypage/main" aria-label="마이페이지">YU</a>
+                <form class="header-search" data-home-search role="search">
+                    <label class="sr-only" for="global-search">통합 검색</label>
+                    <input id="global-search" name="query" type="search" placeholder="아티스트, 노래, 게시글 검색">
+                </form>
+                <a class="avatar-link" href="${pageContext.request.contextPath}/member/mypage" aria-label="마이페이지">YU</a>
             </div>
+
+            <button class="menu-toggle" type="button" data-menu-toggle aria-label="메뉴 열기" aria-expanded="false"></button>
         </div>
     </header>
 
