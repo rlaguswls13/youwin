@@ -36,10 +36,10 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(
                                 "/", "/api/**",
-                                "/auth/**"
+                                "/auth/**", "/member/join-step1", "/member/join-step2"
                         ).permitAll()
                         .requestMatchers(
-                                "/member/**", "/member/update**", "/member/delete"
+                                "/member/**"
                         ).authenticated()
                         .requestMatchers(
                                 "/index",
