@@ -28,19 +28,18 @@ public class SecurityConfig {
 
         http
                 .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.disable())
                 .authenticationProvider(customAuthenticationProvider)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/css/**", "/js/**", "/images/**", "/upload/**", "/error"
                         ).permitAll()
                         .requestMatchers(
-                                "/", "/api/member/**",
-                                "/login/login",
-                                "/member/unlockDormant",
-                                "/member/restoreAccount"
+                                "/", "/api/**",
+                                "/auth/**"
                         ).permitAll()
                         .requestMatchers(
-                                "/member/mypage", "/member/settings", "/member/update**", "/member/delete"
+                                "/member/**", "/member/update**", "/member/delete"
                         ).authenticated()
                         .requestMatchers(
                                 "/index",
@@ -51,8 +50,8 @@ public class SecurityConfig {
                         .anyRequest().permitAll()
                 )
                 .formLogin(form -> form
-                        .loginPage("/login/login")
-                        .loginProcessingUrl("/login/login")
+                        .loginPage("/auth/login")
+                        .loginProcessingUrl("/auth/login")
                         .usernameParameter("memberId")
                         .passwordParameter("memberPassword")
                         .successHandler(customLoginSuccessHandler)
@@ -84,7 +83,7 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session -> session
                         .maximumSessions(1)
-                        .expiredUrl("/login/login?expired=true")
+                        .expiredUrl("/auth/login?expired=true")
                 )
                 .addFilterBefore(
                         autoLoginFilter,

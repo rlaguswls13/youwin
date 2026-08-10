@@ -2,6 +2,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<c:set var="ctx" value="${pageContext.request.contextPath}" scope="request" />
 <!doctype html>
 <html lang="ko">
 <head>
@@ -9,26 +10,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="취향으로 연결되는 음악 커뮤니티 Youwin">
     <title>Youwin | 음악으로 연결되는 순간</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/app.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/home.css">
+    <link rel="stylesheet" href="${ctx}/app.css">
+    <link rel="stylesheet" href="${ctx}/home.css">
 </head>
 <body>
 <div class="site-shell">
     <header class="site-header">
         <div class="site-container site-header__inner">
-            <a class="brand" href="${pageContext.request.contextPath}/" aria-label="Youwin 홈">
+            <a class="brand" href="${ctx}/" aria-label="Youwin 홈">
                 <span class="brand__mark">YW</span>
                 <span>Youwin</span>
             </a>
 
             <nav class="site-nav" data-site-nav aria-label="주요 메뉴">
-                <a class="is-active" href="${pageContext.request.contextPath}/">홈</a>
-                <a href="${pageContext.request.contextPath}/board">게시판</a>
-                <a href="${pageContext.request.contextPath}/index">채팅방</a>
+                <a class="is-active" href="${ctx}/">홈</a>
+                <a href="${ctx}/board">게시판</a>
+                <a href="${ctx}/index">채팅방</a>
 
                 <!-- 🟢 로그인 상태일 때만 마이페이지 노출 -->
                 <sec:authorize access="isAuthenticated()">
-                    <a href="${pageContext.request.contextPath}/member/mypage">마이페이지</a>
+                    <a href="${ctx}/member/mypage">마이페이지</a>
                 </sec:authorize>
 
                 <div class="user-menu">
@@ -38,7 +39,7 @@
                             <strong>${sessionScope.nickname}</strong>님 환영합니다!
                         </span>
                         <!-- 스프링 시큐리티 로그아웃 (CSRF 설정에 따라 POST 요청 권장) -->
-                        <form action="${pageContext.request.contextPath}/member/logout" method="post" style="display:inline;">
+                        <form action="${ctx}/member/logout" method="post" style="display:inline;">
                             <!-- Spring Security CSRF 토큰 (CSRF 사용 시 필요) -->
                             <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
                             <button type="submit" class="auth-btn logout-btn">로그아웃</button>
@@ -47,8 +48,8 @@
 
                     <!-- 2. 비로그인(익명) 상태인 경우 -->
                     <sec:authorize access="isAnonymous()">
-                        <a href="${pageContext.request.contextPath}/login/login" class="auth-btn">로그인</a>
-                        <a href="${pageContext.request.contextPath}/member/joinStep1" class="auth-btn">회원가입</a>
+                        <a href="${ctx}/auth/login" class="auth-btn">로그인</a>
+                        <a href="${ctx}/member/join-step1" class="auth-btn">회원가입</a>
                     </sec:authorize>
                 </div>
             </nav>
@@ -58,7 +59,7 @@
                     <label class="sr-only" for="global-search">통합 검색</label>
                     <input id="global-search" name="query" type="search" placeholder="아티스트, 노래, 게시글 검색">
                 </form>
-                <a class="avatar-link" href="${pageContext.request.contextPath}/member/mypage" aria-label="마이페이지">YU</a>
+                <a class="avatar-link" href="${ctx}/member/mypage" aria-label="마이페이지">YU</a>
             </div>
 
             <button class="menu-toggle" type="button" data-menu-toggle aria-label="메뉴 열기" aria-expanded="false"></button>
@@ -180,25 +181,31 @@
         </div>
     </main>
 
-    <footer class="site-footer">
-        <div class="site-container site-footer__inner">
-            <span>© 2026 Youwin. 음악으로 연결되는 커뮤니티.</span>
-            <div class="site-footer__links"><a href="${pageContext.request.contextPath}/board">공지사항</a><a href="#">이용약관</a><a href="#">개인정보처리방침</a></div>
-        </div>
-    </footer>
-</div>
-<script src="${pageContext.request.contextPath}/app.js"></script>
-<script src="${pageContext.request.contextPath}/home.js"></script>
-<c:if test="${not empty successMessage}">
-    <script>
-        alert("${successMessage}");
-    </script>
-</c:if>
+        <footer class="site-footer">
+            <div class="site-container site-footer__inner">
+                <span>© 2026 Youwin. 음악으로 연결되는 커뮤니티.</span>
+                <div class="site-footer__links">
+                    <a href="${ctx}/board">공지사항</a>
+                    <a href="#">이용약관</a>
+                    <a href="#">개인정보처리방침</a>
+                </div>
+            </div>
+        </footer>
+    </div>
 
-<c:if test="${not empty errorMessage}">
-    <script>
-        alert("${errorMessage}");
-    </script>
-</c:if>
-</body>
-</html>
+    <script src="${ctx}/app.js"></script>
+    <script src="${ctx}/home.js"></script>
+
+    <c:if test="${not empty successMessage}">
+        <script>
+            alert("${successMessage}");
+        </script>
+    </c:if>
+
+    <c:if test="${not empty errorMessage}">
+        <script>
+            alert("${errorMessage}");
+        </script>
+    </c:if>
+    </body>
+    </html>

@@ -23,7 +23,7 @@
   </aside>
   <main class="auth-main">
     <section class="auth-card recovery-card" aria-labelledby="recovery-title">
-      <a class="auth-back" href="${pageContext.request.contextPath}/login/login">← 로그인으로 돌아가기</a>
+      <a class="auth-back" href="${pageContext.request.contextPath}/auth/login">← 로그인으로 돌아가기</a>
       <div class="auth-heading">
         <p class="auth-heading__eyebrow">Dormant account</p>
         <h1 class="auth-title" id="recovery-title">다시 활동을 시작할까요?</h1>
@@ -55,7 +55,7 @@
   document.getElementById('btnSendCode').addEventListener('click', function() {
     const authInput = document.getElementById('authCode');
 
-    fetch('/api/member/send-recovery-code', {
+    fetch('/api/auth/send-recovery-code', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ memberEmail: '${memberEmail}' })
@@ -86,7 +86,7 @@
       return;
     }
 
-    fetch('/api/member/unlockDormant', {
+    fetch('/api/auth/unlock-dormant', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code: code })
@@ -95,12 +95,12 @@
             .then(res => {
               if (res === 'SUCCESS') {
                 alert('휴면 상태가 정상적으로 해제되었습니다! 다시 로그인해 주세요.');
-                location.href = '/login/login';
+                location.href = '/auth/login';
               } else if (res === 'FAIL') {
                 alert('인증번호가 올바르지 않습니다.');
               } else {
                 alert('세션이 만료되었습니다. 다시 로그인 시도해 주세요.');
-                location.href = '/login/login';
+                location.href = '/auth/login';
               }
             })
             .catch(error => {

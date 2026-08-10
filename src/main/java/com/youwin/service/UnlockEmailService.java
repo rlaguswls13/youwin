@@ -24,7 +24,7 @@ public class UnlockEmailService {
     public void sendWarningEmail(String memberId, String toEmail, String failReason) {
         // 해제 토큰 및 URL 생성
         String token = unlockTokenService.createUnlockToken(memberId);
-        String unlockUrl = "http://localhost:8080/member/unlock-account?token=" + token;
+        String unlockUrl = "http://localhost:8080/auth/unlock-account?token=" + token;
 
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -61,7 +61,7 @@ public class UnlockEmailService {
         String token = unlockTokenService.createUnlockToken(memberId);
 
         // 2. 잠금 해제 URL 생성 (서버 도메인에 맞게 수정)
-        String unlockUrl = "http://localhost:8080/member/unlock-account?token=" + token;
+        String unlockUrl = "http://localhost:8080/auth/unlock-account?token=" + token;
 
         try {
             MimeMessage message = mailSender.createMimeMessage();

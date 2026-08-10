@@ -45,6 +45,13 @@
         WHERE member_id = #{memberId}
     </select>
 
+    <!-- 로그인 아이디로 실제 회원 PK 조회 -->
+    <select id="findIdByMemberId" parameterType="string" resultType="int">
+        SELECT id
+        FROM member
+        WHERE member_id = #{memberId}
+    </select>
+
     <select id="findMemberIdByNameAndEmail" resultType="string">
         SELECT member_id
         FROM member

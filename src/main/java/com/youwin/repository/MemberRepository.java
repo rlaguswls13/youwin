@@ -21,6 +21,9 @@ public interface MemberRepository {
     String findMemberIdByNameAndEmail(@Param("memberName") String memberName,
                                       @Param("memberEmail") String memberEmail);
 
+    // 로그인 아이디(member_id)로 실제 회원 PK(id) 조회
+    Integer findIdByMemberId(@Param("memberId") String memberId);
+
     // 회원 정보 단건 조회 (PK가 필요한 경우에도 이 메서드로 조회 후 getMemberId() 사용)
     MemberDto findByMemberId(@Param("memberId") String memberId);
 

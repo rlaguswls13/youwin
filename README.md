@@ -62,7 +62,7 @@ MySQL ◀── Flyway (스키마 버전 관리)
       ├─ index.jsp                    # 메인 화면
       ├─ board.jsp                    # 게시판
       ├─ home/chatroom.jsp            # 채팅방
-      └─ member/mypage.jsp            # 마이페이지
+      └─ mypage/main.jsp              # 마이페이지
 ```
 
 ## 현재 기능
@@ -71,7 +71,7 @@ MySQL ◀── Flyway (스키마 버전 관리)
 - `/board` 공지사항 목록, 분류 필터, 검색, FAQ, 1:1 문의 화면
 - `/board/write` 공지사항 등록
 - `/chatroom` 채팅방 목록, 메시지 영역, 참여자 패널과 로컬 메시지 입력
-- `/member/mypage` 프로필, 활동 통계, 플레이리스트, 최근 활동 화면
+- `/mypage/main` 프로필, 활동 통계, 플레이리스트, 최근 활동 화면
 - `/member/join` 회원가입 화면 및 회원가입 처리 골격
 - 회원 아이디 중복 확인과 BCrypt 비밀번호 암호화
 - 아티스트, 음악, 테마, 채팅 도메인의 DTO 및 Repository 골격
@@ -85,7 +85,7 @@ MySQL ◀── Flyway (스키마 버전 관리)
 | --- | --- | --- | --- |
 | 메인 | `views/index.jsp` | `home.css` | 히어로, 현재 재생 카드, 오픈 톡, 인기글, 라이브 일정 |
 | 게시판 | `views/board.jsp` | `board.css` | 게시판 메뉴, 필터/검색, 목록, 작성 폼, FAQ, 문의 폼 |
-| 마이페이지 | `views/member/mypage.jsp` | `mypage.css` | 프로필, 통계, 플레이리스트, 최근 활동, 관심 장르 |
+| 마이페이지 | `views/mypage/main.jsp` | `mypage.css` | 프로필, 통계, 플레이리스트, 최근 활동, 관심 장르 |
 | 채팅방 | `views/home/chatroom.jsp` | `chatroom.css` | 채팅방 목록, 대화, 입력창, 참여자 목록 |
 
 모든 핵심 화면은 데스크톱, 태블릿, 모바일 레이아웃을 지원합니다. 채팅 메시지 전송과 채팅방 전환은 현재 브라우저 안에서 UI 동작만 확인할 수 있으며 서버 저장은 아직 연결되지 않았습니다.
@@ -144,7 +144,7 @@ mvn spring-boot:run
 - 홈: <http://localhost:8080/>
 - 공지사항: <http://localhost:8080/board>
 - 채팅방: <http://localhost:8080/chatroom>
-- 마이페이지: <http://localhost:8080/member/mypage>
+- 마이페이지: <http://localhost:8080/mypage/main>
 - 회원가입: <http://localhost:8080/member/join>
 - 로그인: <http://localhost:8080/login/login>
 

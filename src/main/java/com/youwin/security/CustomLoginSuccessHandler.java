@@ -1,6 +1,7 @@
 package com.youwin.security;
 
 import com.youwin.repository.MemberSecurityRepository;
+import com.youwin.service.AuthService;
 import com.youwin.service.MemberService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +20,7 @@ public class CustomLoginSuccessHandler
         extends SavedRequestAwareAuthenticationSuccessHandler {
 
     private final MemberService memberService;
+    private final AuthService authService;
     private final MemberSecurityRepository memberSecurityRepository;
 
     @Override
@@ -42,7 +44,7 @@ public class CustomLoginSuccessHandler
         // 3. 자동로그인 체크박스 확인 ("on" 또는 "true")
         String rememberMe = request.getParameter("remember-me");
         if ("on".equals(rememberMe) || "true".equals(rememberMe)) {
-            memberService.setupAutoLogin(memberId, response);
+            authService.setupAutoLogin(memberId, response);
         }
 
         // 4. 기본 이동할 URL 설정

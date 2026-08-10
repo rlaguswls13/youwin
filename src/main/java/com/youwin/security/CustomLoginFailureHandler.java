@@ -37,7 +37,7 @@ public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
                 session.setAttribute("unlockMemberId", member.getMemberId());
                 session.setAttribute("unlockMemberEmail", member.getMemberEmail());
 
-                response.sendRedirect("/member/unlockDormant");
+                response.sendRedirect("/auth/unlock-dormant");
                 return;
             }
         }
@@ -50,7 +50,7 @@ public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
                 session.setAttribute("restoreMemberId", member.getMemberId());
                 session.setAttribute("restoreMemberEmail", member.getMemberEmail());
 
-                response.sendRedirect("/member/restoreAccount");
+                response.sendRedirect("/auth/restore-account");
                 return;
             }
         }
@@ -64,20 +64,20 @@ public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
             }
 
             String errorMsg = URLEncoder.encode("보안을 위해 계정이 잠겼습니다. 이메일로 발송된 해제 링크를 확인해 주세요.", StandardCharsets.UTF_8);
-            response.sendRedirect("/login/login?error=true&exception=" + errorMsg);
+            response.sendRedirect("/auth/login?error=true&exception=" + errorMsg);
             return;
         }
 
         // 3. BANNED (이용 정지 계정)
         if ("BANNED".equals(message)) {
             String errorMsg = URLEncoder.encode("운영 정책 위반으로 이용이 정지된 계정입니다.", StandardCharsets.UTF_8);
-            response.sendRedirect("/login/login?error=true&exception=" + errorMsg);
+            response.sendRedirect("/auth/login?error=true&exception=" + errorMsg);
             return;
         }
 
         // 4. 일반 로그인 실패 및 일시 차단 영역 (주석 부분 대체)
         String errorMsg = URLEncoder.encode(message, StandardCharsets.UTF_8);
-        response.sendRedirect("/login/login?error=true&exception=" + errorMsg);
+        response.sendRedirect("/auth/login?error=true&exception=" + errorMsg);
 
     }
 }

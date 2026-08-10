@@ -33,7 +33,7 @@
                 <p class="auth-description">계정에 로그인하고 오늘의 음악 이야기를 이어가세요.</p>
             </div>
 
-            <form id="loginForm" class="auth-form" action="${pageContext.request.contextPath}/login/login" method="post">
+            <form id="loginForm" class="auth-form" action="${pageContext.request.contextPath}/auth/login" method="post">
                 <div class="input-group">
                     <label for="memberId">아이디</label>
                     <input type="text" id="memberId" name="memberId" value="${savedMemberId}" required autocomplete="username" placeholder="아이디를 입력하세요">
@@ -56,11 +56,11 @@
             </form>
 
             <nav class="footer-links" aria-label="계정 도움말">
-                <a href="${pageContext.request.contextPath}/member/findId">아이디 찾기</a>
+                <a href="${pageContext.request.contextPath}/auth/find-id">아이디 찾기</a>
                 <span class="bar" aria-hidden="true">·</span>
-                <a href="${pageContext.request.contextPath}/member/findPassword">비밀번호 찾기</a>
+                <a href="${pageContext.request.contextPath}/auth/find-password">비밀번호 찾기</a>
                 <span class="bar" aria-hidden="true">·</span>
-                <a href="${pageContext.request.contextPath}/member/joinStep1">회원가입</a>
+                <a href="${pageContext.request.contextPath}/member/join-step1">회원가입</a>
             </nav>
         </section>
     </main>

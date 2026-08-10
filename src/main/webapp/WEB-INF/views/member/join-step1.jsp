@@ -25,7 +25,7 @@
 
   <main class="auth-main">
     <section class="auth-card join-container" aria-labelledby="pageTitle">
-      <a class="auth-back" href="${pageContext.request.contextPath}/login/login">← 로그인으로 돌아가기</a>
+      <a class="auth-back" href="${pageContext.request.contextPath}/auth/login">← 로그인으로 돌아가기</a>
       <div class="join-progress" id="joinProgress" aria-label="가입 진행 단계">
         <span></span><span></span><span class="join-progress__label" id="progressLabel">1 / 2</span>
       </div>
@@ -95,7 +95,7 @@
 
     <!-- Step 2: 회원 설정 -->
     <div id="step2" class="form-step hidden">
-      <jsp:include page="joinStep2.jsp" />
+      <jsp:include page="join-step2.jsp" />
     </div>
 
   </form>
@@ -247,7 +247,7 @@
               } else {
                 showSuccess(emailInput, errEmail, '인증번호 발송 중...');
 
-                fetch('/api/member/send-code', {
+                fetch('/api/email/send-code', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ memberEmail: emailVal })
@@ -278,7 +278,7 @@
       return;
     }
 
-    fetch('/api/member/verify-code', {
+    fetch('/api/email/verify-code', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ memberEmail: emailVal, code: codeInput.value })
@@ -426,7 +426,7 @@
         }
       }
               // ----------------------------------------------------
-              // [Step 2] 회원설정 단계 (joinStep2.jsp 연동)
+              // [Step 2] 회원설정 단계 (join-step2.jsp 연동)
       // ----------------------------------------------------
       else {
         if (target.id === 'nickname') {
