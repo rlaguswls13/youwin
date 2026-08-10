@@ -4,51 +4,14 @@
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 
-<!doctype html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Youwin 마이페이지">
-    <title>마이페이지 | Youwin</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/app.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/mypage.css">
-</head>
-<body>
+<!-- 공통 Header Include -->
+<%@ include file="/WEB-INF/views/common/header.jsp" %>
 
 <!-- 🟢 Spring Security principal 및 memberDto 변수 안전하게 바인딩 -->
 <sec:authorize access="isAuthenticated()">
     <sec:authentication property="principal" var="principal"/>
     <c:set var="member" value="${not empty principal.memberDto ? principal.memberDto : member}"/>
 </sec:authorize>
-
-<div class="site-shell">
-    <header class="site-header">
-        <div class="site-container site-header__inner">
-            <a class="brand" href="${pageContext.request.contextPath}/" aria-label="Youwin 홈">
-                <span class="brand__mark">YW</span>
-                <span>Youwin</span>
-            </a>
-            <nav class="site-nav" data-site-nav aria-label="주요 메뉴">
-                <a href="${pageContext.request.contextPath}/">홈</a>
-                <a href="${pageContext.request.contextPath}/board">게시판</a>
-                <a href="${pageContext.request.contextPath}/index">채팅방</a>
-                <a class="is-active" href="${pageContext.request.contextPath}/member/mypage">마이페이지</a>
-            </nav>
-            <div class="site-header__actions">
-                <a class="button button--secondary" href="${pageContext.request.contextPath}/member/settings">프로필 설정</a>
-                <span class="avatar">
-                    <c:choose>
-                        <c:when test="${not empty member.nickname}">
-                            <c:out value="${fn:substring(member.nickname, 0, 1)}"/>
-                        </c:when>
-                        <c:otherwise>YU</c:otherwise>
-                    </c:choose>
-                </span>
-            </div>
-            <button class="menu-toggle" type="button" data-menu-toggle aria-label="메뉴 열기" aria-expanded="false"></button>
-        </div>
-    </header>
 
     <main class="page-main">
         <div class="site-container">
@@ -164,20 +127,5 @@
         </div>
     </main>
 
-    <footer class="site-footer">
-        <div class="site-container site-footer__inner">
-            <span>© 2026 Youwin.</span>
-            <div class="site-footer__links">
-                <a href="${pageContext.request.contextPath}/board">고객센터</a>
-                <!-- 스프링 시큐리티 로그아웃 폼 -->
-                <form action="${pageContext.request.contextPath}/member/logout" method="post" class="logout-form">
-                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
-                    <button type="submit" class="logout-btn">로그아웃</button>
-                </form>
-            </div>
-        </div>
-    </footer>
-</div>
-<script src="${pageContext.request.contextPath}/app.js"></script>
-</body>
-</html>
+<!-- 공통 Footer Include -->
+<%@ include file="/WEB-INF/views/common/footer.jsp" %>

@@ -1,34 +1,18 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
-<!doctype html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>프로필 설정 | Youwin</title>
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/app.css">
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/mypage.css">
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/account.css">
-</head>
-<body class="settings-page">
+
+<!-- 공통 Header Include -->
+<%@ include file="/WEB-INF/views/common/header.jsp" %>
+
+<!-- 설정 페이지 전용 CSS 추가 -->
+<link rel="stylesheet" href="${ctx}/mypage.css">
 
 <%-- Security Context의 memberDto 객체를 member 변수로 안전하게 바인딩 --%>
 <sec:authorize access="isAuthenticated()">
   <sec:authentication property="principal" var="principal"/>
   <c:set var="member" value="${not empty principal.memberDto ? principal.memberDto : memberDto}"/>
 </sec:authorize>
-
-<div class="site-shell">
-  <header class="site-header">
-    <div class="site-container site-header__inner">
-      <a class="brand" href="${pageContext.request.contextPath}/"><span class="brand__mark">YW</span><span>Youwin</span></a>
-      <nav class="site-nav" data-site-nav aria-label="설정 메뉴">
-        <a href="${pageContext.request.contextPath}/member/mypage">마이페이지</a>
-      </nav>
-      <button class="menu-toggle" type="button" data-menu-toggle aria-label="메뉴 열기" aria-expanded="false"></button>
-    </div>
-  </header>
 
   <main class="page-main">
     <div class="site-container settings-container">
@@ -42,7 +26,6 @@
       <section class="surface settings-card">
         <div class="settings-card__head"><h2 class="section-title">프로필 사진</h2><span class="chip">PROFILE</span></div>
         <div class="profile-avatar-edit">
-          <!-- 인라인 style 없이 class만 사용 -->
           <div class="profile-avatar" id="avatarPreviewContainer">
             <img id="mainAvatarImg"
                  src="${not empty member.profileImage ? pageContext.request.contextPath.concat(member.profileImage) : pageContext.request.contextPath.concat('/upload/profile/default-profile.svg')}"
@@ -81,7 +64,6 @@
       <div class="settings-danger"><p>더 이상 서비스를 이용하지 않는 경우 계정을 삭제할 수 있습니다.</p><a href="javascript:void(0);" onclick="openModal('modalDelete')">계정 삭제</a></div>
     </div>
   </main>
-</div>
 
 <!-- ==================== 팝업(모달) 영역들 ==================== -->
 
@@ -210,7 +192,7 @@
   </div>
 </div>
 
-<!-- 회원 삭제(Delete) 모달 팝업 -->
+<!-- 6. 회원 삭제(Delete) 모달 팝업 -->
 <div class="modal-overlay" id="modalDelete">
   <div class="modal-content">
     <div class="modal-header">
@@ -221,7 +203,6 @@
     <form action="${pageContext.request.contextPath}/member/delete" method="post" id="formDelete" onsubmit="return false;">
       <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
 
-      <!-- 안내문 박스 -->
       <div class="settings-delete-note">
         <p style="font-size: 0.85rem; color: #c53030; font-weight: 600; margin-bottom: 0.5rem;">⚠️ 삭제 전 반드시 확인해 주세요</p>
         <ul style="font-size: 0.8rem; color: #4a5568; padding-left: 1.2rem; margin: 0; line-height: 1.5;">
@@ -231,7 +212,6 @@
         </ul>
       </div>
 
-      <!-- 동의 체크박스 -->
       <div class="settings-delete-agree">
         <label style="font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
           <input type="checkbox" id="agreeDelete" style="width: 16px; height: 16px;">
@@ -240,7 +220,6 @@
         <span class="error-msg" id="err-agreeDelete"></span>
       </div>
 
-      <!-- 비밀번호 재확인 입력 -->
       <div class="form-group" style="margin-bottom: 1.5rem; text-align: left;">
         <label for="deletePassword">현재 비밀번호 확인</label>
         <input type="password" id="deletePassword" name="password" class="input-control" placeholder="비밀번호를 입력하세요">
@@ -252,13 +231,10 @@
   </div>
 </div>
 
-<!-- 스크립트 영역 -->
 <script>
-  // 기본 상수 및 원본 이미지 경로
   const DEFAULT_IMAGE_SRC = "${pageContext.request.contextPath}/upload/profile/default-profile.svg";
   const currentProfileImgSrc = "${not empty member.profileImage ? pageContext.request.contextPath.concat(member.profileImage) : pageContext.request.contextPath.concat('/upload/profile/default-profile.svg')}";
 
-  // 모달 제어 함수 (전역)
   function openModal(id) {
     const modal = document.getElementById(id);
     if (modal) modal.classList.add('is-active');
@@ -267,16 +243,10 @@
   function closeModal(id) {
     const modal = document.getElementById(id);
     if (!modal) return;
-
     modal.classList.remove('is-active');
-
-    // 🟢 프로필 모달이 닫힐 때 선택 취소 처리
-    if (id === 'modalProfile') {
-      cancelProfileChange();
-    }
+    if (id === 'modalProfile') cancelProfileChange();
   }
 
-  // 🟢 프로필 이미지 변경 취소 함수
   function cancelProfileChange() {
     const modalProfileInput = document.getElementById('profile');
     const deleteProfileInput = document.getElementById('deleteProfile');
@@ -285,23 +255,17 @@
 
     if (modalProfileInput) modalProfileInput.value = "";
     if (deleteProfileInput) deleteProfileInput.value = "false";
-
-    // 원래 이미지로 복구
     if (modalAvatarImg) modalAvatarImg.src = currentProfileImgSrc;
     if (mainAvatarImg) mainAvatarImg.src = currentProfileImgSrc;
   }
 
-  // 🟢 DOM 요소 로드 완료 후 이벤트 바인딩
   document.addEventListener('DOMContentLoaded', function() {
-
-    // 모달 배경 클릭 시 닫기
     window.addEventListener('click', function(e) {
       if (e.target.classList.contains('modal-overlay')) {
         closeModal(e.target.id);
       }
     });
 
-    // 프로필 이미지 선택 시 즉시 미리보기
     const modalProfileInput = document.getElementById('profile');
     if (modalProfileInput) {
       modalProfileInput.addEventListener('change', function(e) {
@@ -309,7 +273,6 @@
         if (!file) return;
 
         document.getElementById('deleteProfile').value = "false";
-
         const reader = new FileReader();
         reader.onload = function(event) {
           const base64Src = event.target.result;
@@ -323,7 +286,6 @@
       });
     }
 
-    // 기본 이미지로 변경 버튼 클릭 이벤트
     const modalResetBtn = document.getElementById('modalResetAvatarBtn');
     if (modalResetBtn) {
       modalResetBtn.addEventListener('click', function() {
@@ -341,7 +303,6 @@
     }
   });
 
-  // ==================== [공통 유효성 처리 메세지 함수] ====================
   function showError(inputElem, errElem, message) {
     if (errElem) {
       errElem.innerText = message;
@@ -377,7 +338,6 @@
     }
   }
 
-  // ==================== [유효성 검사 규칙들] ====================
   const currentNickname = "${member.nickname}";
   const currentPhone = "${member.memberPhone}";
   const currentEmail = "${member.memberEmail}";
@@ -419,7 +379,6 @@
     return '';
   }
 
-  // ==================== [1. 닉네임 중복확인 & 실시간 이벤트] ====================
   function checkDuplicateNickname() {
     const nicknameInput = document.getElementById('nickname');
     const errNickname = document.getElementById('err-nickname');
@@ -494,7 +453,6 @@
     }
   }
 
-  // ==================== [2. 전화번호 입력 제한 및 실시간 검사] ====================
   const phoneInput = document.getElementById('memberPhone');
   const errPhone = document.getElementById('err-phone');
 
@@ -528,30 +486,24 @@
     }
   }
 
-  // ==================== [3. 이메일 실시간 검사 및 제출] ====================
-  // ==================== [3. 이메일 중복확인, 실시간 검사 및 제출] ====================
   const emailInput = document.getElementById('memberEmail');
   const errEmail = document.getElementById('err-email');
-  let isEmailChecked = true; // 본인의 현재 이메일인 상태로 시작하므로 초기값 true
+  let isEmailChecked = true;
 
-  // 이메일 중복확인 버튼 클릭 이벤트
   function checkDuplicateEmail() {
     const emailValue = emailInput.value.trim();
 
-    // 1) 본인 원래 이메일인 경우
     if (emailValue === currentEmail) {
       showSuccess(emailInput, errEmail, '현재 사용 중인 본인의 이메일입니다.');
       isEmailChecked = true;
       return;
     }
 
-    // 2) 유효성 검사 (형식 체크)
     if (!checkField(emailInput, errEmail, validateEmail)) {
       isEmailChecked = false;
       return;
     }
 
-    // 3) 이메일 중복 확인 API 호출
     fetch('${pageContext.request.contextPath}/api/member/check-email?memberEmail=' + encodeURIComponent(emailValue))
             .then(response => {
               if (!response.ok) throw new Error('서버 응답 오류');
@@ -573,7 +525,6 @@
             });
   }
 
-  // 이메일 입력값 변경(input) 이벤트
   emailInput.addEventListener('input', function() {
     const val = this.value.trim();
 
@@ -586,27 +537,22 @@
     }
   });
 
-  // 이메일 수정 완료 제출 함수
   function submitEmailForm() {
     const emailValue = emailInput.value.trim();
 
-    // 1) 변경 사항이 없는 경우
     if (emailValue === currentEmail) {
       showError(emailInput, errEmail, '현재 사용 중인 이메일과 동일합니다.');
       emailInput.focus();
       return;
     }
 
-    // 2) 유효성 검사
     let isEmailValid = checkField(emailInput, errEmail, validateEmail);
 
-    // 3) 중복확인 여부 검사
     if (isEmailValid && !isEmailChecked) {
       showError(emailInput, errEmail, '이메일 중복확인을 진행해 주세요.');
       isEmailValid = false;
     }
 
-    // 4) 최종 제출
     if (isEmailValid) {
       emailInput.value = emailValue;
       document.getElementById('formEmail').submit();
@@ -615,7 +561,6 @@
     }
   }
 
-  // ==================== [4. 비밀번호 실시간 검사 및 제출] ====================
   const curPw = document.getElementById('currentPassword');
   const newPw = document.getElementById('newPassword');
   const confirmPw = document.getElementById('confirmPassword');
@@ -697,7 +642,6 @@
     }
   }
 
-  // ==================== [5. 모달 내 키보드 Enter 처리] ====================
   document.addEventListener('keydown', function(event) {
     if (event.key === 'Enter') {
       const target = event.target;
@@ -731,7 +675,6 @@
     }
   });
 
-  // ==================== [계정 삭제 (Delete) 처리] ====================
   function submitDeleteForm() {
     const agreeCheck = document.getElementById('agreeDelete');
     const deletePw = document.getElementById('deletePassword');
@@ -762,17 +705,5 @@
   }
 </script>
 
-<c:if test="${not empty successMessage}">
-  <script>
-    alert("${successMessage}");
-  </script>
-</c:if>
-
-<c:if test="${not empty errorMessage}">
-  <script>
-    alert("${errorMessage}");
-  </script>
-</c:if>
-  <script src="${pageContext.request.contextPath}/app.js"></script>
-</body>
-</html>
+<!-- 공통 Footer Include -->
+<%@ include file="/WEB-INF/views/common/footer.jsp" %>
