@@ -10,12 +10,15 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @ToString
-public class ChatRoomMemberDto {
+public class ChatHistoryDto {
 
+    private Long messageId;
     private Integer roomId;
-    private Integer memberId;
+    private String senderId;
     private String nickname;
-    private Integer lastReadMessageId;
-    private LocalDateTime joinAt;
-    private Boolean online;
+    private String messageContent;
+    private LocalDateTime createdAt;
+    private int unreadCount;
+
+
 }

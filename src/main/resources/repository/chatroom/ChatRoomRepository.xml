@@ -6,7 +6,6 @@
 
     <!-- 아티스트 목록 조회 v-->
     <select id="findArtistList" resultType="com.youwin.dto.ArtistDto">
-
         SELECT
             artist_id,
             artist_name,
@@ -14,12 +13,10 @@
             created_at
         FROM artists
         ORDER BY artist_name
-
     </select>
 
     <!-- 아티스트 검색 v-->
     <select id="searchArtist" parameterType="String" resultType="com.youwin.dto.ArtistDto">
-
         SELECT
             artist_id,
             artist_name,
@@ -32,7 +29,6 @@
 
     <!-- 노래 검색 v-->
     <select id="searchSong" parameterType="String" resultType="com.youwin.dto.SongDto">
-
         SELECT
             s.song_id,
             s.song_title,
@@ -41,17 +37,14 @@
             s.album_image_url,
             s.release_date
         FROM songs s
-                 JOIN artists a
-                      ON s.artist_id = a.artist_id
+                 JOIN artists a ON s.artist_id = a.artist_id
         WHERE
             s.song_title LIKE CONCAT('%', #{keyword}, '%')
-        OR  a.artist_name LIKE CONCAT('%', #{keyword}, '%')
+           OR  a.artist_name LIKE CONCAT('%', #{keyword}, '%')
         ORDER BY s.release_date DESC
-
     </select>
 
     <select id="findRoomsByArtist" parameterType="int" resultType="com.youwin.dto.ChatRoomDto">
-
         SELECT
             room_id,
             room_name,
@@ -62,9 +55,8 @@
             created_at
         FROM chat_rooms
         WHERE room_type = 'artist'
-        AND target_id = #{artistId}
+          AND target_id = #{artistId}
         ORDER BY created_at DESC
-
     </select>
 
     <select id="findRoomListBySong" parameterType="int" resultType="com.youwin.dto.ChatRoomDto">
@@ -79,7 +71,7 @@
             created_at AS createdAt
         FROM chat_rooms
         WHERE room_type = 'song'
-        AND target_id = #{songId}
+          AND target_id = #{songId}
         ORDER BY created_at DESC
     </select>
 
@@ -99,20 +91,17 @@
     </select>
 
     <select id="findArtist" parameterType="int" resultType="com.youwin.dto.ArtistDto">
-
         SELECT
             artist_id,
             artist_name,
             artist_image_url,
             created_at
         FROM artists
-        WHERE artist_id=#{artistId}
-
+        WHERE artist_id = #{artistId}
     </select>
 
     <!-- 노래 선택 -->
     <select id="findSong" parameterType="int" resultType="com.youwin.dto.SongDto">
-
         SELECT
             song_id,
             song_title,
@@ -121,13 +110,11 @@
             album_image_url,
             release_date
         FROM songs
-        WHERE song_id=#{songId}
-
+        WHERE song_id = #{songId}
     </select>
 
     <!-- 장르별 노래 조회 -->
     <select id="findSongByTheme" parameterType="int" resultType="com.youwin.dto.SongDto">
-
         SELECT
             song_id,
             song_title,
@@ -136,12 +123,11 @@
             album_image_url,
             release_date
         FROM songs
-        WHERE theme_id=#{themeId}
+        WHERE theme_id = #{themeId}
     </select>
 
     <!-- 장르 목록 조회 -->
     <select id="findThemeList" resultType="com.youwin.dto.ThemeDto">
-
         SELECT
             theme_id,
             theme_name,
@@ -160,7 +146,7 @@
                               cm.message,
                               cm.sent_at
                           FROM chat_messages cm
-                          JOIN member m ON cm.member_id = m.id
+                                   JOIN member m ON cm.member_id = m.id
                           WHERE cm.room_id = #{roomId}
                           ORDER BY cm.message_id DESC
                               LIMIT 50
@@ -185,19 +171,16 @@
 
     <!-- 장르 조회 -->
     <select id="findTheme" parameterType="int" resultType="com.youwin.dto.ThemeDto">
-
         SELECT
             theme_id,
             theme_name,
             created_at
         FROM themes
-        WHERE theme_id=#{themeId}
-
+        WHERE theme_id = #{themeId}
     </select>
 
     <!-- 노래 목록 조회 -->
     <select id="findSongList" resultType="com.youwin.dto.SongDto">
-
         SELECT
             song_id,
             artist_id,
@@ -207,12 +190,10 @@
             release_date
         FROM songs
         ORDER BY release_date DESC
-
     </select>
 
     <!-- 채팅방 목록 조회 -->
     <select id="findRoomList" parameterType="int" resultType="com.youwin.dto.ChatRoomDto">
-
         SELECT
             cr.room_id,
             cr.room_name,
@@ -222,8 +203,7 @@
             cr.room_image_url,
             cr.created_at
         FROM chat_rooms cr
-        JOIN chat_room_members crm
-        ON cr.room_id = crm.room_id
+                 JOIN chat_room_members crm ON cr.room_id = crm.room_id
         WHERE crm.member_id = #{memberId}
         ORDER BY cr.created_at DESC
     </select>
@@ -242,12 +222,10 @@
             cr.owner_id AS ownerId,
             m.nickname AS ownerName
         FROM chat_rooms cr
-        LEFT JOIN member m ON cr.owner_id = m.id
+                 LEFT JOIN member m ON cr.owner_id = m.id
         WHERE cr.room_id = #{roomId}
     </select>
 
-
-    <!-- 채팅방의 전체 메시지 조회 -->
     <select id="findMessages" parameterType="int" resultType="com.youwin.dto.ChatMessageDto">
         SELECT
             cm.message_id AS messageId,
@@ -255,10 +233,16 @@
             cm.member_id AS memberId,
             m.nickname AS nickname,
             cm.message AS message,
-            cm.sent_at AS sentAt
+            cm.sent_at AS sentAt,
+            (
+                SELECT COUNT(*)
+                FROM chat_room_members crm
+                WHERE crm.room_id = cm.room_id
+                  AND crm.member_id != cm.member_id
+            AND crm.last_read_message_id &lt; cm.message_id
+            ) AS unreadCount
         FROM chat_messages cm
-        JOIN member m
-        ON cm.member_id = m.id
+            JOIN member m ON cm.member_id = m.id
         WHERE cm.room_id = #{roomId}
         ORDER BY cm.message_id ASC
     </select>
@@ -270,70 +254,67 @@
             cm.member_id AS memberId,
             m.nickname AS nickname,
             cm.message AS message,
-            cm.sent_at AS sentAt
+            cm.sent_at AS sentAt,
+            (
+                SELECT COUNT(*)
+                FROM chat_room_members crm
+                WHERE crm.room_id = cm.room_id
+                  AND crm.member_id != cm.member_id
+            AND crm.last_read_message_id &lt; cm.message_id
+            ) AS unreadCount
         FROM chat_messages cm
-        JOIN member m
-        ON cm.member_id = m.id
+            JOIN member m ON cm.member_id = m.id
         WHERE cm.message_id = #{messageId}
     </select>
 
     <select id="findLastMessageId" parameterType="int" resultType="int">
-
         SELECT COALESCE(MAX(message_id), 0)
         FROM chat_messages
         WHERE room_id = #{roomId}
-
     </select>
 
     <!-- 새 메시지 조회 -->
     <select id="findNewMessages" parameterType="map" resultType="com.youwin.dto.ChatMessageDto">
-
         SELECT
-            cm.message_id,
-            cm.room_id,
-            cm.member_id,
-            m.nickname,
-            cm.message,
-            cm.sent_at
+            cm.message_id AS messageId,
+            cm.room_id AS roomId,
+            cm.member_id AS memberId,
+            m.nickname AS nickname,
+            cm.message AS message,
+            cm.sent_at AS sentAt,
+            (
+                SELECT COUNT(*)
+                FROM chat_room_members crm
+                WHERE crm.room_id = cm.room_id
+                  AND crm.member_id != cm.member_id
+            AND crm.last_read_message_id &lt; cm.message_id
+            ) AS unreadCount
         FROM chat_messages cm
-        JOIN member m
-        ON cm.member_id = m.id
+            JOIN member m ON cm.member_id = m.id
         WHERE cm.room_id = #{roomId}
-        AND cm.message_id > #{lastMessageId}
+          AND cm.message_id > #{lastMessageId}
         ORDER BY cm.message_id
-
     </select>
-
 
     <!-- 참여자 목록 조회 : 방장 먼저, 나머지는 닉네임순 -->
     <select id="findMembers" parameterType="int" resultType="com.youwin.dto.ChatRoomMemberDto">
-
         SELECT
             crm.room_id,
             crm.member_id,
             m.nickname,
             crm.join_at
         FROM chat_room_members crm
-
-        JOIN member m
-        ON crm.member_id = m.id
-
-        JOIN chat_rooms cr
-        ON crm.room_id = cr.room_id
-
+                 JOIN member m ON crm.member_id = m.id
+                 JOIN chat_rooms cr ON crm.room_id = cr.room_id
         WHERE crm.room_id = #{roomId}
-
         ORDER BY
-        CASE
-        WHEN crm.member_id = cr.owner_id THEN 0
-        ELSE 1
-        END,m.nickname
-
+            CASE
+                WHEN crm.member_id = cr.owner_id THEN 0
+                ELSE 1
+                END, m.nickname
     </select>
 
-    <select id="findMembersByIds"
-            resultType="com.youwin.dto.ChatRoomMemberDto">
-
+    <select id="findMembersByIds" resultType="com.youwin.dto.ChatRoomMemberDto">
         SELECT
         id AS member_id,
         nickname,
@@ -341,106 +322,103 @@
         NULL AS join_at
         FROM member
         WHERE id IN
-
-        <foreach collection="memberIds"
-                 item="memberId"
-                 open="("
-                 separator=","
-                 close=")">
-
+        <foreach collection="memberIds" item="memberId" open="(" separator="," close=")">
             #{memberId}
-
         </foreach>
-
     </select>
 
     <!-- 몇 명인지 숫자 가져오기-->
     <select id="countMember" parameterType="int" resultType="int">
-
         SELECT COUNT(*)
         FROM chat_room_members
         WHERE room_id = #{roomId}
-
     </select>
 
     <!-- 참여자 닉네임 -->
     <select id="findNickname" resultType="string">
-
         SELECT nickname
         FROM member
         WHERE id = #{memberId}
-
     </select>
 
     <!-- 채팅방 가입 여부 확인 (중복 가입 방지) -->
     <select id="existsRoomMember" parameterType="com.youwin.dto.ChatRoomMemberDto" resultType="int">
-
         SELECT COUNT(*)
         FROM chat_room_members
         WHERE room_id = #{roomId}
           AND member_id = #{memberId}
-
     </select>
 
     <!-- 현재 사용자의 채팅방 가입 상태 조회 -->
     <select id="isJoined" parameterType="map" resultType="boolean">
-
         SELECT EXISTS (
             SELECT 1
             FROM chat_room_members
             WHERE room_id = #{roomId}
-            AND member_id = #{memberId}
+              AND member_id = #{memberId}
         )
-
     </select>
 
     <!-- 로그인 아이디로 실제 회원 PK 조회 -->
     <select id="findMemberPkByLoginId" parameterType="string" resultType="int">
-
         SELECT id
         FROM member
         WHERE member_id = #{memberId}
-
     </select>
 
     <!-- 입력한 아티스트 이름으로 ID 조회 -->
     <select id="findArtistIdByName" parameterType="string" resultType="java.lang.Integer">
-
         SELECT artist_id
         FROM artists
         WHERE artist_name = #{artistName}
-        LIMIT 1
-
+            LIMIT 1
     </select>
 
     <!-- 입력한 노래 제목으로 ID 조회 -->
     <select id="findSongIdByTitle" parameterType="string" resultType="java.lang.Integer">
-
         SELECT song_id
         FROM songs
         WHERE song_title = #{songTitle}
-        LIMIT 1
+            LIMIT 1
+    </select>
 
+    <!-- 마지막으로 읽은 메시지 번호 조회 -->
+    <select id="findLastReadMessage" resultType="int">
+        SELECT last_read_message_id
+        FROM chat_room_members
+        WHERE room_id = #{roomId}
+          AND member_id = #{memberId}
+    </select>
+
+    <select id="countUnreadMember" resultType="int">
+        SELECT COUNT(*)
+        FROM chat_room_members
+        WHERE room_id = #{roomId}
+          AND member_id != (
+            SELECT member_id
+            FROM chat_messages
+            WHERE message_id = #{messageId}
+            )
+          AND last_read_message_id &lt; #{messageId}
     </select>
 
     <select id="findMemberPkByMemberId" parameterType="string" resultType="java.lang.Integer">
-
         SELECT id
         FROM member
         WHERE member_id = #{memberId}
-
     </select>
+
     <!-- 채팅방 생성 -->
     <insert id="createRoom" parameterType="com.youwin.dto.ChatRoomDto" useGeneratedKeys="true" keyProperty="roomId">
         INSERT INTO chat_rooms
         (
-            room_name,
-            room_description,
-            room_type,
-            target_id,
-            theme_id,
-            room_image_url,
-            owner_id
+                room_name,
+                room_description,
+                room_type,
+                target_id,
+                theme_id,
+                room_image_url,
+                owner_id
         )
         VALUES
             (
@@ -455,29 +433,29 @@
     </insert>
 
     <!-- 채팅방 입장 -->
-    <insert id="joinRoom" parameterType="com.youwin.dto.ChatRoomMemberDto">
-
+    <insert id="joinRoom">
         INSERT INTO chat_room_members
         (
-            room_id,
-            member_id
+                room_id,
+                member_id,
+                last_read_message_id
         )
         VALUES
             (
                 #{roomId},
-                #{memberId}
+                #{memberId},
+                0
             )
     </insert>
 
     <!-- 메시지 전송 -->
     <insert id="saveMessage" parameterType="com.youwin.dto.ChatMessageDto" useGeneratedKeys="true" keyProperty="messageId">
-
         INSERT INTO chat_messages
         (
-            room_id,
-            member_id,
-            message,
-            sent_At
+                room_id,
+                member_id,
+                message,
+                sent_at
         )
         VALUES
             (
@@ -490,27 +468,24 @@
 
     <!-- 채팅방 회원 신고 -->
     <insert id="saveReport" parameterType="com.youwin.dto.ChatReportDto">
-
         INSERT INTO reports
         (
-            room_id,
-            reporter_id,
-            reported_id,
-            reason
+                room_id,
+                reporter_id,
+                reported_id,
+                reason
         )
         VALUES
-        (
-            #{roomId},
-            #{reporterId},
-            #{reportedId},
-            #{reason}
-        )
-
+            (
+                #{roomId},
+                #{reporterId},
+                #{reportedId},
+                #{reason}
+            )
     </insert>
 
     <!-- 채팅방 수정 -->
     <update id="updateRoom" parameterType="com.youwin.dto.ChatRoomDto">
-
         UPDATE chat_rooms
         SET room_name = #{roomName},
         room_description = #{roomDescription},
@@ -522,43 +497,42 @@
         </if>
         WHERE room_id = #{roomId}
         AND owner_id = #{ownerId}
+    </update>
 
+    <!-- 마지막으로 읽은 메시지 번호 저장 -->
+    <update id="updateLastReadMessage">
+        UPDATE chat_room_members
+        SET last_read_message_id = #{lastReadMessageId}
+        WHERE room_id = #{roomId}
+          AND member_id = #{memberId}
     </update>
 
     <!-- 채팅방 퇴장 -->
     <delete id="leaveRoom" parameterType="com.youwin.dto.ChatRoomMemberDto">
-
         DELETE
         FROM chat_room_members
-        WHERE room_id=#{roomId}
-          AND member_id=#{memberId}
+        WHERE room_id = #{roomId}
+          AND member_id = #{memberId}
     </delete>
 
     <!-- 채팅방 삭제 -->
     <delete id="deleteRoom" parameterType="int">
-
         DELETE
         FROM chat_rooms
-        WHERE room_id=#{roomId}
-
+        WHERE room_id = #{roomId}
     </delete>
 
     <!-- 채팅방 메시지 삭제 -->
     <delete id="deleteMessages" parameterType="int">
-
         DELETE
         FROM chat_messages
         WHERE room_id = #{roomId}
-
     </delete>
 
-
     <delete id="deleteRoomMembers" parameterType="int">
-
         DELETE
         FROM chat_room_members
         WHERE room_id = #{roomId}
-
     </delete>
 
 </mapper>
