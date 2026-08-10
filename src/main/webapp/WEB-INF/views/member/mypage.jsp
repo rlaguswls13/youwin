@@ -177,5 +177,6 @@
     </footer>
 </div>
 <script src="${pageContext.request.contextPath}/app.js"></script>
+<script src="${pageContext.request.contextPath}/mypage.js"></script>
 </body>
 </html>

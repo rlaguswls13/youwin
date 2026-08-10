@@ -73,7 +73,6 @@ public class ChatSocketController {
             return;
         }
 
-        Integer memberId = memberRepository.findIdByMemberId(principal.getName());
         String loginId = principal.getName();
 
         Integer memberId = service.findMemberPkByLoginId(loginId);
