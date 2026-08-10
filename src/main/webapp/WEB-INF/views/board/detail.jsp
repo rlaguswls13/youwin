@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <!doctype html>
 <html lang="ko">
@@ -24,26 +24,21 @@
             <a href="${pageContext.request.contextPath}/board">게시판</a>
             <a href="${pageContext.request.contextPath}/index">채팅방</a>
 
-            <!-- 🟢 로그인 상태일 때만 마이페이지 노출 -->
             <sec:authorize access="isAuthenticated()">
                 <a href="${pageContext.request.contextPath}/member/mypage">마이페이지</a>
             </sec:authorize>
 
             <div class="user-menu">
-                <!-- 1. 로그인 상태인 경우 -->
                 <sec:authorize access="isAuthenticated()">
                     <span class="welcome-msg">
                         <strong><sec:authentication property="principal.memberDto.nickname"/></strong>님 환영합니다!
                     </span>
-                    <!-- 스프링 시큐리티 로그아웃 (CSRF 설정에 따라 POST 요청 권장) -->
                     <form action="${pageContext.request.contextPath}/member/logout" method="post" style="display:inline;">
-                        <!-- Spring Security CSRF 토큰 (CSRF 사용 시 필요) -->
                         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
                         <button type="submit" class="auth-btn logout-btn">로그아웃</button>
                     </form>
                 </sec:authorize>
 
-                <!-- 2. 비로그인(익명) 상태인 경우 -->
                 <sec:authorize access="isAnonymous()">
                     <a href="${pageContext.request.contextPath}/member/login" class="auth-btn">로그인</a>
                     <a href="${pageContext.request.contextPath}/member/joinStep1" class="auth-btn">회원가입</a>
@@ -120,13 +115,17 @@
             <!-- 하단 버튼 영역 -->
             <div class="form-actions" style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px; border-top: 1px solid #f1f3f5; padding-top: 20px;">
               <button class="button button--secondary" type="button" onclick="location.href='${pageContext.request.contextPath}/board';">목록으로</button>
-              <div style="display: flex; gap: 8px;">
-                <button class="button button--secondary" type="button" onclick="location.href='${pageContext.request.contextPath}/board/modify?noticeId=${notice.noticeId}';">수정하기</button>
-                <form action="${pageContext.request.contextPath}/board/delete" method="POST" class="delete-form" style="margin: 0;" onsubmit="return confirm('정말 삭제하시겠습니까?');">
-                  <input type="hidden" name="noticeId" value="${notice.noticeId}">
-                  <button class="button" type="submit" style="background-color: #ff4d4f; border-color: #ff4d4f; color: #fff;">삭제하기</button>
-                </form>
-              </div>
+
+              <!-- 컨트롤러의 isAdmin 변수를 이용해 수정/삭제하기 버튼 노출 -->
+              <c:if test="${isAdmin}">
+                <div style="display: flex; gap: 8px;">
+                  <button class="button button--secondary" type="button" onclick="location.href='${pageContext.request.contextPath}/board/modify?noticeId=${notice.noticeId}';">수정하기</button>
+                  <form action="${pageContext.request.contextPath}/board/delete" method="POST" class="delete-form" style="margin: 0;" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                    <input type="hidden" name="noticeId" value="${notice.noticeId}">
+                    <button class="button" type="submit" style="background-color: #ff4d4f; border-color: #ff4d4f; color: #fff;">삭제하기</button>
+                  </form>
+                </div>
+              </c:if>
             </div>
           </div>
 

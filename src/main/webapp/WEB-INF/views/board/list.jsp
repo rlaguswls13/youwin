@@ -24,26 +24,21 @@
                 <a class="is-active" href="${pageContext.request.contextPath}/board">게시판</a>
                 <a href="${pageContext.request.contextPath}/index">채팅방</a>
 
-                <!-- 🟢 로그인 상태일 때만 마이페이지 노출 -->
                 <sec:authorize access="isAuthenticated()">
                     <a href="${pageContext.request.contextPath}/member/mypage">마이페이지</a>
                 </sec:authorize>
 
                 <div class="user-menu">
-                    <!-- 1. 로그인 상태인 경우 -->
                     <sec:authorize access="isAuthenticated()">
                         <span class="welcome-msg">
                             <strong><sec:authentication property="principal.memberDto.nickname"/></strong>님 환영합니다!
                         </span>
-                        <!-- 스프링 시큐리티 로그아웃 (CSRF 설정에 따라 POST 요청 권장) -->
                         <form action="${pageContext.request.contextPath}/member/logout" method="post" style="display:inline;">
-                            <!-- Spring Security CSRF 토큰 (CSRF 사용 시 필요) -->
                             <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
                             <button type="submit" class="auth-btn logout-btn">로그아웃</button>
                         </form>
                     </sec:authorize>
 
-                    <!-- 2. 비로그인(익명) 상태인 경우 -->
                     <sec:authorize access="isAnonymous()">
                         <a href="${pageContext.request.contextPath}/member/login" class="auth-btn">로그인</a>
                         <a href="${pageContext.request.contextPath}/member/joinStep1" class="auth-btn">회원가입</a>
@@ -95,7 +90,10 @@
                             <h1 class="page-title">공지사항</h1>
                             <p class="page-description">Youwin의 새로운 소식과 서비스 안내를 확인하세요.</p>
                         </div>
-                        <button class="button" type="button" onclick="location.href='${pageContext.request.contextPath}/board/write';">새 글 작성</button>
+                        <!-- 컨트롤러의 isAdmin 변수를 이용해 '새 글 작성' 버튼 노출 -->
+                        <c:if test="${isAdmin}">
+                            <button class="button" type="button" onclick="location.href='${pageContext.request.contextPath}/board/write';">새 글 작성</button>
+                        </c:if>
                     </div>
 
                     <!-- 상단 PINNED 배너 -->
@@ -107,9 +105,8 @@
                         <div style="color: #adb5bd; font-size: 13px;">2026.07.16</div>
                     </div>
 
-                    <!-- 검색 및 분류 필터 바 (condition 객체 대응 삼항 연산자 적용) -->
+                    <!-- 검색 및 분류 필터 바 -->
                     <form action="${pageContext.request.contextPath}/board" method="get" style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; flex-wrap: wrap; gap: 10px;">
-                        <!-- 현재 탭 유지용 히든 필드 -->
                         <input type="hidden" name="tab" value="${param.tab}">
 
                         <div style="display: flex; gap: 6px;">
@@ -135,40 +132,46 @@
                             <thead>
                             <tr>
                                 <th>번호</th><th>분류</th><th>제목</th><th>작성자</th>
-                                <th style="text-align: center;">작성일</th><th style="text-align: center;">조회</th><th style="text-align: center;">관리</th>
+                                <th style="text-align: center;">작성일</th><th style="text-align: center;">조회</th>
+                                <c:if test="${isAdmin}">
+                                    <th style="text-align: center;">관리</th>
+                                </c:if>
                             </tr>
                             </thead>
                             <tbody>
                             <c:choose>
                                 <c:when test="${empty list}">
-                                    <tr><td class="board-empty" colspan="7">등록된 공지사항이 없습니다.</td></tr>
+                                    <tr><td class="board-empty" colspan="${isAdmin ? 7 : 6}">등록된 공지사항이 없습니다.</td></tr>
                                 </c:when>
                                 <c:otherwise>
                                     <c:forEach var="noticeItem" items="${list}" varStatus="status">
                                         <tr onclick="location.href='${pageContext.request.contextPath}/board/detail?noticeId=${noticeItem.noticeId}';" style="cursor: pointer;">
-                                            <!-- 번호 꼬임 방지 역순 계산식 (condition 객체 기준) -->
                                             <td class="board-table__number">
-                                                    ${totalCount - ((condition.page - 1) * condition.size) - status.index}
+                                                ${totalCount - ((condition.page - 1) * condition.size) - status.index}
                                             </td>
                                             <td><span class="chip">${noticeItem.category}</span></td>
                                             <td class="board-table__title">
                                                 <c:if test="${noticeItem.isPinned == 1}">
                                                     <span style="background: #ffe3e3; color: #f03e3e; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-right: 6px; font-weight: bold;">● 고정</span>
                                                 </c:if>
-                                                    ${noticeItem.title}
+                                                ${noticeItem.title}
                                             </td>
                                             <td class="board-table__meta">${empty noticeItem.memberId ? '운영팀' : noticeItem.memberId}</td>
                                             <td class="board-table__meta" style="text-align: center;">${noticeItem.createAt}</td>
                                             <td class="board-table__meta" style="text-align: center;">${noticeItem.count}</td>
-                                            <td onclick="event.stopPropagation();" style="text-align: center;">
-                                                <div style="display: flex; gap: 4px; justify-content: center; align-items: center;">
-                                                    <button type="button" class="board-filter" onclick="location.href='${pageContext.request.contextPath}/board/modify?noticeId=${noticeItem.noticeId}';" style="min-height:28px; padding:0 10px; border-color:#2f54eb; color:#2f54eb; background:none; font-size:11px; cursor:pointer;">수정</button>
-                                                    <form action="${pageContext.request.contextPath}/board/delete" method="POST" class="delete-form" style="margin:0;">
-                                                        <input type="hidden" name="noticeId" value="${noticeItem.noticeId}">
-                                                        <button type="submit" style="min-height:28px; padding:0 10px; border:1px solid #ff4d4f; border-radius:4px; color:#ff4d4f; background:none; font-size:11px; cursor:pointer;">삭제</button>
-                                                    </form>
-                                                </div>
-                                            </td>
+
+                                            <!-- 컨트롤러의 isAdmin 변수를 이용해 각 행의 수정/삭제 버튼 노출 -->
+                                            <c:if test="${isAdmin}">
+                                                <td onclick="event.stopPropagation();" style="text-align: center;">
+                                                    <div style="display: flex; gap: 4px; justify-content: center; align-items: center;">
+                                                        <button type="button" class="board-filter" onclick="location.href='${pageContext.request.contextPath}/board/modify?noticeId=${noticeItem.noticeId}';" style="min-height:28px; padding:0 10px; border-color:#2f54eb; color:#2f54eb; background:none; font-size:11px; cursor:pointer;">수정</button>
+                                                        <form action="${pageContext.request.contextPath}/board/delete" method="POST" class="delete-form" style="margin:0;">
+                                                            <input type="hidden" name="noticeId" value="${noticeItem.noticeId}">
+                                                            <button type="submit" style="min-height:28px; padding:0 10px; border:1px solid #ff4d4f; border-radius:4px; color:#ff4d4f; background:none; font-size:11px; cursor:pointer;">삭제</button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            </c:if>
                                         </tr>
                                     </c:forEach>
                                 </c:otherwise>
