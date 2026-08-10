@@ -2,7 +2,7 @@
     const currentPath = window.location.pathname;
 
     // ====================================================================
-    // 1. 공통 기능 (삭제 폼 컨펌 등 모든 페이지 공통)
+    // 1. 공통 기능 (삭제 폼 확인 및 에디터 취소 버튼 등 모든 페이지 공통)
     // ====================================================================
     const deleteForms = document.querySelectorAll('.delete-form');
     deleteForms.forEach(function (form) {
@@ -13,7 +13,6 @@
         });
     });
 
-    // 에디터(등록/수정) 취소 버튼 공통 처리
     document.querySelectorAll('[data-cancel-editor]').forEach(function (button) {
         button.addEventListener('click', function () {
             window.location.href = window.contextPath + '/board';
@@ -30,7 +29,6 @@
     const searchButton = document.querySelector('.board-search button[type="submit"]');
 
     if (filterButtons.length > 0 || searchInput) {
-        // 페이지 최초 로드 시 URL 파라미터를 읽어 UI 상태 복원
         (function initFilterState() {
             const params = new URLSearchParams(window.location.search);
             const currentCategory = params.get('category') || 'all';
@@ -51,7 +49,6 @@
             }
         })();
 
-        // 선택된 탭, 카테고리, 검색 조건 및 검색어를 포함하여 서버로 요청을 보내는 함수
         function searchAndFilterSubmit(targetPage = 1) {
             const activeFilter = document.querySelector('[data-board-filter].is-active');
             const category = activeFilter ? activeFilter.value : 'all';
@@ -73,7 +70,6 @@
             window.location.href = url + '?' + queryParams.join('&');
         }
 
-        // 필터 버튼 클릭 이벤트
         filterButtons.forEach(function (button) {
             button.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -85,7 +81,6 @@
             });
         });
 
-        // 검색 입력창 엔터키 이벤트
         if (searchInput) {
             searchInput.addEventListener('keypress', function (event) {
                 if (event.key === 'Enter') {
@@ -94,23 +89,32 @@
                 }
             });
         }
+
+        if (searchButton) {
+            searchButton.addEventListener('click', function (event) {
+                event.preventDefault();
+                searchAndFilterSubmit(1);
+            });
+        }
     }
 
 
     // ====================================================================
     // 3. 등록 및 수정 폼 화면 전용 기능 (form.jsp) - 이미지 업로드 및 미리보기
     // ====================================================================
-    const imageInput = document.getElementById('imageInput');
+    const imageInput = document.getElementById('images') || document.getElementById('imageInput');
     const btnUploadTrigger = document.getElementById('btnUploadTrigger');
-    const previewContainer = document.getElementById('previewContainer');
+    const previewContainer = document.getElementById('image-preview-list') || document.getElementById('previewContainer');
     const imageCountSpan = document.getElementById('imageCount');
 
-    if (imageInput && btnUploadTrigger) {
+    if (imageInput) {
         let selectedFiles = [];
 
-        btnUploadTrigger.addEventListener('click', function () {
-            imageInput.click();
-        });
+        if (btnUploadTrigger) {
+            btnUploadTrigger.addEventListener('click', function () {
+                imageInput.click();
+            });
+        }
 
         imageInput.addEventListener('change', function (e) {
             const files = Array.from(e.target.files);
@@ -146,20 +150,20 @@
             selectedFiles.forEach((file, index) => {
                 const reader = new FileReader();
                 reader.onload = function (e) {
-                    const thumbDiv = document.createElement('div');
-                    thumbDiv.className = 'existing-image-item';
-                    thumbDiv.innerHTML = `
-                        <img src="${e.target.result}" alt="미리보기 이미지">
-                        <button type="button" class="btn-del-existing" data-index="${index}">×</button>
-                    `;
+                    const div = document.createElement('div');
+                    div.className = 'existing-image-item';
 
-                    thumbDiv.querySelector('button').addEventListener('click', function () {
+                    // `${file.name}` 형태의 템플릿 리터럴 문법 오류 수정 (문자열 결합 방식 적용)
+                    div.innerHTML = '<img src="' + e.target.result + '" alt="' + file.name + '">' +
+                        '<button type="button" class="btn-del-existing" data-index="' + index + '">×</button>';
+
+                    div.querySelector('button').addEventListener('click', function () {
                         selectedFiles.splice(index, 1);
                         updatePreview();
                         syncInputFiles();
                     });
 
-                    previewContainer.appendChild(thumbDiv);
+                    previewContainer.appendChild(div);
                 };
                 reader.readAsDataURL(file);
             });

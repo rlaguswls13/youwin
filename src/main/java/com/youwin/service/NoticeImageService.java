@@ -2,7 +2,7 @@ package com.youwin.service;
 
 import com.youwin.dto.NoticeImageDto;
 import com.youwin.repository.NoticeRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,20 +12,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor // 생성자 주입 간소화
+@Transactional
 public class NoticeImageService {
 
-    // [수정] WebMvcConfig와 경로를 일치시켜 src/main/resources/static/upload/ 에 저장되도록 동적 경로 설정
     private final String uploadPath = System.getProperty("user.dir").replace("\\", "/") + "/src/main/resources/static/upload/";
     private final NoticeRepository noticeRepository;
-
-    @Autowired
-    public NoticeImageService(NoticeRepository noticeRepository) {
-        this.noticeRepository = noticeRepository;
-    }
 
     /**
      * 1. 다중 이미지 파일 업로드 및 DB 기록
@@ -86,10 +83,10 @@ public class NoticeImageService {
     }
 
     /**
-     * 4. 수정 시 이미지 동기화 처리 (중복 저장 방어 적용)
+     * 2. 수정 시 이미지 동기화 처리 (List<MultipartFile> 규격 호환)
      */
     @Transactional
-    public void updateBoardImages(Long noticeId, MultipartFile[] files, List<String> existingFiles) {
+    public void updateBoardImages(Long noticeId, List<MultipartFile> files, List<String> existingFiles) {
         // 1. 현재 DB에 저장되어 있는 해당 글의 이미지 목록 조회
         List<NoticeImageDto> dbImages = noticeRepository.selectImagesByNoticeId(noticeId);
 
@@ -98,7 +95,6 @@ public class NoticeImageService {
             boolean isKept = false;
             if (existingFiles != null) {
                 for (String existingUrl : existingFiles) {
-                    // URL에 해당 파일명이 포함되어 있다면 유지 대상으로 판단
                     if (existingUrl.contains(dbImage.getSavedFileName())) {
                         isKept = true;
                         break;
@@ -106,7 +102,6 @@ public class NoticeImageService {
                 }
             }
 
-            // 유지 대상이 아니라면 물리 파일 삭제 및 DB 레코드 삭제
             if (!isKept) {
                 File file = new File(uploadPath, dbImage.getSavedFileName());
                 if (file.exists()) {
@@ -116,9 +111,9 @@ public class NoticeImageService {
             }
         }
 
-        // 3. 새로 추가된 파일(MultipartFile)들만 골라서 안전하게 저장
-        if (files != null && files.length > 0) {
-            List<MultipartFile> validNewFiles = new java.util.ArrayList<>();
+        // 3. 새로 추가된 파일들만 골라서 안전하게 저장
+        if (files != null && !files.isEmpty()) {
+            List<MultipartFile> validNewFiles = new ArrayList<>();
             for (MultipartFile file : files) {
                 if (file != null && !file.isEmpty() && file.getSize() > 0) {
                     String origName = file.getOriginalFilename();

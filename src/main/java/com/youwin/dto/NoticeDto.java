@@ -1,60 +1,38 @@
 package com.youwin.dto;
 
+import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class NoticeDto {
     private Long noticeId;
-    private String category;
-    private String title;
-    private String content;
+    private String memberId;      // 작성자 아이디
+    private String category;      // 카테고리
+    private String title;         // 제목
+    private String content;       // 내용
+    private LocalDateTime createAt; // 작성일시
+
+    // JSTL 또는 화면 포맷팅용 문자열 필드 (필요 시 활용)
+    private String createAtStr;
+
+    // 공지사항 상단 고정 여부 (0: 일반, 1: 고정)
     private int isPinned;
+
+    // 댓글 허용 여부 (0: 비허용, 1: 허용)
     private int allowComments;
-    private String memberId;
-    private LocalDateTime createAt;
+
+    // 조회수 필드
     private int count;
 
-    // [중요] 뷰(JSP)에서 전송되는 이미지 파일 배열을 담기 위한 필드
+    // 뷰(JSP)에서 전송되는 업로드 이미지 파일 배열
     private MultipartFile[] files;
 
-    // DB에서 조회한 이미지 목록을 담기 위한 필드
+    // 상세 보기 화면 등에서 보여줄 첨부 이미지 목록 (일대다 관계 매핑)
     private List<NoticeImageDto> imageList;
-
-    // 기본 생성자
-    public NoticeDto() {}
-
-    // Getter & Setter
-    public Long getNoticeId() { return noticeId; }
-    public void setNoticeId(Long noticeId) { this.noticeId = noticeId; }
-
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
-
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-
-    public String getContent() { return content; }
-    public void setContent(String content) { this.content = content; }
-
-    public int getIsPinned() { return isPinned; }
-    public void setIsPinned(int isPinned) { this.isPinned = isPinned; }
-
-    public int getAllowComments() { return allowComments; }
-    public void setAllowComments(int allowComments) { this.allowComments = allowComments; }
-
-    public String getMemberId() { return memberId; }
-    public void setMemberId(String memberId) { this.memberId = memberId; }
-
-    public LocalDateTime getCreateAt() { return createAt; }
-    public void setCreateAt(LocalDateTime createAt) { this.createAt = createAt; }
-
-    public int getCount() { return count; }
-    public void setCount(int count) { this.count = count; }
-
-    public MultipartFile[] getFiles() { return files; }
-    public void setFiles(MultipartFile[] files) { this.files = files; }
-
-    public List<NoticeImageDto> getImageList() { return imageList; }
-    public void setImageList(List<NoticeImageDto> imageList) { this.imageList = imageList; }
 }
