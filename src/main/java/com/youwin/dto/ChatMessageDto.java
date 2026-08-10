@@ -17,6 +17,6 @@ public class ChatMessageDto {
     private String message;
     private String sentAt;
     private String nickname;
-    public String getNickname() { return nickname; }
-    public void setNickname(String nickname) { this.nickname = nickname; }
+    private Integer unreadCount;
+
 }

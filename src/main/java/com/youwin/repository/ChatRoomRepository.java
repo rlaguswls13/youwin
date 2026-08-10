@@ -10,6 +10,7 @@ import java.util.List;
 public interface ChatRoomRepository {
 
     // --------- 아티스트 -------
+
     List<ArtistDto> findArtistList();
 
     List<ArtistDto> searchArtist(String keyword);
@@ -66,12 +67,14 @@ public interface ChatRoomRepository {
 
     Integer findMemberPkByMemberId(String memberId);
 
+
     //----- 현재 사용자의 채팅방 가입 상태 조회 -------
+
     boolean isJoined(@Param("roomId") Integer roomId, @Param("memberId") Integer memberId);
 
 
-    // --------- 채팅 메시지 -----------
 
+    // --------- 채팅 메시지 -----------
 
     List<ChatMessageDto> findMessages(Integer roomId);
 
@@ -85,13 +88,16 @@ public interface ChatRoomRepository {
 
     Integer findLastMessageId(Integer roomId);
 
+
     // ---------- 참여자 --------------
 
     List<ChatRoomMemberDto> findMembers(Integer roomId);
 
+
     // ---------- 현재 접속중인 참여자 -------------
 
     List<ChatRoomMemberDto> findMembersByIds(List<Integer> memberIds);
+
 
     // ---------- 신고 ----------
 
@@ -100,4 +106,24 @@ public interface ChatRoomRepository {
     Integer findArtistIdByName(String artistName);
 
     Integer findSongIdByTitle(String songTitle);
+
+
+    //  마지막으로 읽은 메시지 번호 저장
+    void updateLastReadMessage(
+            @Param("roomId") Integer roomId,
+            @Param("memberId") Integer memberId,
+            @Param("lastReadMessageId") Integer lastReadMessageId
+    );
+
+    // 마지막으로 읽은 메시지 번호 조회
+    Integer findLastReadMessage(
+            @Param("roomId") Integer roomId,
+            @Param("memberId") Integer memberId
+    );
+
+    Integer countUnreadMember(
+
+            @Param("roomId") Integer roomId,
+            @Param("messageId") Integer messageId
+    );
 }

@@ -231,6 +231,24 @@ public class ChatroomApiController {
         return chatRoomService.findMembers(roomId);
     }
 
+    @PostMapping("/message/read")
+    public void readMessage(
+            @RequestParam Integer roomId,
+            @RequestParam Integer messageId,
+            @AuthenticationPrincipal CustomUserDetails userDetails){
+
+        String loginId = userDetails.getMemberDto().getMemberId();
+
+        Integer memberId = chatRoomService.findMemberPkByLoginId(loginId);
+
+        chatRoomService.updateLastReadMessage(
+                roomId,
+                memberId,
+                messageId
+        );
+    }
+
+
     @PostMapping("/report")
     public void reportMember(
             @RequestBody ChatReportDto dto,

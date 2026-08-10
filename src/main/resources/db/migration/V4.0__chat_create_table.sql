@@ -31,14 +31,14 @@ create table if not exists songs (
 
 create table if not exists chat_rooms(
  room_id		        int 					not null auto_increment comment '채팅방 고유 번호',
- room_name		    varchar(100) 			not null comment '방 이름',
- room_type		    enum('artist','song') 	not null comment '채팅방 구분',
- room_description    varchar(100)			not null comment '방 설명',
- room_image_url      varchar(300)			null     comment '아티스트, 노래 이미지',
- target_id		    int						not null comment '채팅방 대상 번호(암묵적, room_type에 따라 artists.artist_id 또는 songs.song_id 참조)',
- theme_id		    int						not null comment '장르 번호 FK(암묵적) -> themes.theme_id',
- owner_id            int                     not null comment '방장 회원 번호 FK -> member.id',
- created_at		    datetime 				not null default now() comment '방 개설 일자',
+ room_name		        varchar(100) 			not null comment '방 이름',
+ room_type		        enum('artist','song') 	not null comment '채팅방 구분',
+ room_description       varchar(100)			not null comment '방 설명',
+ room_image_url         varchar(300)			null     comment '아티스트, 노래 이미지',
+ target_id		        int						not null comment '채팅방 대상 번호(암묵적, room_type에 따라 artists.artist_id 또는 songs.song_id 참조)',
+ theme_id		        int						not null comment '장르 번호 FK(암묵적) -> themes.theme_id',
+ owner_id               int                     not null comment '방장 회원 번호 FK -> member.id',
+ created_at		        datetime 				not null default now() comment '방 개설 일자',
  primary key(room_id)
 ) comment = '채팅방';
 
@@ -46,9 +46,10 @@ create table if not exists chat_rooms(
 
 -- 소통방에 현재 어떤 참여자들이 들어와 있는지 실시간 목록을 관리
 create table if not exists chat_room_members(
-    room_id         int         not null comment '채팅방 번호 FK(암묵적) -> chat_rooms.room_id',
-    member_id       int         not null comment '회원 번호 FK(암묵적) -> member.member_id',
-    join_at         datetime    not null default now() comment '입장 시간',
+    room_id               int             not null auto_increment comment '채팅방 번호 FK(암묵적) -> chat_rooms.room_id',
+    member_id             int             not null comment '회원 번호 FK(암묵적) -> member.member_id',
+    last_read_message_id  int 		      not null default 0 comment '마지막으로 읽은 메시지 번호',
+    join_at               datetime        not null default now() comment '입장 시간',
     primary key(room_id, member_id)
 
     ) comment='채팅방 참여자';
@@ -61,5 +62,6 @@ create table if not exists chat_messages(
     sent_at     	datetime        not null default now() comment '보낸 시간',
     primary key(message_id)
     ) comment='채팅 메시지';
+
     
     

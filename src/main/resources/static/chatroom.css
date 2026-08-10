@@ -791,3 +791,16 @@
     max-height: 85vh;
     overflow-y: auto;
 }
+
+.message-read{
+    display:block;
+    font-size:11px;
+    color:#888;
+    text-align:right;
+    margin-bottom:2px;
+    line-height:1;
+}
+
+.message__time{
+    display:block;
+}
