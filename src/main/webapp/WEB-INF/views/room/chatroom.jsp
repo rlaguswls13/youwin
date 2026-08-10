@@ -156,7 +156,7 @@
                     </div>
                 </div>
 
-                <h4 class="member-section-title">참여 중</h4>
+                <h4>🟢 참여중</h4>
 
                 <div id="online-member-list">
                     <c:forEach var="member" items="${memberList}">
@@ -174,10 +174,25 @@
                                                     ${member.nickname}
                                             </strong>
 
+                                            <c:if test="${member.memberId == room.ownerId}">
+                                                <span style="color: blue; font-weight: bold;">[방장]</span>
+                                            </c:if>
                                         <c:if test="${member.memberId == room.ownerId}">
                                             <span class="owner-badge">HOST</span>
                                         </c:if>
 
+                                             <span class="member-item__status">
+                                                 <span class="online-dot">●</span>
+                                                 참여중
+                                             </span>
+                                          </span>
+                                            <c:if test="${member.memberId != loginMemberId}">
+                                             <button type="button" onclick="reportMember(${member.memberId})" style="margin-left: auto; font-size: 11px;">신고</button>
+                                            </c:if>
+                                    </div>
+                                </c:if>
+                        </c:forEach>
+                    </div>
                                          <span class="member-item__status">
                                              <span class="online-dot">●</span>
                                              참여중
@@ -193,6 +208,7 @@
 
                 <hr>
 
+                    <h4>⚪ 오프라인</h4>
                 <h4 class="member-section-title">오프라인</h4>
 
                 <div id="offline-member-list">
@@ -213,6 +229,22 @@
                                                 ${member.nickname}
                                         </strong>
 
+                                             <c:if test="${member.memberId == room.ownerId}">
+                                             <span style="color: blue; font-weight: bold;">[방장]</span>
+                                             </c:if>
+                                            <span class="member-item__status">
+                                                오프라인
+                                            </span>
+                                        </span>
+                                            <c:if test="${member.memberId != loginMemberId}">
+                                                <button type="button" onclick="reportMember(${member.memberId})" style="margin-left: auto; font-size: 11px;">신고</button>
+                                            </c:if>
+                                        </div>
+                                    </c:if>
+                                </c:forEach>
+                            </div>
+                </aside>
+                <div id="edit-room-modal" class="modal">
                                          <c:if test="${member.memberId == room.ownerId}">
                                          <span class="owner-badge">HOST</span>
                                          </c:if>
@@ -269,6 +301,21 @@
                     <select id="edit-room-theme">
                         <option value="">장르 선택</option>
 
+                            <c:forEach var="theme" items="${themeList}">
+                                <option value="${theme.themeId}"
+                                    ${theme.themeId == room.themeId ? 'selected' : ''}>
+                                        ${theme.themeName}
+                                </option>
+                            </c:forEach>
+                        </select>
+                        <br><br>
+                        <div class="edit-room-buttons">
+                        <button type="button" id="edit-room-cancel">취소</button>
+                        <button type="button" id="edit-room-save">수정</button>
+                        </div>
+                     </div>
+                </div>
+                <div id="report-modal" class="modal">
                         <c:forEach var="theme" items="${themeList}">
                             <option value="${theme.themeId}"
                                 ${theme.themeId == room.themeId ? 'selected' : ''}>

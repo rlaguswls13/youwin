@@ -22,6 +22,10 @@ public class ChatSocketController {
     private final ChatRoomSessiongManager sessiongManager;
     private final MemberRepository memberRepository;
 
+    /**
+     * 1. 메시지 전송
+     */
+
     // 메시지 전송
     @MessageMapping("/message")
     public void send(ChatMessageDto dto) {
@@ -42,7 +46,7 @@ public class ChatSocketController {
         }
 
         String loginId = principal.getName();
-        Integer memberId = service.findMemberPkByLoginId(loginId);
+        Integer memberId = memberRepository.findIdByMemberId(loginId);
 
         if (memberId == null) {
             return;
@@ -69,6 +73,7 @@ public class ChatSocketController {
             return;
         }
 
+        Integer memberId = memberRepository.findIdByMemberId(principal.getName());
         String loginId = principal.getName();
 
         Integer memberId = service.findMemberPkByLoginId(loginId);
