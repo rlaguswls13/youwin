@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>${empty notice ? '새 공지 작성' : '공지 수정'} | Youwin</title>
+    <title>${mode == 'edit' ? '공지 수정' : '새 공지 작성'} | Youwin</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/app.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/board.css">
     <style>
@@ -54,15 +54,15 @@
                 <section class="board-view is-active">
                     <div class="page-heading">
                         <p class="page-eyebrow">Write a post</p>
-                        <h1 class="page-title">${empty notice ? '새 공지 작성' : '공지 수정'}</h1>
+                        <h1 class="page-title">${mode == 'edit' ? '공지 수정' : '새 공지 작성'}</h1>
                         <p class="page-description">필요한 내용을 간결하고 정확하게 작성해 주세요.</p>
                     </div>
 
                     <form id="editor-form" class="surface editor-card form-grid"
-                          action="${pageContext.request.contextPath}${empty notice ? '/board/write' : '/board/modify'}"
+                          action="${pageContext.request.contextPath}${mode == 'edit' ? '/board/modify/'.concat(notice.noticeId) : '/board/write'}"
                           method="post" enctype="multipart/form-data" style="margin-top: 20px; padding: 24px;">
 
-                        <input type="hidden" name="noticeId" value="${notice.noticeId}">
+                        <input type="hidden" name="noticeId" value="${mode == 'edit' ? notice.noticeId : ''}">
 
                         <div class="form-field">
                             <label for="category">분류</label>
@@ -86,7 +86,7 @@
                         </div>
 
                         <!-- 기존 등록된 이미지 표시 영역 (수정 모드) -->
-                        <c:if test="${not empty imageList}">
+                        <c:if test="${mode == 'edit' and not empty imageList}">
                             <div class="form-field" style="width: 100%;">
                                 <label>기존 첨부 이미지 (X를 누르면 삭제됩니다)</label>
                                 <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px;">
@@ -107,7 +107,7 @@
                         <!-- 이미지 업로드 버튼 및 액션 -->
                         <div class="form-actions" style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 20px;">
                             <div class="image-upload-trigger-wrap" style="display: flex; align-items: center; gap: 12px;">
-                                <input type="file" id="imageInput" name="files" multiple accept="image/*" style="display: none;">
+                                <input type="file" id="imageInput" name="imageFiles" multiple accept="image/*" style="display: none;">
                                 <div id="btnUploadTrigger" style="display: flex; align-items: center; gap: 6px; padding: 8px 14px; border: 1px dashed #ced4da; border-radius: 6px; cursor: pointer; background-color: #f8f9fa; user-select: none;">
                                     <span style="font-weight: bold; color: #495057; font-size: 14px;">+ 이미지 업로드</span>
                                     <span style="font-size: 13px; color: #6c757d;">(<span id="imageCount">0</span>/5)</span>
@@ -117,7 +117,7 @@
 
                             <div style="display: flex; gap: 8px;">
                                 <button class="button button--secondary" type="button" onclick="location.href='${pageContext.request.contextPath}/board';">취소</button>
-                                <button class="button" type="submit">${empty notice ? '등록하기' : '수정하기'}</button>
+                                <button class="button" type="submit">${mode == 'edit' ? '수정하기' : '등록하기'}</button>
                             </div>
                         </div>
                     </form>

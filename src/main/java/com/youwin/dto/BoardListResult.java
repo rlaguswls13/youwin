@@ -1,19 +1,16 @@
 package com.youwin.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.ToString;
+
 import java.util.List;
 
+@Getter
+@AllArgsConstructor
+@ToString
 public class BoardListResult {
-    private List<NoticeDto> noticeList;
-    private PageInfo pageInfo;
-    private BoardSearchCondition searchCondition;
-
-    public BoardListResult(List<NoticeDto> noticeList, PageInfo pageInfo, BoardSearchCondition searchCondition) {
-        this.noticeList = noticeList;
-        this.pageInfo = pageInfo;
-        this.searchCondition = searchCondition;
-    }
-
-    public List<NoticeDto> getNoticeList() { return noticeList; }
-    public PageInfo getPageInfo() { return pageInfo; }
-    public BoardSearchCondition getSearchCondition() { return searchCondition; }
+    private final List<NoticeDto> noticeList;
+    private final PageInfo pageInfo;
+    private final BoardSearchCondition searchCondition;
 }

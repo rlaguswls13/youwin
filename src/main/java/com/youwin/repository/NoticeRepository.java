@@ -1,50 +1,59 @@
 package com.youwin.repository;
 
+import com.youwin.dto.BoardSearchCondition;
 import com.youwin.dto.NoticeDto;
-import com.youwin.dto.NoticeImageDto; // [신규 추가] 이미지 정보 이동을 위한 DTO 임포트
+import com.youwin.dto.NoticeImageDto;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
 import java.util.List;
 import java.util.Map;
 
 @Mapper
 public interface NoticeRepository {
 
-    // 1. 공지사항 작성 (등록) 구역
-    // 기존 저장 메서드
-    void save(NoticeDto notice);
+    // 1. 공지사항 작성 (등록)
+    // useGeneratedKeys 설정으로 insert 실행 후 noticeDto에 noticeId가 자동으로 채워짐
+    int save(NoticeDto noticeDto);
 
-    // 2. 공지사항 페이지네이션 및 검색 구역
-    // 기존 전체 조회 메서드 (필요 시 다른 기능에서 사용 가능하므로 남겨둠)
+    // 2. 공지사항 조회 구역
+    // 전체 목록 조회 (필요 시 기존 기능 호환용)
     List<NoticeDto> findAll();
 
-    // 페이징, 카테고리 필터, 키워드 검색 조건이 적용된 게시글 목록을 조회하는 메서드
-    List<NoticeDto> findAllWithPaging(Map<String, Object> params);
+    // 페이징, 카테고리 필터, 키워드 검색 조건이 적용된 게시글 목록 조회 (검색 조건 객체 사용)
+    List<NoticeDto> findAllWithPaging(BoardSearchCondition condition);
 
-    // 페이지네이션 하단 번호 렌더링 계산을 위해 조건에 맞는 전체 게시글 총 개수를 반환하는 메서드
-    int countTotal(Map<String, Object> params);
+    // Map 타입 파라미터를 사용하는 페이징 목록 조회 (기존 코드 호환용)
+    List<NoticeDto> findAllWithPagingMap(Map<String, Object> params);
 
-    // 3. 공지사항 삭제 구역
-    // delete 쿼리를 호출하기 위한 추상 메서드 선언
-    void deleteById(Long noticeId);
+    // 페이징 하단 번호 계산을 위한 조건별 전체 게시글 총 개수 반환 (검색 조건 객체 사용)
+    int countTotal(BoardSearchCondition condition);
 
-    // 4. 공지사항 수정 구역
-    // DB 데이터 수정을 위한 매퍼 추상 메서드 선언
-    void update(NoticeDto notice);
+    // Map 타입 파라미터를 사용하는 총 개수 반환 (기존 코드 호환용)
+    int countTotalMap(Map<String, Object> params);
 
-    // 5. 공지사항 단건 상세 조회 구역
-    // 단건 상세 조회 쿼리를 호출하기 위한 추상 메서드 선언 (더블클릭 조회 연동)
+    // 단건 상세 조회 구역
     NoticeDto findById(Long noticeId);
 
-    // 6. 공지사항 이미지 처리 구역
-    // 업로드된 이미지 정보를 첨부파일 테이블에 기록하는 메서드
+    // 3. 공지사항 수정 구역
+    int update(NoticeDto noticeDto);
+
+    // 4. 공지사항 삭제 구역
+    int deleteById(Long noticeId);
+
+    // 5. 공지사항 이미지 처리 구역
+    // 단일 이미지 등록
     void insertImage(NoticeImageDto imageDto);
 
-    // 상세조회 시 특정 공지사항 ID에 묶인 이미지 목록을 불러오는 메서드
+    // 다중 이미지 일괄 등록 (MyBatis 동적 쿼리 <foreach>를 위한 @Param 명시)
+    void insertNoticeImages(@Param("images") List<NoticeImageDto> images);
+
+    // 특정 공지사항 ID에 묶인 이미지 목록 조회
     List<NoticeImageDto> selectImagesByNoticeId(Long noticeId);
 
-    // 공지사항 글 삭제 시 연결되어 있던 모든 이미지 데이터를 일괄 제거하는 메서드
-    void deleteImagesByNoticeId(Long noticeId);
+    // 공지사항 글 삭제 시 연결된 모든 이미지 데이터 일괄 제거
+    int deleteImagesByNoticeId(Long noticeId);
 
-    // [추가] 공지사항 수정 시 유지되지 않은 개별 이미지를 DB에서 삭제하는 메서드
-    void deleteImageById(Long imageId);
+    // 수정 시 유지되지 않은 개별 이미지를 ID로 삭제
+    int deleteImageById(Long imageId);
 }
