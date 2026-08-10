@@ -146,7 +146,7 @@ mvn spring-boot:run
 - 채팅방: <http://localhost:8080/chatroom>
 - 마이페이지: <http://localhost:8080/member/mypage>
 - 회원가입: <http://localhost:8080/member/join>
-- 로그인: <http://localhost:8080/member/login>
+- 로그인: <http://localhost:8080/login/login>
 
 포트 변경:
 

@@ -9,75 +9,9 @@
     <title>Youwin | 아이디 찾기</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/app.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/home.css">
-    <style>
-        .hidden { display: none !important; }
-
-        /* Input Group 배치 */
-        .input-group-btn {
-            display: flex;
-            gap: 8px;
-            margin-top: 8px;
-            position: relative;
-        }
-        .input-group-btn input { flex: 1; }
-
-        /* 1. 서브 버튼 (인증 요청, 확인 버튼) 스타일 보정 */
-        .btn-sub {
-            padding: 0 18px;
-            white-space: nowrap;
-            background-color: #4f46e5; /* 보라/파란계열의 확실한 포인트 컬러 */
-            color: #ffffff !important;  /* 흰색 글자 고정 */
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.2s ease-in-out;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .btn-sub:hover {
-            background-color: #4338ca; /* 호버 시 약간 더 어둡게 */
-        }
-        .btn-sub:active {
-            transform: scale(0.98);
-        }
-
-        /* 2. 메인 제출 버튼 (아이디 찾기 / 비밀번호 변경 완료 버튼) 스타일 보정 */
-        .button {
-            width: 100%;
-            padding: 14px;
-            background-color: #6366f1 !important; /* 밝고 명확한 브랜드 컬러 */
-            color: #ffffff !important;            /* 글자 확실하게 보이도록 지정 */
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .button:hover {
-            background-color: #4f46e5 !important;
-        }
-
-        /* 메시지 및 타이머 스타일 */
-        .msg-text { font-size: 12px; margin-top: 6px; display: block; }
-        .msg-error { color: #f87171; }
-        .msg-success { color: #4ade80; }
-        .timer-badge {
-            position: absolute;
-            right: 110px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #f87171;
-            font-size: 13px;
-            font-weight: bold;
-            pointer-events: none;
-        }
-    </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/account.css">
 </head>
-<body>
+<body class="account-support">
 <div class="site-shell">
     <!-- 헤더 영역 -->
     <header class="site-header">
@@ -89,7 +23,7 @@
             <nav class="site-nav" data-site-nav aria-label="주요 메뉴">
                 <a href="${pageContext.request.contextPath}/">홈</a>
                 <a href="${pageContext.request.contextPath}/board">게시판</a>
-                <a href="${pageContext.request.contextPath}/chatroom">채팅방</a>
+                <a href="${pageContext.request.contextPath}/index">채팅방</a>
                 <a href="${pageContext.request.contextPath}/member/mypage">마이페이지</a>
                 <div class="user-menu">
                     <c:if test="${not empty sessionScope.loginUser}">
@@ -97,7 +31,7 @@
                         <a href="${pageContext.request.contextPath}/member/logout">로그아웃</a>
                     </c:if>
                     <c:if test="${empty sessionScope.loginUser}">
-                        <a href="${pageContext.request.contextPath}/member/login">로그인</a>
+                        <a href="${pageContext.request.contextPath}/login/login">로그인</a>
                         <a href="${pageContext.request.contextPath}/member/joinStep1">회원가입</a>
                     </c:if>
                 </div>
@@ -105,13 +39,14 @@
             <div class="site-header__actions">
                 <a class="avatar-link" href="${pageContext.request.contextPath}/member/mypage" aria-label="마이페이지">YU</a>
             </div>
+            <button class="menu-toggle" type="button" data-menu-toggle aria-label="메뉴 열기" aria-expanded="false"></button>
         </div>
     </header>
 
     <!-- 메인 콘텐츠 영역 -->
     <main class="page-main">
-        <div class="site-container" style="max-width: 480px; padding-top: 60px; padding-bottom: 80px;">
-            <div class="surface" style="padding: 32px; border-radius: 16px;">
+        <div class="site-container account-container">
+            <div class="surface account-card">
                 <div class="section-head" style="margin-bottom: 24px;">
                     <div>
                         <h1 class="section-title" style="font-size: 24px;">아이디 찾기</h1>
@@ -120,7 +55,7 @@
                 </div>
 
                 <!-- 아이디 찾기 입력 폼 -->
-                <form id="findIdForm" onsubmit="return false;" style="display: flex; flex-direction: column; gap: 16px;">
+                <form id="findIdForm" class="account-form" onsubmit="return false;">
                     <!-- 1. 이름 입력 -->
                     <div>
                         <label for="memberName" style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #ffffff;">이름</label>
@@ -153,7 +88,7 @@
                     </div>
 
                     <!-- 4. 결과 출력 박스 (기본 숨김) -->
-                    <div id="resultBox" class="hidden" style="background-color: rgba(99, 102, 241, 0.15); border: 1px solid #6366f1; padding: 20px; border-radius: 12px; text-align: center; margin-top: 8px;">
+                    <div id="resultBox" class="hidden account-result">
                         <p style="margin: 0; font-size: 14px; color: #cbd5e1;">회원님의 아이디는 다음과 같습니다.</p>
                         <p style="margin: 10px 0 0 0; font-size: 20px; font-weight: bold; color: #ffffff;" id="foundMemberId"></p>
                     </div>
@@ -162,9 +97,9 @@
                     <button type="button" id="btnSubmit" class="button" onclick="findIdSubmit()" style="width: 100%; margin-top: 8px;">아이디 찾기</button>
                 </form>
 
-                <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; font-size: 14px;">
+                <div class="account-links">
                     <a class="text-link" href="${pageContext.request.contextPath}/member/findPassword">비밀번호 찾기</a>
-                    <a class="text-link" href="${pageContext.request.contextPath}/member/login">로그인으로 돌아가기</a>
+                    <a class="text-link" href="${pageContext.request.contextPath}/login/login">로그인으로 돌아가기</a>
                 </div>
             </div>
         </div>

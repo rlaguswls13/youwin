@@ -1,11 +1,6 @@
 package com.youwin.dto;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.AllArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -17,19 +12,18 @@ import java.time.format.DateTimeFormatter;
 @AllArgsConstructor
 public class MemberDto {
     // JSP input태그의 name 속성과 일치해야 자동으로 바인딩됩니다.
+    private Long id;
     private String memberId;
     private String memberPassword;
     private String memberName;
     private String memberEmail;
     private String memberPhone;
     private String nickname;
-    private String profileImage;
+    private String profileImage; // DB 저장용 파일 경로 (/upload/profile/xxx.png)
     private String memberStatus;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
-
-    private MultipartFile profile;
 
     // JSP에서 ${member.formattedCreatedAt} 으로 부를 때 사용되는 메서드
     public String getFormattedCreatedAt() {

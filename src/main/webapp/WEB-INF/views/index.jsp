@@ -35,7 +35,7 @@
                     <!-- 1. 로그인 상태인 경우 -->
                     <sec:authorize access="isAuthenticated()">
                         <span class="welcome-msg">
-                            <strong><sec:authentication property="principal.memberDto.nickname"/></strong>님 환영합니다!
+                            <strong>${sessionScope.nickname}</strong>님 환영합니다!
                         </span>
                         <!-- 스프링 시큐리티 로그아웃 (CSRF 설정에 따라 POST 요청 권장) -->
                         <form action="${pageContext.request.contextPath}/member/logout" method="post" style="display:inline;">
@@ -47,7 +47,7 @@
 
                     <!-- 2. 비로그인(익명) 상태인 경우 -->
                     <sec:authorize access="isAnonymous()">
-                        <a href="${pageContext.request.contextPath}/member/login" class="auth-btn">로그인</a>
+                        <a href="${pageContext.request.contextPath}/login/login" class="auth-btn">로그인</a>
                         <a href="${pageContext.request.contextPath}/member/joinStep1" class="auth-btn">회원가입</a>
                     </sec:authorize>
                 </div>

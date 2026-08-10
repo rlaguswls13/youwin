@@ -1,36 +1,45 @@
 package com.youwin.service;
 
-import com.youwin.repository.EmailVerificationRepository; // 사용 중이신 Repository/Mapper 경로에 맞춰 변경
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
 public class EmailVerificationService {
 
     private final JavaMailSender mailSender;
-    private final EmailVerificationRepository emailVerificationRepository;
+
+    /* [수정] DB Repository 삭제 후 Caffeine In-Memory Cache 객체 생성
+     * - verificationCodes: (이메일 -> 인증번호) 저장 (유효기간: 5분)
+     * - verifiedEmails: (이메일 -> 인증완료여부(Boolean)) 저장 (유효기간: 10분)
+     */
+    private final Cache<String, String> verificationCodes = Caffeine.newBuilder()
+            .expireAfterWrite(5, TimeUnit.MINUTES)
+            .build();
+
+    private final Cache<String, Boolean> verifiedEmails = Caffeine.newBuilder()
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .build();
 
     // 6자리 랜덤 인증번호 생성
     public String createAuthCode() {
         return String.valueOf((int) (Math.random() * 899999) + 100000);
     }
 
-    // 메일 발송 및 DB 저장 공통 처리
-    @Transactional
+    // 메일 발송 및 메모리 캐시 저장 처리 (DB 관련 @Transactional 제거)
     public void sendVerificationCode(String email) {
         String authCode = createAuthCode();
-        LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(5); // 5분 유효기간
 
-        // 1. DB에 인증 정보 저장/갱신
-        emailVerificationRepository.saveVerificationCode(email, authCode, expiresAt);
+        /* [수정] DB 저장 대신 Caffeine Cache 메모리에 저장 (자동으로 5분 후 만료됨) */
+        verificationCodes.put(email, authCode);
 
-        // 2. 이메일 발송
+        // 이메일 발송
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
         message.setSubject("[YouWin] 이메일 인증번호 안내");
@@ -39,38 +48,38 @@ public class EmailVerificationService {
         mailSender.send(message);
     }
 
-    // 인증번호 검증 공통 처리
-    @Transactional
+    // 인증번호 검증 처리 (DB 관련 @Transactional 제거)
     public boolean verifyCode(String email, String inputCode) {
-        // 1. 해당 이메일의 최신 인증 정보 조회
-        // (Repository 메서드는 프로젝트 상황에 맞게 매핑)
-        var verification = emailVerificationRepository.findLatestByEmail(email);
+        /* [수정] Caffeine Cache에서 해당 이메일의 인증번호 조회 */
+        String storedCode = verificationCodes.getIfPresent(email);
 
-        if (verification == null) {
+        if (storedCode == null) {
             throw new IllegalArgumentException("인증번호가 요청되지 않았거나 만료되었습니다.");
         }
 
-        if (verification.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new IllegalStateException("인증번호 유효시간(5분)이 초과되었습니다. 재발송 해주세요.");
-        }
-
-        if (!verification.getCode().equals(inputCode)) {
+        if (!storedCode.equals(inputCode)) {
             return false; // 인증번호 불일치
         }
 
-        // 2. 인증 완료 상태로 변경
-        emailVerificationRepository.updateVerifiedStatus(email, true);
+        /* [수정] 인증 성공 시:
+         * 1. 사용한 인증번호는 캐시에서 즉시 삭제
+         * 2. 최종 회원가입/비밀번호 변경 시 검증을 위해 인증 완료 상태(true)를 10분간 캐시에 저장
+         */
+        verificationCodes.invalidate(email);
+        verifiedEmails.put(email, true);
         return true;
     }
 
     // 인증 완료 여부 확인 (최종 회원가입/비밀번호 변경 직전에 확인용)
     public boolean isVerified(String email) {
-        return emailVerificationRepository.isVerified(email);
+        /* [수정] DB 조회 대신 캐시 메모리에서 인증 완료 여부 확인 */
+        Boolean isVerified = verifiedEmails.getIfPresent(email);
+        return Boolean.TRUE.equals(isVerified);
     }
 
     // 사용 완료된 인증 데이터 삭제
-    @Transactional
     public void removeVerification(String email) {
-        emailVerificationRepository.deleteByEmail(email);
+        /* [수정] DB 데이터 삭제 대신 캐시 메모리에서 인증 완료 상태 즉시 제거 */
+        verifiedEmails.invalidate(email);
     }
 }

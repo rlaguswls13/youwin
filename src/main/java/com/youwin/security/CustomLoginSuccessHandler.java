@@ -1,9 +1,11 @@
 package com.youwin.security;
 
+import com.youwin.repository.MemberSecurityRepository;
 import com.youwin.service.MemberService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
@@ -17,6 +19,7 @@ public class CustomLoginSuccessHandler
         extends SavedRequestAwareAuthenticationSuccessHandler {
 
     private final MemberService memberService;
+    private final MemberSecurityRepository memberSecurityRepository;
 
     @Override
     public void onAuthenticationSuccess(
@@ -28,17 +31,27 @@ public class CustomLoginSuccessHandler
         CustomUserDetails user =
                 (CustomUserDetails) authentication.getPrincipal();
 
-        // 마지막 로그인 시간 갱신
-        memberService.updateLastLoginAt(user.getUsername());
+        String memberId = user.getUsername();
 
-        // 자동로그인 체크박스 확인 ("on" 또는 "true")
+        // 1. 로그인 성공했으므로 보안 테이블 전체 리셋 (실패/잠금 카운트 = 0)
+        //memberSecurityRepository.resetLoginFailCount(memberId);
+
+        // 2. 마지막 로그인 시간 갱신
+        memberService.updateLastLoginAt(memberId);
+
+        // 3. 자동로그인 체크박스 확인 ("on" 또는 "true")
         String rememberMe = request.getParameter("remember-me");
         if ("on".equals(rememberMe) || "true".equals(rememberMe)) {
-            memberService.setupAutoLogin(user.getUsername(), response);
+            memberService.setupAutoLogin(memberId, response);
         }
 
-        // 로그인 성공 시 기본 이동할 URL이 지정되지 않았다면 홈("/")으로 이동
+        // 4. 기본 이동할 URL 설정
         setDefaultTargetUrl("/");
+
+        // 5. 유저 기본 정보
+        HttpSession session = request.getSession();
+        session.setAttribute("nickname", user.getMemberDto().getNickname());
+        session.setAttribute("profile", user.getMemberDto().getProfileImage());
 
         super.onAuthenticationSuccess(request, response, authentication);
     }

@@ -1,6 +1,8 @@
 package com.youwin.security;
 
 import com.youwin.dto.MemberDto;
+import com.youwin.repository.MemberSecurityRepository;
+import com.youwin.service.UnlockEmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
@@ -14,6 +16,9 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     private final CustomUserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
+    private final LoginAttemptService loginAttemptService;
+    private final MemberSecurityRepository memberSecurityRepository;
+    private final UnlockEmailService unlockEmailService;
 
     @Override
     public Authentication authenticate(Authentication authentication)
@@ -22,40 +27,88 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         String memberId = authentication.getName();
         String password = authentication.getCredentials().toString();
 
-        // 1. DB 회원 정보 조회
-        CustomUserDetails userDetails =
-                (CustomUserDetails) userDetailsService.loadUserByUsername(memberId);
-
-        // 2. 비밀번호 검증
-        if (!passwordEncoder.matches(password, userDetails.getPassword())) {
-            throw new BadCredentialsException("비밀번호가 일치하지 않습니다.");
+        // 1. 5회/10회 일시 차단(30분/1시간) 여부 체크 (최우선 실행)
+        long remainingMinutes = loginAttemptService.getRemainingBlockMinutes(memberId);
+        if (remainingMinutes > 0) {
+            throw new LockedException(remainingMinutes + "분 동안 로그인이 제한됩니다.");
         }
 
-        // 3. 회원 상태(member_status) 검증
+        // 2. DB 회원 정보 조회
+        CustomUserDetails userDetails = null;
+        try {
+            userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(memberId);
+        } catch (Exception e) {
+            // 회원 정보가 없는 경우 아래 비밀번호 비교 단계로 넘어가지 않고 실패 처리 수행
+            return processFailedAttempt(memberId, null);
+        }
+
+        // 3. 비밀번호 검증
+        if (!passwordEncoder.matches(password, userDetails.getPassword())) {
+            return processFailedAttempt(memberId, userDetails.getMemberDto());
+        }
+
+        // 4. 회원 상태(member_status) 검증
         MemberDto member = userDetails.getMemberDto();
         String status = member != null ? member.getMemberStatus() : "ACTIVE";
 
-        // 휴면 계정 -> LockedException 발생 (LoginFailureHandler에서 감지 후 이메일 인증으로 이동)
         if ("DORMANT".equals(status)) {
             throw new LockedException("DORMANT");
         }
-
-        // 탈퇴 대기 계정 -> DisabledException 발생 (LoginFailureHandler에서 감지 후 복구/취소 페이지로 이동)
         if ("DELETED".equals(status)) {
             throw new DisabledException("DELETED");
         }
-
-        // 이용 정지 계정 -> DisabledException 발생 (LoginFailureHandler에서 감지 후 정지 안내)
         if ("BANNED".equals(status)) {
             throw new DisabledException("BANNED");
         }
+        if ("LOCKED".equals(status)) {
+            throw new LockedException("LOCKED");
+        }
 
-        // 4. 로그인 성공 (ACTIVE 상태)
+        // 5. 로그인 성공 (Caffeine 메모리 실패 기록 리셋)
+        loginAttemptService.loginSucceeded(memberId);
+
         return new UsernamePasswordAuthenticationToken(
                 userDetails,
                 null,
                 userDetails.getAuthorities()
         );
+    }
+
+    /**
+     * 로그인 실패 통합 처리 메서드 (1회만 실패 카운트 증가)
+     */
+    private Authentication processFailedAttempt(String memberId, MemberDto memberDto) throws AuthenticationException {
+        int failCount = loginAttemptService.loginFailed(memberId);
+
+        // 1. 5회 실패 (30분 차단)
+        if (failCount == 5) {
+            loginAttemptService.setBlockTime(memberId, 30);
+            if (memberDto != null && memberDto.getMemberEmail() != null) {
+                unlockEmailService.sendWarningEmail(memberId, memberDto.getMemberEmail(), "5회 실패 (30분 일시 차단)");
+            }
+            throw new LockedException("5회 실패로 30분간 로그인이 제한됩니다. 발송된 이메일을 통해 바로 해제할 수 있습니다.");
+        }
+
+        // 2. 10회 실패 (1시간 차단)
+        if (failCount == 10) {
+            loginAttemptService.setBlockTime(memberId, 60);
+            if (memberDto != null && memberDto.getMemberEmail() != null) {
+                unlockEmailService.sendWarningEmail(memberId, memberDto.getMemberEmail(), "10회 실패 (1시간 일시 차단)");
+            }
+            throw new LockedException("10회 실패로 1시간 동안 로그인이 제한됩니다. 발송된 이메일을 통해 바로 해제할 수 있습니다.");
+        }
+
+        // 3. 15회 이상 실패 시 DB 영구 잠금(LOCKED)
+        if (failCount >= 15) {
+            memberSecurityRepository.lockAccount(memberId);
+            if (memberDto != null && memberDto.getMemberEmail() != null) {
+                unlockEmailService.sendUnlockEmail(memberId, memberDto.getMemberEmail());
+            }
+            throw new LockedException("LOCKED");
+        }
+
+        int targetLimit = (failCount < 5) ? 5 : (failCount < 10) ? 10 : 15;
+        throw new BadCredentialsException("회원 정보가 올바르지 않습니다. (실패 횟수: " + failCount + "/" + targetLimit + "회)");
     }
 
     @Override

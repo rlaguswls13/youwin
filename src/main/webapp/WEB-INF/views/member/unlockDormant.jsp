@@ -1,39 +1,55 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>휴면 계정 해제</title>
-  <style>
-    .container { width: 400px; margin: 50px auto; text-align: center; font-family: sans-serif; }
-    .info-box { background-color: #f8f9fa; border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; }
-    .input-group { margin-bottom: 15px; }
-    input[type="text"] { width: 70%; padding: 8px; }
-    button { padding: 8px 15px; cursor: pointer; }
-    .btn-submit { width: 100%; background: #007bff; color: white; border: none; padding: 10px; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="휴면 계정 해제">
+  <title>휴면 계정 해제 | Youwin</title>
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/app.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/auth.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/account.css">
 </head>
 <body>
-<div class="container">
-  <h2>🔒 휴면 계정 안내</h2>
-  <div class="info-box">
-    <p>회원님의 계정(<strong>${memberId}</strong>)은 장기 미접속으로 인해 <strong>휴면 상태</strong>로 전환되었습니다.</p>
-    <p>서비스를 계속 이용하시려면 본인 확인을 위한 이메일 인증을 진행해 주세요.</p>
-  </div>
-
-  <form id="unlockForm">
-    <div class="input-group">
-      <p>등록된 이메일: <strong>${memberEmail}</strong></p>
-      <button type="button" id="btnSendCode">인증번호 발송</button>
+<div class="auth-page">
+  <aside class="auth-aside" aria-label="Youwin 계정 보호">
+    <a class="brand auth-brand" href="${pageContext.request.contextPath}/" aria-label="Youwin 홈"><span class="brand__mark">YW</span><span>Youwin</span></a>
+    <div class="auth-aside__copy">
+      <p class="auth-aside__eyebrow">Secure your account</p>
+      <h2>소중한 계정을<br>안전하게 다시 연결해요</h2>
+      <p class="auth-aside__description">등록된 이메일 인증을 통해 본인 확인 후 계정 이용을 이어갈 수 있습니다.</p>
     </div>
+    <p class="auth-aside__note">인증번호는 타인에게 공유하지 마세요.</p>
+  </aside>
+  <main class="auth-main">
+    <section class="auth-card recovery-card" aria-labelledby="recovery-title">
+      <a class="auth-back" href="${pageContext.request.contextPath}/login/login">← 로그인으로 돌아가기</a>
+      <div class="auth-heading">
+        <p class="auth-heading__eyebrow">Dormant account</p>
+        <h1 class="auth-title" id="recovery-title">다시 활동을 시작할까요?</h1>
+        <p class="auth-description">장기간 로그인하지 않아 계정이 안전하게 휴면 상태로 전환되었습니다.</p>
+      </div>
 
-    <div class="input-group">
-      <input type="text" id="authCode" placeholder="인증번호 6자리 입력" disabled>
-      <button type="button" id="btnVerify" class="btn-submit" style="margin-top: 10px;">휴면 해제하기</button>
-    </div>
-  </form>
+      <div class="recovery-note ">
+        <strong>현재 휴면 상태입니다</strong>
+        <p>회원님의 계정(<strong>${memberId}</strong>)은 이메일 인증 후 즉시 다시 이용할 수 있습니다.</p>
+      </div>
+
+      <form id="unlockForm" class="auth-form" onsubmit="return false;">
+        <div class="recovery-email">
+          <span>등록된 이메일</span>
+          <strong>${memberEmail}</strong>
+        </div>
+        <button type="button" id="btnSendCode" class="button button--secondary">인증번호 발송</button>
+        <div class="input-group">
+          <label for="authCode">인증번호</label>
+          <input type="text" id="authCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="인증번호 6자리" disabled>
+        </div>
+        <button type="button" id="btnVerify" class="btn-submit">인증하고 휴면 해제</button>
+      </form>
+    </section>
+  </main>
 </div>
-
 <script>
   // 1. 인증번호 발송 요청
   document.getElementById('btnSendCode').addEventListener('click', function() {
@@ -79,12 +95,12 @@
             .then(res => {
               if (res === 'SUCCESS') {
                 alert('휴면 상태가 정상적으로 해제되었습니다! 다시 로그인해 주세요.');
-                location.href = '/member/login';
+                location.href = '/login/login';
               } else if (res === 'FAIL') {
                 alert('인증번호가 올바르지 않습니다.');
               } else {
                 alert('세션이 만료되었습니다. 다시 로그인 시도해 주세요.');
-                location.href = '/member/login';
+                location.href = '/login/login';
               }
             })
             .catch(error => {

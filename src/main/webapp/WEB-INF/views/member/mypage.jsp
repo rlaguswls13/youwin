@@ -11,37 +11,10 @@
     <title>마이페이지 | Youwin</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/app.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/mypage.css">
-    <style>
-        /* ==========================================
-   프로필 이미지 규격 통일 스타일
-   ========================================== */
-
-        /* 1. 프로필 아바타 기본 레이아웃 (원형 & 120px 규격) */
-        .profile-avatar {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #f0f0f0;
-            border: 4px solid #6366f1; /* 맘에 들어 하신 원형 테두리 포인트 */
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
-            flex-shrink: 0;
-        }
-
-        /* 2. 내부 이미지 규격 및 비율 유지 */
-        .profile-avatar .profile-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-    </style>
 </head>
 <body>
 
-<!-- 🟢 Spring Security principal 및 memberDto 변수 바인딩 -->
+<!-- 🟢 Spring Security principal 및 memberDto 변수 안전하게 바인딩 -->
 <sec:authorize access="isAuthenticated()">
     <sec:authentication property="principal" var="principal"/>
     <c:set var="member" value="${not empty principal.memberDto ? principal.memberDto : member}"/>
@@ -57,13 +30,19 @@
             <nav class="site-nav" data-site-nav aria-label="주요 메뉴">
                 <a href="${pageContext.request.contextPath}/">홈</a>
                 <a href="${pageContext.request.contextPath}/board">게시판</a>
-                <a href="${pageContext.request.contextPath}/chatroom">채팅방</a>
+                <a href="${pageContext.request.contextPath}/index">채팅방</a>
                 <a class="is-active" href="${pageContext.request.contextPath}/member/mypage">마이페이지</a>
             </nav>
             <div class="site-header__actions">
                 <a class="button button--secondary" href="${pageContext.request.contextPath}/member/settings">프로필 설정</a>
-                <!-- 아바타에 닉네임 첫 글자 표시 -->
-                <span class="avatar">${not empty member.nickname ? fn:substring(member.nickname, 0, 1) : 'YU'}</span>
+                <span class="avatar">
+                    <c:choose>
+                        <c:when test="${not empty member.nickname}">
+                            <c:out value="${fn:substring(member.nickname, 0, 1)}"/>
+                        </c:when>
+                        <c:otherwise>YU</c:otherwise>
+                    </c:choose>
+                </span>
             </div>
             <button class="menu-toggle" type="button" data-menu-toggle aria-label="메뉴 열기" aria-expanded="false"></button>
         </div>
@@ -72,30 +51,37 @@
     <main class="page-main">
         <div class="site-container">
             <section class="surface profile-hero" aria-labelledby="profile-title">
-                <!-- 1. 프로필 사진 (클래스 조합으로 인라인 스타일 불필요) -->
-                <div class="profile-avatar" aria-hidden="true">
-                    <!-- mypage.jsp 프로필 영역 -->
-                    <div class="profile-avatar" aria-hidden="true">
-                        <img id="mainAvatarImg"
-                             src="${not empty member.profileImage ? pageContext.request.contextPath.concat(member.profileImage) : pageContext.request.contextPath.concat('/upload/profile/default-profile.svg')}"
-                             class="profile-img"
-                             alt="프로필 사진">
-                    </div>
+                <!-- 1. 프로필 사진 (경로 안전 바인딩) -->
+                <div class="profile-avatar">
+                    <c:choose>
+                        <c:when test="${not empty member.profileImage}">
+                            <img id="mainAvatarImg"
+                                 src="${pageContext.request.contextPath}${member.profileImage}"
+                                 class="profile-img"
+                                 alt="사용자 프로필 사진">
+                        </c:when>
+                        <c:otherwise>
+                            <img id="mainAvatarImg"
+                                 src="${pageContext.request.contextPath}/upload/profile/default-profile.svg"
+                                 class="profile-img"
+                                 alt="기본 프로필 사진">
+                        </c:otherwise>
+                    </c:choose>
                 </div>
 
                 <div class="profile-copy">
                     <p class="profile-copy__label">MY MUSIC PROFILE</p>
-                    <h1 id="profile-title">${member.nickname}</h1>
+                    <h1 id="profile-title"><c:out value="${member.nickname}"/></h1>
                     <div class="profile-copy__meta">
-                        <span>@${member.memberId}</span>
-                        <span>가입일 ${member.formattedCreatedAt}</span>
-                        <span>수정일 ${member.formattedUpdatedAt}</span>
+                        <span>@<c:out value="${member.memberId}"/></span>
+                        <span>가입일 <c:out value="${member.formattedCreatedAt}"/></span>
+                        <span>수정일 <c:out value="${member.formattedUpdatedAt}"/></span>
                     </div>
                 </div>
 
                 <div class="profile-hero__actions">
                     <a class="button button--secondary" href="${pageContext.request.contextPath}/member/settings">프로필 수정</a>
-                    <a class="button" href="${pageContext.request.contextPath}/chatroom">채팅방 가기</a>
+                    <a class="button" href="${pageContext.request.contextPath}/index">채팅방 가기</a>
                 </div>
             </section>
 
@@ -120,14 +106,57 @@
 
                 <aside>
                     <section class="surface mypage-card" aria-labelledby="activity-title">
-                        <div class="section-head"><div><h2 class="section-title" id="activity-title">최근 활동</h2><p class="section-copy">내 커뮤니티 기록</p></div></div>
+                        <div class="section-head">
+                            <div>
+                                <h2 class="section-title" id="activity-title">최근 활동</h2>
+                                <p class="section-copy">내 커뮤니티 기록</p>
+                            </div>
+                        </div>
                         <div class="activity-list">
-                            <article class="activity-item"><p class="activity-item__type">게시글</p><p class="activity-item__title">여름밤에 어울리는 시티팝 추천</p><time datetime="2026-07-21T10:20">오늘 10:20</time></article>
-                            <article class="activity-item"><p class="activity-item__type">채팅</p><p class="activity-item__title">신보 같이 듣기 방에 참여했어요</p><time datetime="2026-07-20T22:10">어제 22:10</time></article>
-                            <article class="activity-item"><p class="activity-item__type">플레이리스트</p><p class="activity-item__title">Blue Hour를 저장했어요</p><time datetime="2026-07-19T18:40">7월 19일</time></article>
+                            <c:forEach var="act" items="${recentActivities}">
+                                <article class="activity-item">
+                                    <p class="activity-item__type">
+                                        <c:choose>
+                                            <c:when test="${act.actType == 'CHAT'}">채팅</c:when>
+                                            <c:when test="${act.actType == 'NOTICE'}">게시글</c:when>
+                                            <c:otherwise>기타</c:otherwise>
+                                        </c:choose>
+                                    </p>
+                                    <p class="activity-item__title">
+                                        <a href="${ctx}${act.linkUrl}">
+                                            <c:out value="${act.content}" />
+                                        </a>
+                                    </p>
+                                    <time datetime="${act.actAt}">
+                                        <fmt:parseDate value="${act.actAt}" pattern="yyyy-MM-dd'T'HH:mm" var="parsedDate" type="both" />
+                                        <fmt:formatDate value="${parsedDate}" pattern="MM월 dd일 HH:mm" />
+                                    </time>
+                                </article>
+                            </c:forEach>
+
+                            <c:if test="${empty recentActivities}">
+                                <article class="activity-item">
+                                    <p class="activity-item__title">최근 활동 내역이 없습니다.</p>
+                                </article>
+                            </c:if>
                         </div>
                     </section>
-                    <section class="surface preference-card" aria-labelledby="preference-title"><div class="section-head"><div><h2 class="section-title" id="preference-title">나의 취향</h2><p class="section-copy">추천에 반영되는 관심 장르</p></div></div><div class="preference-tags"><span class="chip">City Pop</span><span class="chip">Indie</span><span class="chip">Jazz</span><span class="chip">Lo-Fi</span><span class="chip">R&B</span></div></section>
+
+                    <section class="surface preference-card" aria-labelledby="preference-title">
+                        <div class="section-head">
+                            <div>
+                                <h2 class="section-title" id="preference-title">나의 취향</h2>
+                                <p class="section-copy">추천에 반영되는 관심 장르</p>
+                            </div>
+                        </div>
+                        <div class="preference-tags">
+                            <span class="chip">City Pop</span>
+                            <span class="chip">Indie</span>
+                            <span class="chip">Jazz</span>
+                            <span class="chip">Lo-Fi</span>
+                            <span class="chip">R&B</span>
+                        </div>
+                    </section>
                 </aside>
             </div>
         </div>

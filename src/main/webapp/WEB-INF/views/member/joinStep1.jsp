@@ -5,101 +5,35 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>회원가입</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background-color: #f0f0f0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-    .join-container { width: 100%; max-width: 450px; padding: 40px 20px; text-align: center; }
-    .join-title { font-size: 32px; font-weight: bold; color: #1a1a1a; margin-bottom: 30px; }
-    .join-form, .form-step { display: flex; flex-direction: column; gap: 12px; text-align: left; }
-    .hidden { display: none !important; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
-    .form-group label { font-size: 14px; font-weight: bold; color: #333; }
-    .input-with-btn { display: flex; gap: 8px; position: relative; }
-    .input-with-btn input[type="text"], .input-with-btn input[type="email"] { flex: 1; }
-
-    .form-group input[type="text"],
-    .form-group input[type="password"],
-    .form-group input[type="email"],
-    .form-group input[type="tel"] {
-      width: 100%; height: 45px; padding: 0 15px; background-color: #dbdbdb; border: 1px solid transparent;
-      outline: none; font-size: 15px; color: #333; transition: background-color 0.2s, border-color 0.2s;
-    }
-    .form-group input.input-error { border-color: #e74c3c; background-color: #fdeded; }
-    .form-group input.input-success { border-color: #2ecc71; background-color: #eafaf1; }
-    .form-group input:focus { background-color: #cfcfcf; }
-
-    .error-msg { font-size: 12px; color: #e74c3c; min-height: 18px; line-height: 18px; opacity: 0; transition: opacity 0.2s ease; }
-    .error-msg.show { opacity: 1; }
-    .error-msg.success-msg { color: #27ae60; }
-
-    /* 타이머 스타일 */
-    .timer-text { position: absolute; right: 105px; top: 13px; font-size: 13px; color: #e74c3c; font-weight: bold; }
-
-    .btn-container { margin-top: 10px; display: flex; justify-content: center; }
-    .btn { width: 120px; height: 45px; background-color: #dbdbdb; border: none; outline: none; font-size: 16px; font-weight: bold; color: #333; cursor: pointer; transition: all 0.2s ease; }
-    .btn-check { width: 90px; height: 45px; background-color: #dbdbdb; border: none; outline: none; font-size: 13px; font-weight: bold; color: #333; cursor: pointer; white-space: nowrap; transition: all 0.2s ease; }
-    .btn:hover, .btn-check:hover { background-color: #c5c5c5; color: #000; }
-
-    /* ==========================================
-       [통합] 프로필 이미지 규격 스타일 (마이페이지 디자인)
-       ========================================== */
-    .profile-group {
-      text-align: center;
-      margin-bottom: 10px;
-    }
-
-    .profile-section {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-    }
-
-    /* 1. 마이페이지 프로필 원형 & 보라색 테두리 포인트 */
-    .profile-img-preview {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #f0f0f0;
-      border: 4px solid #6366f1; /* 요청하신 보라색 원형 테두리 */
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
-      flex-shrink: 0;
-    }
-
-    /* 2. 내부 이미지 규격 및 비율 유지 */
-    .profile-img-preview img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    /* 3. 사진 변경 버튼 스타일 */
-    .file-upload-btn {
-      font-size: 13px;
-      color: #6366f1;
-      font-weight: bold;
-      cursor: pointer;
-      transition: color 0.2s ease;
-    }
-
-    .file-upload-btn:hover {
-      text-decoration: underline;
-      color: #4f46e5;
-    }
-
-    input[type="file"] {
-      display: none;
-    }
-  </style>
+  <meta name="description" content="Youwin 음악 커뮤니티 회원가입">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/app.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/auth.css">
 </head>
 <body>
+<div class="auth-page">
+  <aside class="auth-aside" aria-label="Youwin 소개">
+    <a class="brand auth-brand" href="${pageContext.request.contextPath}/" aria-label="Youwin 홈">
+      <span class="brand__mark">YW</span><span>Youwin</span>
+    </a>
+    <div class="auth-aside__copy">
+      <p class="auth-aside__eyebrow">Create your profile</p>
+      <h2>나의 취향으로<br>새로운 연결을 시작해요</h2>
+      <p class="auth-aside__description">간단한 정보와 프로필을 등록하면 취향에 맞는 채팅방과 커뮤니티를 만날 수 있어요.</p>
+    </div>
+    <p class="auth-aside__note">안전한 커뮤니티를 위해 이메일 인증을 진행합니다.</p>
+  </aside>
 
-<div class="join-container">
-  <h1 class="join-title" id="pageTitle">회원 정보</h1>
+  <main class="auth-main">
+    <section class="auth-card join-container" aria-labelledby="pageTitle">
+      <a class="auth-back" href="${pageContext.request.contextPath}/login/login">← 로그인으로 돌아가기</a>
+      <div class="join-progress" id="joinProgress" aria-label="가입 진행 단계">
+        <span></span><span></span><span class="join-progress__label" id="progressLabel">1 / 2</span>
+      </div>
+      <div class="auth-heading">
+        <p class="auth-heading__eyebrow">Join Youwin</p>
+        <h1 class="join-title" id="pageTitle">회원 정보</h1>
+        <p class="auth-description" id="stepDescription">로그인과 본인 확인에 사용할 정보를 입력해 주세요.</p>
+      </div>
 
   <form id="joinForm" action="/member/join" method="post" enctype="multipart/form-data" class="join-form" onsubmit="return false;">
 
@@ -165,6 +99,8 @@
     </div>
 
   </form>
+    </section>
+  </main>
 </div>
 
 <script>
@@ -435,6 +371,9 @@
       document.getElementById('step1').classList.add('hidden');
       document.getElementById('step2').classList.remove('hidden');
       document.getElementById('pageTitle').innerText = '회원 설정';
+      document.getElementById('joinProgress').classList.add('is-step-2');
+      document.getElementById('progressLabel').innerText = '2 / 2';
+      document.getElementById('stepDescription').innerText = '커뮤니티에서 사용할 프로필을 완성해 주세요.';
     }
   }
 

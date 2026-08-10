@@ -7,9 +7,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Youwin | 비밀번호 재설정</title>
   <link rel="stylesheet" href="${pageContext.request.contextPath}/app.css">
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/home.css">
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/account.css">
 </head>
-<body>
+<body class="account-support">
 <div class="site-shell">
   <header class="site-header">
     <div class="site-container site-header__inner">
@@ -21,8 +21,8 @@
   </header>
 
   <main class="page-main">
-    <div class="site-container" style="max-width: 480px; padding-top: 60px; padding-bottom: 80px;">
-      <div class="surface" style="padding: 32px; border-radius: 16px;">
+    <div class="site-container account-container">
+      <div class="surface account-card">
         <div class="section-head" style="margin-bottom: 24px;">
           <div>
             <h1 class="section-title" style="font-size: 24px;">새 비밀번호 설정</h1>
@@ -31,12 +31,12 @@
         </div>
 
         <c:if test="${not empty errorMessage}">
-          <div style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 14px;">
+          <div class="account-alert" role="alert">
               ${errorMessage}
           </div>
         </c:if>
 
-        <form action="${pageContext.request.contextPath}/member/resetPassword" method="post" style="display: flex; flex-direction: column; gap: 16px;">
+        <form class="account-form" action="${pageContext.request.contextPath}/member/resetPassword" method="post">
           <div>
             <label for="newPassword" style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #ffffff;">새 비밀번호</label>
             <input type="password" id="newPassword" name="newPassword" placeholder="새 비밀번호를 입력하세요" required

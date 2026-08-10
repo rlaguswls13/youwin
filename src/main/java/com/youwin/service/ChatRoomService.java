@@ -117,6 +117,26 @@ public class ChatRoomService {
         dto.setOwnerId(loginMemberId);
 
         if ("artist".equals(dto.getRoomType())) {
+
+            Integer artistId = chatRoomRepository.findArtistIdByName(
+                    dto.getArtistName()
+                    );
+
+            if (artistId == null) {
+                throw new IllegalArgumentException("등록되어 있지 않은 아티스트입니다.");
+            }
+            dto.setTargetId(artistId);
+
+        } else if ("song".equals(dto.getRoomType())) {
+
+            Integer songId =
+                    chatRoomRepository.findSongIdByTitle(dto.getSongTitle());
+
+            if (songId == null) {
+                throw new IllegalArgumentException("등록되어 있지 않은 노래입니다.");
+            }
+            dto.setTargetId(songId);
+        } else {
             dto.setTargetId(null);
         }
         else if ("song".equals(dto.getRoomType())) {

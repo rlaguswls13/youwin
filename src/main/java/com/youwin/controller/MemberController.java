@@ -1,13 +1,13 @@
 package com.youwin.controller;
 
 import com.youwin.dto.MemberDto;
+import com.youwin.dto.MyActivityDto;
 import com.youwin.security.CustomUserDetails;
 import com.youwin.service.MemberService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
+
 @Controller
 @RequestMapping("/member")
 @RequiredArgsConstructor
@@ -29,9 +31,13 @@ public class MemberController {
     private final MemberService memberService;
 
     @PostMapping("/join")
-    public String join(MemberDto memberDto) {
-        memberService.joinMember(memberDto);
-        return "redirect:/member/login";
+    public String join(
+            MemberDto memberDto,
+            @RequestParam(value = "profile", required = false) MultipartFile profileFile) {
+
+        // Service에 DTO와 파일 파라미터를 따로 전달
+        memberService.joinMember(memberDto, profileFile);
+        return "redirect:/login/login";
     }
 
     // 닉네임 변경
@@ -73,31 +79,22 @@ public class MemberController {
         return "redirect:/member/settings";
     }
 
-    // 프로필 이미지 변경
+    // 프로필 이미지 변경 (컨트롤러 코드 다이어트)
     @PostMapping("/updateProfileImage")
     public String updateProfileImage(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam("deleteProfile") boolean deleteProfile,
+            @RequestParam(value = "deleteProfile", defaultValue = "false") boolean deleteProfile,
             @RequestParam(value = "profile", required = false) MultipartFile profileFile,
             RedirectAttributes redirectAttributes) {
 
+        // 1. Service 호출 (Service 내부에서 DB 업데이트 + 파일 저장 + SecurityContext 갱신까지 한 번에 완료됨)
         memberService.updateProfileImage(
                 userDetails.getMemberDto().getMemberId(),
                 profileFile,
-                deleteProfile);
-
-        MemberDto updatedMember = memberService.getMemberById(
-                userDetails.getMemberDto().getMemberId());
-
-        CustomUserDetails newUserDetails = new CustomUserDetails(updatedMember);
-
-        Authentication newAuth = new UsernamePasswordAuthenticationToken(
-                newUserDetails,
-                newUserDetails.getPassword(),
-                newUserDetails.getAuthorities()
+                deleteProfile
         );
-        SecurityContextHolder.getContext().setAuthentication(newAuth);
 
+        redirectAttributes.addFlashAttribute("message", "프로필 이미지가 변경되었습니다.");
         return "redirect:/member/settings";
     }
 
@@ -137,7 +134,7 @@ public class MemberController {
             RedirectAttributes rttr) {
 
         if (userDetails == null) {
-            return "redirect:/member/login";
+            return "redirect:/login/login";
         }
 
         String memberId = userDetails.getUsername();
@@ -195,17 +192,19 @@ public class MemberController {
         return "member/joinStep2";
     }
 
-    @GetMapping("/login")
-    public String loginForm() {
-        return "member/login";
-    }
-
     @GetMapping("/mypage")
     public String mypageForm(
             @AuthenticationPrincipal CustomUserDetails user,
             Model model) {
 
         MemberDto memberDto = user.getMemberDto();
+
+        // memberDto.getId()가 Integer이므로 별도의 parseInt 없이 바로 사용
+        Long pkId = (memberDto.getId() != null) ? memberDto.getId() : 0;
+
+        List<MyActivityDto> recentActivities = memberService.getRecentActivities(pkId, 5);
+
+        model.addAttribute("recentActivities", recentActivities);
         model.addAttribute("memberDto", memberDto);
 
         return "member/mypage";

@@ -4,11 +4,17 @@ server:
 spring:
   application:
     name: youwin
+  flyway:
+    enabled: false
   datasource:
     url: jdbc:mysql://localhost:3306/youwin?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: youwin
     password: youwin
     driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      # 애플리케이션 시작 시 DB 연결을 만들지 않고 실제 요청 시 생성합니다.
+      minimum-idle: 0
+      initialization-fail-timeout: -1
   mvc:
     view:
       prefix: /WEB-INF/views/
@@ -34,4 +40,5 @@ mybatis:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 
-coustom.cron: 0 0 3 * * *
+custom:
+  cron: "0 0 3 * * *"

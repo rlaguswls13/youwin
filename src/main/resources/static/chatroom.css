@@ -804,3 +804,7 @@
 .message__time{
     display:block;
 }
+
+@media (hover: none) {
+    .leave-room-btn { opacity: 1; }
+}

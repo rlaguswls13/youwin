@@ -11,24 +11,23 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final CustomUserDetailsService userDetailsService;
-    private final CustomAuthenticationProvider customAuthenticationProvider;
     private final CustomLoginSuccessHandler customLoginSuccessHandler;
     private final CustomLoginFailureHandler customLoginFailureHandler;
     private final AutoLoginFilter autoLoginFilter;
-    private final AutoLoginRepository autoLoginRepository; // DB 토큰 삭제용 추가
+    private final AutoLoginRepository autoLoginRepository;
+    private final CustomAuthenticationProvider customAuthenticationProvider;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
                 .csrf(csrf -> csrf.disable())
-                .userDetailsService(userDetailsService)
                 .authenticationProvider(customAuthenticationProvider)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
@@ -36,18 +35,13 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(
                                 "/", "/api/member/**",
-                                "/member/login",
+                                "/login/login",
                                 "/member/unlockDormant",
-                                "/member/restoreAccount",
-                                "/email/send-code"
+                                "/member/restoreAccount"
                         ).permitAll()
                         .requestMatchers(
                                 "/member/mypage", "/member/settings", "/member/update**", "/member/delete"
-
                         ).authenticated()
-//                        .requestMatchers(
-//                                "/member/**")
-//                        .anonymous()
                         .requestMatchers(
                                 "/index",
                                 "/chatroom",
@@ -57,8 +51,8 @@ public class SecurityConfig {
                         .anyRequest().permitAll()
                 )
                 .formLogin(form -> form
-                        .loginPage("/member/login")
-                        .loginProcessingUrl("/member/login")
+                        .loginPage("/login/login")
+                        .loginProcessingUrl("/login/login")
                         .usernameParameter("memberId")
                         .passwordParameter("memberPassword")
                         .successHandler(customLoginSuccessHandler)
@@ -78,7 +72,6 @@ public class SecurityConfig {
                                     if ("remember-me".equals(cookie.getName())) {
                                         autoLoginRepository.deleteByToken(cookie.getValue());
 
-                                        // 브라우저 쿠키 확실하게 만료시키기
                                         Cookie deleteCookie = new Cookie("remember-me", null);
                                         deleteCookie.setPath("/");
                                         deleteCookie.setMaxAge(0);
@@ -88,6 +81,10 @@ public class SecurityConfig {
                                 }
                             }
                         })
+                )
+                .sessionManagement(session -> session
+                        .maximumSessions(1)
+                        .expiredUrl("/login/login?expired=true")
                 )
                 .addFilterBefore(
                         autoLoginFilter,
@@ -101,5 +98,10 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
     }
 }

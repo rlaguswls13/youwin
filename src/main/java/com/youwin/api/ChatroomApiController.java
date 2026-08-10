@@ -2,17 +2,16 @@ package com.youwin.api;
 
 import com.youwin.dto.*;
 import com.youwin.repository.MemberRepository;
+import com.youwin.security.CustomUserDetails;
 import com.youwin.service.ChatMessageService;
 import com.youwin.service.ChatRoomService;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
-import jakarta.servlet.http.HttpServletRequest;
-import com.youwin.security.CustomUserDetails;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 
 @RequiredArgsConstructor
@@ -109,7 +108,7 @@ public class ChatroomApiController {
 
         // 로그인 아이디 → 실제 member 테이블 PK
         Integer memberId =
-                memberRepository.findIdByMemberId(loginId);
+                chatRoomService.findMemberPkByLoginId(loginId);
 
         Integer roomId =
                 chatRoomService.createRoom(
@@ -152,7 +151,7 @@ public class ChatroomApiController {
         String loginId = userDetails.getMemberDto().getMemberId();
 
         // 로그인 아이디 → 실제 member PK
-        Integer memberId = memberRepository.findIdByMemberId(loginId);
+        Integer memberId = chatRoomService.findMemberPkByLoginId(loginId);
 
         if (memberId == null) {
             return ResponseEntity
