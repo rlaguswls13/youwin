@@ -95,6 +95,7 @@
 
         clearMsg('err-id');
         clearMsg('err-email');
+        clearMsg('err-auth-code');
 
         if (!memberId) { showMsg('err-id', '아이디를 입력해 주세요.', false); return; }
         if (!email) { showMsg('err-email', '이메일을 입력해 주세요.', false); return; }
@@ -124,6 +125,8 @@
         const email = document.getElementById('memberEmail').value.trim();
         const code = document.getElementById('authCode').value.trim();
 
+        clearMsg('err-auth-code');
+
         if (!code || code.length !== 6) {
             showMsg('err-auth-code', '6자리 인증번호를 입력해 주세요.', false);
             return;
@@ -137,24 +140,28 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    alert('이메일 인증이 완료되었습니다. 새 비밀번호를 설정해 주세요.');
+                    showMsg('err-auth-code', '이메일 인증이 완료되었습니다.', true);
                     isEmailVerified = true;
                     clearInterval(timerInterval);
 
-                    document.getElementById('findPwForm').classList.add('hidden');
-                    document.getElementById('resetPwForm').classList.remove('hidden');
-                    document.getElementById('pageTitle').innerText = '새 비밀번호 설정';
-                    document.getElementById('pageSubTitle').innerText = '새롭게 사용할 비밀번호를 입력해 주세요.';
+                    // 약 0.8초 후 Step 2 폼 전환 (사용자가 성공 메시지를 확인할 수 있도록)
+                    setTimeout(() => {
+                        document.getElementById('findPwForm').classList.add('hidden');
+                        document.getElementById('resetPwForm').classList.remove('hidden');
+                        document.getElementById('pageTitle').innerText = '새 비밀번호 설정';
+                        document.getElementById('pageSubTitle').innerText = '새롭게 사용할 비밀번호를 입력해 주세요.';
+                    }, 800);
                 } else {
                     showMsg('err-auth-code', data.message || '인증번호가 일치하지 않습니다.', false);
                     isEmailVerified = false;
                 }
-            });
+            })
+            .catch(() => showMsg('err-auth-code', '서버 통신 중 오류가 발생했습니다.', false));
     }
 
     function resetPasswordSubmit() {
         if (!isEmailVerified) {
-            alert('이메일 인증이 완료되지 않았습니다.');
+            showMsg('err-pw', '이메일 인증이 완료되지 않았습니다.', false);
             return;
         }
 
@@ -189,13 +196,15 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    alert('비밀번호가 성공적으로 변경되었습니다. 로그인 페이지로 이동합니다.');
-                    location.href = `${CTX}/auth/login`;
+                    showMsg('err-pw-confirm', '비밀번호가 변경되었습니다. 로그인 페이지로 이동합니다.', true);
+                    setTimeout(() => {
+                        location.href = `${CTX}/auth/login`;
+                    }, 1200);
                 } else {
-                    alert(data.message || '비밀번호 변경에 실패했습니다.');
+                    showMsg('err-pw-confirm', data.message || '비밀번호 변경에 실패했습니다.', false);
                 }
             })
-            .catch(() => alert('서버 통신 중 오류가 발생했습니다.'));
+            .catch(() => showMsg('err-pw-confirm', '서버 통신 중 오류가 발생했습니다.', false));
     }
 
     function startTimer(duration) {
@@ -212,7 +221,7 @@
             if (--timer < 0) {
                 clearInterval(timerInterval);
                 document.getElementById('timer').innerText = "만료";
-                showMsg('err-auth-code', '인증시간이 만료되었습니다. 다시 요청해주세요.', false);
+                showMsg('err-auth-code', '인증시간이 만료되었습니다. 다시 요청해 주세요.', false);
             }
         }, 1000);
     }

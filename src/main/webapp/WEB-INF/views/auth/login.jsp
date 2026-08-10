@@ -60,7 +60,7 @@
                 <span class="bar" aria-hidden="true">·</span>
                 <a href="${pageContext.request.contextPath}/auth/find-password">비밀번호 찾기</a>
                 <span class="bar" aria-hidden="true">·</span>
-                <a href="${pageContext.request.contextPath}/member/joinStep1">회원가입</a>
+                <a href="${pageContext.request.contextPath}/member/join-step1">회원가입</a>
             </nav>
         </section>
     </main>

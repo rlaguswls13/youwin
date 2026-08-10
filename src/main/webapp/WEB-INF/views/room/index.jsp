@@ -22,7 +22,7 @@
                 <a href="${pageContext.request.contextPath}/">홈</a>
                 <a href="${pageContext.request.contextPath}/board">게시판</a>
                 <a class="is-active" href="${pageContext.request.contextPath}/index">채팅방</a>
-                <a href="${pageContext.request.contextPath}/member/mypage">마이페이지</a>
+                <a href="${pageContext.request.contextPath}/mypage/main">마이페이지</a>
             </nav>
             <div class="site-header__actions">
                 <button class="button" id="create-btn" type="button">＋ 채팅방 만들기</button>

@@ -28,6 +28,7 @@ public class SecurityConfig {
 
         http
                 .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.disable())
                 .authenticationProvider(customAuthenticationProvider)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
@@ -35,12 +36,10 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(
                                 "/", "/api/**",
-                                "/auth/**",
-                                "/member/unlockDormant",
-                                "/member/restoreAccount"
+                                "/auth/**"
                         ).permitAll()
                         .requestMatchers(
-                                "/member/mypage", "/member/settings", "/member/update**", "/member/delete"
+                                "/mypage/main", "/member/settings", "/member/update**", "/member/delete"
                         ).authenticated()
                         .requestMatchers(
                                 "/index",

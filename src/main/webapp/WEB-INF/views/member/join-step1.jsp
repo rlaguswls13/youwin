@@ -95,7 +95,7 @@
 
     <!-- Step 2: 회원 설정 -->
     <div id="step2" class="form-step hidden">
-      <jsp:include page="joinStep2.jsp" />
+      <jsp:include page="join-step2.jsp" />
     </div>
 
   </form>
@@ -426,7 +426,7 @@
         }
       }
               // ----------------------------------------------------
-              // [Step 2] 회원설정 단계 (joinStep2.jsp 연동)
+              // [Step 2] 회원설정 단계 (join-step2.jsp 연동)
       // ----------------------------------------------------
       else {
         if (target.id === 'nickname') {

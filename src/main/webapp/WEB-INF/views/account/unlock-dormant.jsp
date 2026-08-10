@@ -86,7 +86,7 @@
       return;
     }
 
-    fetch('/api/auth/unlockDormant', {
+    fetch('/api/auth/unlock-dormant', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code: code })

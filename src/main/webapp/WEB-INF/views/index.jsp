@@ -49,7 +49,7 @@
                     <!-- 2. 비로그인(익명) 상태인 경우 -->
                     <sec:authorize access="isAnonymous()">
                         <a href="${ctx}/auth/login" class="auth-btn">로그인</a>
-                        <a href="${ctx}/member/joinStep1" class="auth-btn">회원가입</a>
+                        <a href="${ctx}/member/join-step1" class="auth-btn">회원가입</a>
                     </sec:authorize>
                 </div>
             </nav>

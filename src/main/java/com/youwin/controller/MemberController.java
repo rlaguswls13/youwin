@@ -3,6 +3,7 @@ package com.youwin.controller;
 import com.youwin.dto.MemberDto;
 import com.youwin.dto.MyActivityDto;
 import com.youwin.security.CustomUserDetails;
+import com.youwin.service.AuthService;
 import com.youwin.service.MemberService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,10 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -29,57 +27,66 @@ import java.util.List;
 public class MemberController {
 
     private final MemberService memberService;
+    private final AuthService authService;
+
+    /* ================= 1. 페이지 이동 (GET) ================= */
+
+    @GetMapping("/join-step1")
+    public String joinStep1() {
+        return "member/join-step1";
+    }
+
+    @GetMapping("/join-step2")
+    public String joinStep2() {
+        return "member/join-step2";
+    }
+
+    @GetMapping("/mypage")
+    public String mypageForm(@AuthenticationPrincipal CustomUserDetails user, Model model) {
+        MemberDto memberDto = user.getMemberDto();
+        Long pkId = (memberDto.getId() != null) ? memberDto.getId() : 0;
+
+        List<MyActivityDto> recentActivities = memberService.getRecentActivities(pkId, 5);
+        model.addAttribute("recentActivities", recentActivities);
+        model.addAttribute("memberDto", memberDto);
+
+        return "mypage/main"; // WEB-INF/views/mypage/main.jsp
+    }
+
+    @GetMapping("/settings")
+    public String settingsForm(@AuthenticationPrincipal CustomUserDetails user, Model model) {
+        MemberDto memberDto = memberService.getMemberById(user.getUsername());
+        model.addAttribute("memberDto", memberDto);
+
+        return "mypage/settings"; // WEB-INF/views/mypage/settings.jsp
+    }
+
+    /* ================= 2. 정보 처리 및 변경 (POST) ================= */
 
     @PostMapping("/join")
-    public String join(
-            MemberDto memberDto,
-            @RequestParam(value = "profile", required = false) MultipartFile profileFile) {
-
-        // Service에 DTO와 파일 파라미터를 따로 전달
+    public String join(MemberDto memberDto, @RequestParam(value = "profile", required = false) MultipartFile profileFile) {
         memberService.joinMember(memberDto, profileFile);
         return "redirect:/auth/login";
     }
 
-    // 닉네임 변경
     @PostMapping("/updateNickname")
-    public String updateNickname(
-            @RequestParam("nickname") String nickname,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-
-        memberService.updateNickname(
-                userDetails.getUsername(),
-                nickname);
-
+    public String updateNickname(@RequestParam("nickname") String nickname, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        memberService.updateNickname(userDetails.getUsername(), nickname);
         return "redirect:/member/settings";
     }
 
-    // 전화번호 변경
     @PostMapping("/updatePhone")
-    public String updatePhone(
-            @RequestParam("memberPhone") String memberPhone,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-
-        memberService.updatePhone(
-                userDetails.getUsername(),
-                memberPhone);
-
+    public String updatePhone(@RequestParam("memberPhone") String memberPhone, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        memberService.updatePhone(userDetails.getUsername(), memberPhone);
         return "redirect:/member/settings";
     }
 
-    // 이메일 변경
     @PostMapping("/updateEmail")
-    public String updateEmail(
-            @RequestParam("memberEmail") String memberEmail,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-
-        memberService.updateEmail(
-                userDetails.getUsername(),
-                memberEmail);
-
+    public String updateEmail(@RequestParam("memberEmail") String memberEmail, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        memberService.updateEmail(userDetails.getUsername(), memberEmail);
         return "redirect:/member/settings";
     }
 
-    // 프로필 이미지 변경 (컨트롤러 코드 다이어트)
     @PostMapping("/updateProfileImage")
     public String updateProfileImage(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -87,18 +94,11 @@ public class MemberController {
             @RequestParam(value = "profile", required = false) MultipartFile profileFile,
             RedirectAttributes redirectAttributes) {
 
-        // 1. Service 호출 (Service 내부에서 DB 업데이트 + 파일 저장 + SecurityContext 갱신까지 한 번에 완료됨)
-        memberService.updateProfileImage(
-                userDetails.getMemberDto().getMemberId(),
-                profileFile,
-                deleteProfile
-        );
-
+        memberService.updateProfileImage(userDetails.getMemberDto().getMemberId(), profileFile, deleteProfile);
         redirectAttributes.addFlashAttribute("message", "프로필 이미지가 변경되었습니다.");
         return "redirect:/member/settings";
     }
 
-    // 비밀번호 변경
     @PostMapping("/updatePasswordInSettings")
     public String updatePasswordInSettings(
             @RequestParam("currentPassword") String currentPassword,
@@ -107,24 +107,14 @@ public class MemberController {
             RedirectAttributes rttr) {
 
         try {
-            memberService.updatePasswordInSettings(
-                    userDetails.getUsername(),
-                    currentPassword,
-                    newPassword);
-
-            rttr.addFlashAttribute(
-                    "successMessage",
-                    "비밀번호가 변경되었습니다.");
-
+            memberService.updatePasswordInSettings(userDetails.getUsername(), currentPassword, newPassword);
+            rttr.addFlashAttribute("successMessage", "비밀번호가 변경되었습니다.");
         } catch (IllegalArgumentException e) {
-            rttr.addFlashAttribute(
-                    "errorMessage",
-                    e.getMessage());
+            rttr.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/member/settings";
     }
 
-    // 회원 탈퇴
     @PostMapping("/delete")
     public String deleteMember(
             @RequestParam("password") String password,
@@ -138,7 +128,6 @@ public class MemberController {
         }
 
         String memberId = userDetails.getUsername();
-
         boolean isPasswordMatch = memberService.checkPassword(memberId, password);
 
         if (!isPasswordMatch) {
@@ -150,11 +139,10 @@ public class MemberController {
             memberService.deleteMember(memberId);
 
             Cookie[] cookies = request.getCookies();
-
             if (cookies != null) {
                 for (Cookie cookie : cookies) {
                     if ("remember-me".equals(cookie.getName())) {
-                        memberService.removeAutoLoginToken(cookie.getValue());
+                        authService.removeAutoLoginToken(cookie.getValue());
                         cookie.setPath("/");
                         cookie.setMaxAge(0);
                         response.addCookie(cookie);
@@ -169,7 +157,6 @@ public class MemberController {
             }
 
             rttr.addFlashAttribute("successMessage", "계정 삭제 신청이 완료되었습니다.");
-
             return "redirect:/";
 
         } catch (Exception e) {
@@ -177,45 +164,5 @@ public class MemberController {
             rttr.addFlashAttribute("errorMessage", "탈퇴 처리 중 오류가 발생했습니다.");
             return "redirect:/member/settings";
         }
-    }
-
-    // ==========================================
-    // View 페이지 이동 (GET 매핑)
-    // ==========================================
-    @GetMapping("/joinStep1")
-    public String joinStep1() {
-        return "member/joinStep1";
-    }
-
-    @GetMapping("/joinStep2")
-    public String joinStep2() {
-        return "member/joinStep2";
-    }
-
-    @GetMapping("/mypage")
-    public String mypageForm(
-            @AuthenticationPrincipal CustomUserDetails user,
-            Model model) {
-
-        MemberDto memberDto = user.getMemberDto();
-
-        // memberDto.getId()가 Integer이므로 별도의 parseInt 없이 바로 사용
-        Long pkId = (memberDto.getId() != null) ? memberDto.getId() : 0;
-
-        List<MyActivityDto> recentActivities = memberService.getRecentActivities(pkId, 5);
-
-        model.addAttribute("recentActivities", recentActivities);
-        model.addAttribute("memberDto", memberDto);
-
-        return "member/mypage";
-    }
-
-    @GetMapping("/settings")
-    public String settingsForm(@AuthenticationPrincipal CustomUserDetails user, Model model) {
-
-        MemberDto memberDto = memberService.getMemberById(user.getUsername());
-        model.addAttribute("memberDto", memberDto);
-
-        return "member/settings";
     }
 }

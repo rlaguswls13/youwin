@@ -36,7 +36,7 @@
           </div>
         </c:if>
 
-        <form class="account-form" action="${pageContext.request.contextPath}/member/resetPassword" method="post">
+        <form class="account-form" action="${pageContext.request.contextPath}/auth/resetPassword" method="post">
           <div>
             <label for="newPassword" style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #ffffff;">새 비밀번호</label>
             <input type="password" id="newPassword" name="newPassword" placeholder="새 비밀번호를 입력하세요" required

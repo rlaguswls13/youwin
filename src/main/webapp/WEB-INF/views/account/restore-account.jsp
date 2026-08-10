@@ -86,7 +86,7 @@
       return;
     }
 
-    fetch('/api/auth/restoreAccount', {
+    fetch('/api/auth/restore-account', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code: code })

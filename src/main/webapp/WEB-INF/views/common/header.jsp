@@ -31,7 +31,7 @@
 
                 <!-- 🟢 로그인 상태일 때만 마이페이지 노출 -->
                 <sec:authorize access="isAuthenticated()">
-                    <a href="${ctx}/mypage">마이페이지</a>
+                    <a href="${ctx}/member/mypage">마이페이지</a>
                 </sec:authorize>
 
                 <div class="user-menu">

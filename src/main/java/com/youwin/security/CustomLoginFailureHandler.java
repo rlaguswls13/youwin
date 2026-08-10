@@ -37,7 +37,7 @@ public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
                 session.setAttribute("unlockMemberId", member.getMemberId());
                 session.setAttribute("unlockMemberEmail", member.getMemberEmail());
 
-                response.sendRedirect("/member/unlockDormant");
+                response.sendRedirect("/auth/unlock-dormant");
                 return;
             }
         }
@@ -50,7 +50,7 @@ public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
                 session.setAttribute("restoreMemberId", member.getMemberId());
                 session.setAttribute("restoreMemberEmail", member.getMemberEmail());
 
-                response.sendRedirect("/member/restoreAccount");
+                response.sendRedirect("/auth/restore-account");
                 return;
             }
         }
