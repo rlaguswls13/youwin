@@ -1,5 +1,4 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="jakarta.tags.core" %>
     <footer class="site-footer">
         <div class="site-container site-footer__inner">
             <span>© 2026 Youwin. 음악으로 연결되는 커뮤니티.</span>

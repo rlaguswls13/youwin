@@ -35,12 +35,12 @@ public class SecurityConfig {
                                 "/css/**", "/js/**", "/images/**", "/upload/**", "/error"
                         ).permitAll()
                         .requestMatchers(
-                                "/", "/api/**",
-                                "/auth/**", "/member/join-step1", "/member/join-step2"
-                        ).permitAll()
-                        .requestMatchers(
-                                "/member/**"
+                                "/member/update**", "/member/delete", "/member/mypage", "/member/settings"
                         ).authenticated()
+                        .requestMatchers(
+                                "/", "/api/**",
+                                "/auth/**", "/member/**"
+                        ).permitAll()
                         .requestMatchers(
                                 "/index",
                                 "/chatroom",
