@@ -13,116 +13,170 @@
 
             <body>
 
-            <div>
+            <div class="index-wrap">
 
-                <h2> you win</h2>
+                <!-- ================= Header ================= -->
 
-                <h4> 음악 소통 페이지 </h4>
+                <header class="index-header">
 
-                <button id="home-btn">🏠</button>
+                    <div class="logo-area">
+                        <h2>YOU WIN</h2>
+                        <p class="logo-description">좋아하는 음악을 함께 듣고 이야기하는 공간</p>
+                    </div>
 
-                <div>
-                    <input type="text" id="keyword" placeholder="검색어를 입력하세요">
-                    <button type="button" id="search-btn">검색</button>
-                </div>
+                    <button id="home-btn">🏠</button>
+
+                </header>
+
+                <!-- ================= Search ================= -->
+
+                <section class="top-menu">
+
+                    <div class="search-box">
+
+                        <input type="text" id="keyword" placeholder="채팅방 이름 또는 설명 검색">
+                        <button id="search-btn">검색</button>
+                    </div>
+
+                    <button id="create-btn">+ 채팅방 만들기</button>
+
+                </section>
 
 
+                <div id="create-modal">
 
-                <button id="create-btn"> +채팅방 만들기 </button>
-
-                <div id="create-modal" style="display: none;">
-                     <div>
+                    <div class="create-modal-content">
 
                         <h2>채팅방 만들기</h2>
 
-                        <label>방 이름 *</label> <br>
-                        <input type="text" id="roomName"> <br><br>
+                        <label>방 이름 *</label>
+                        <input type="text" id="roomName">
 
                         <label>방 설명</label>
-                        <textarea id="roomDescription"></textarea> <br><br>
+                        <textarea id="roomDescription"></textarea>
 
-                         <label>방 이미지 (선택)</label><br>
-                         <input type="file" id="roomImage" accept="image/*"><br><br>
-                         <img id="previewImage" src="" style="display:none; width:180px; height:180px; object-fit:cover;">
+                        <label>방 이미지 (선택)</label>
+                        <input type="file" id="roomImage" accept="image/*">
 
-                         <label>방 분류 선택 *</label><br>
-                         <select id="roomType">
-                             <option value="artist">🎤 아티스트별 방</option>
-                             <option value="song">🎵 노래별 방</option>
-                         </select>
-                         <br><br>
+                        <img id="previewImage" src="">
 
-                         <label id="artistInputArea">아티스트
-                             <input type="text" id="artistName" placeholder="아티스트를 입력하세요">
-                         </label>
+                        <label>방 분류</label>
 
-                         <label id="songInputArea" style="display:none;">노래
-                             <input type="text" id="songTitle" placeholder="노래 제목을 입력하세요">
-                         </label>
-                         <br><br>
+                        <select id="roomType">
 
-                         <label>장르</label>
-                         <select id="themeId">
-                             <option value="">선택 안 함</option>
-                         </select>
-                         <br><br>
+                            <option value="artist">🎤 아티스트별</option>
+                            <option value="song">🎵 노래별</option>
 
-                        <button id="save-btn">생성</button>
-                        <button id="close-btn">취소</button>
+                        </select>
 
-                       </div>
-                     </div>
+                        <label id="artistInputArea">아티스트
+                            <input type="text" id="artistName" placeholder="아티스트를 입력하세요">
+                        </label>
 
+                        <label id="songInputArea" style="display:none;">노래
+                            <input type="text" id="songTitle" placeholder="노래 제목">
+                        </label>
 
-            <div id="join-modal" style="display:none;">
-                <div class="join-modal-content">
+                        <label>장르</label>
 
-                    <h2>채팅방 정보</h2>
+                        <select id="themeId">
 
-                    <img id="join-room-image" src="" alt="채팅방 이미지">
+                            <option value="">선택 안 함</option>
 
-                    <h3 id="join-room-name"></h3>
+                        </select>
 
-                    <p>
-                       <strong>방장</strong><br>
-                       <span id="join-room-owner"></span>
-                    </p>
+                        <div class="modal-btn">
 
-                    <p>
-                        <strong>방 설명</strong><br>
-                        <span id="join-room-description"></span>
-                    </p>
+                            <button id="save-btn">생성</button>
+                            <button id="close-btn">취소</button>
 
-                    <p>
-                        <strong>참여 인원</strong><br>
-                        <span id="join-room-count"></span>명
-                    </p>
+                        </div>
 
-                    <p>
-                        <strong>생성일</strong><br>
-                        <span id="join-room-created-at"></span>
-                    </p>
-
-                    <div class="join-modal-btn-area">
-                    <button id="join-ok-btn">가입하기</button>
-                    <button id="join-cancel-btn">취소</button>
                     </div>
 
                 </div>
-            </div>
 
+                <div id="join-modal">
 
+                    <div class="join-modal-content">
 
+                        <h2>채팅방 정보</h2>
 
-                <h3> 🎤아티스트별 </h3>
-                <div id="artistList"></div>
+                        <img id="join-room-image"
+                             src=""
+                             alt="채팅방 이미지">
 
+                        <h3 id="join-room-name"></h3>
 
+                        <p>
 
-                <h3> 🎵노래별 </h3>
-                <div id="songList"></div>
+                            <strong>방장</strong><br>
 
+                            <span id="join-room-owner"></span>
 
+                        </p>
+
+                        <p>
+
+                            <strong>방 설명</strong><br>
+
+                            <span id="join-room-description"></span>
+
+                        </p>
+
+                        <p>
+
+                            <strong>참여 인원</strong><br>
+
+                            <span id="join-room-count"></span>명
+
+                        </p>
+
+                        <p>
+
+                            <strong>생성일</strong><br>
+
+                            <span id="join-room-created-at"></span>
+
+                        </p>
+
+                        <div class="join-modal-btn-area">
+
+                            <button id="join-ok-btn">가입하기</button>
+                            <button id="join-cancel-btn">취소</button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- ================= Artist ================= -->
+
+                <section class="room-section">
+                    <div class="section-header">
+                        <h3>🎤 아티스트별 채팅방</h3>
+                        <span class="section-sub">좋아하는 아티스트 팬들과 대화해보세요.</span>
+
+                    </div>
+
+                    <div id="artistList" class="room-grid"></div>
+
+                </section>
+
+                <!-- ================= Song ================= -->
+
+                <section class="room-section">
+
+                    <div class="section-header">
+                        <h3>🎵 노래별 채팅방</h3>
+                        <span class="section-sub">노래를 좋아하는 사람들과 이야기해보세요.</span>
+
+                    </div>
+
+                    <div id="songList" class="room-grid"></div>
+
+                </section>
 
             </div>
 
@@ -170,28 +224,31 @@
             if (songList) songList.innerHTML = "";
 
             if (!roomList || roomList.length === 0) {
-                artistList.innerHTML = "<div>검색 결과가 없습니다.</div>";
+                artistList.innerHTML = `<div class="empty-room">검색 결과가 없습니다.</div>`;
                 return;
             }
 
             for (const room of roomList) {
                 const roomDiv = document.createElement("div");
 
-                const image = document.createElement("img");
-                image.src = room.roomImageUrl || DEFAULT_FALLBACK_IMAGE;
-                image.width = 150;
-                image.height = 150;
+                roomDiv.className = "room-card";
 
-                image.onerror = function() {
-                    this.onerror = null;
-                    this.src = DEFAULT_FALLBACK_IMAGE;
-                };
+                roomDiv.innerHTML = `
+                <img src="\${room.roomImageUrl || DEFAULT_FALLBACK_IMAGE}"
+                     alt="\${room.roomName}">
 
-                const name = document.createElement("div");
-                name.textContent = room.roomName;
+                <div class="room-card-body">
 
-                roomDiv.appendChild(image);
-                roomDiv.appendChild(name);
+                    <h4 class="room-card-title">
+                        \${room.roomName}
+                    </h4>
+
+                    <p class="room-card-description">
+                        \${room.roomDescription || "채팅방 설명이 없습니다."}
+                    </p>
+
+                </div>
+            `;
 
                 roomDiv.addEventListener("click", async (e) => {
                     e.stopPropagation();
@@ -221,7 +278,7 @@
         document.querySelector("#close-btn").addEventListener("click", closeModal);
         document.querySelector("#save-btn").addEventListener("click", createRoom);
 
-        function openModal() { document.querySelector("#create-modal").style.display = "block"; }
+        function openModal() { document.querySelector("#create-modal").style.display = "flex"; }
 
         document.querySelector("#roomType").addEventListener("change", changeRoomType);
 
@@ -378,17 +435,32 @@
                     for (const room of roomList) {
                         const roomDiv = document.createElement("div");
 
-                        const image = document.createElement("img");
-                        image.src = room.roomImageUrl || DEFAULT_FALLBACK_IMAGE;
-                        image.width = 150;
-                        image.height = 150;
-                        image.onerror = function() { this.onerror = null; this.src = DEFAULT_FALLBACK_IMAGE; };
+                        roomDiv.className = "room-card";
 
-                        const name = document.createElement("div");
-                        name.textContent = room.roomName;
+                        roomDiv.innerHTML = `
+                        <img src="\${room.roomImageUrl || DEFAULT_FALLBACK_IMAGE}"
+                             alt="\${room.roomName}">
 
-                        roomDiv.appendChild(image);
-                        roomDiv.appendChild(name);
+                        <div class="room-card-body">
+
+                            <h4 class="room-card-title">
+                                \${room.roomName}
+                            </h4>
+
+                            <p class="room-card-description">
+                                \${room.roomDescription || "채팅방 설명이 없습니다."}
+                            </p>
+
+                        </div>
+                    `;
+
+                        const image = roomDiv.querySelector("img");
+
+                        image.onerror = function () {
+                            this.onerror = null;
+                            this.src = DEFAULT_FALLBACK_IMAGE;
+
+                        };
 
                         roomDiv.addEventListener("click", async (e) => {
                             e.stopPropagation();
@@ -407,10 +479,16 @@
                         artistList.appendChild(roomDiv);
                     }
                 } else {
-                    artistList.innerHTML = "개설된 아티스트 채팅방이 없습니다.";
+                    artistList.innerHTML = `
+                <div class="empty-room">
+
+                    개설된 아티스트 채팅방이 없습니다.
+
+                </div>
+                `;
                 }
             } catch (error) {
-                console.error("아티스트 목록 조회 실패:", error);
+                alert("목록을 불러오지 못했습니다.");
             }
         }
 
@@ -428,17 +506,29 @@
                     for (const room of roomList) {
                         const roomDiv = document.createElement("div");
 
-                        const image = document.createElement("img");
-                        image.src = room.roomImageUrl || DEFAULT_FALLBACK_IMAGE;
-                        image.width = 150;
-                        image.height = 150;
-                        image.onerror = function() { this.onerror = null; this.src = DEFAULT_FALLBACK_IMAGE; };
+                        roomDiv.className = "room-card";
+                        roomDiv.innerHTML = `
+                        <img src="\${room.roomImageUrl || DEFAULT_FALLBACK_IMAGE}"
+                             alt="\${room.roomName}">
 
-                        const name = document.createElement("div");
-                        name.textContent = room.roomName;
+                        <div class="room-card-body">
 
-                        roomDiv.appendChild(image);
-                        roomDiv.appendChild(name);
+                            <h4 class="room-card-title">
+                                \${room.roomName}
+                            </h4>
+
+                            <p class="room-card-description">
+                                \${room.roomDescription || "채팅방 설명이 없습니다."}
+                            </p>
+
+                        </div>
+                    `;
+
+                        const image = roomDiv.querySelector("img");
+                        image.onerror = function () {
+                            this.onerror = null;
+                            this.src = DEFAULT_FALLBACK_IMAGE;
+                        };
 
                         roomDiv.addEventListener("click", async (e) => {
                             e.stopPropagation();
@@ -457,10 +547,14 @@
                         songList.appendChild(roomDiv);
                     }
                 } else {
-                    songList.innerHTML = "개설된 노래 채팅방이 없습니다.";
+                    songList.innerHTML = `
+                <div class="empty-room">
+                    개설된 노래별 채팅방이 없습니다.
+                </div>
+                `;
                 }
             } catch (error) {
-                console.error("노래 목록 조회 실패:", error);
+                alert("목록을 불러오지 못했습니다.");
             }
         }
         // ========================= 채팅방 가입 및 정보 모달 섹션 =========================
