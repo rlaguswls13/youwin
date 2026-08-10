@@ -20,7 +20,6 @@ public class ChatSocketController {
     private final ChatRoomService service;
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatRoomSessiongManager sessiongManager;
-    private final MemberRepository memberRepository;
 
     /**
      * 1. 메시지 전송
@@ -46,7 +45,7 @@ public class ChatSocketController {
         }
 
         String loginId = principal.getName();
-        Integer memberId = memberRepository.findIdByMemberId(loginId);
+        Integer memberId = service.findMemberPkByLoginId(loginId);
 
         if (memberId == null) {
             return;

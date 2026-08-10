@@ -25,6 +25,8 @@
     const editTargetLabel = document.querySelector("#edit-target-label");
     const editTargetId = document.querySelector("#edit-target-id");
     const editRoomImage = document.querySelector("#edit-room-image");
+    const roomMenuButton = document.querySelector("#room-menu-button");
+    const roomMenu = document.querySelector("#room-menu");
 
     if (roomMenuButton && roomMenu) {
         function closeRoomMenu() {

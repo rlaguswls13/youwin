@@ -181,18 +181,6 @@
                                             <span class="owner-badge">HOST</span>
                                         </c:if>
 
-                                             <span class="member-item__status">
-                                                 <span class="online-dot">●</span>
-                                                 참여중
-                                             </span>
-                                          </span>
-                                            <c:if test="${member.memberId != loginMemberId}">
-                                             <button type="button" onclick="reportMember(${member.memberId})" style="margin-left: auto; font-size: 11px;">신고</button>
-                                            </c:if>
-                                    </div>
-                                </c:if>
-                        </c:forEach>
-                    </div>
                                          <span class="member-item__status">
                                              <span class="online-dot">●</span>
                                              참여중
@@ -244,21 +232,6 @@
                                 </c:forEach>
                             </div>
                 </aside>
-                <div id="edit-room-modal" class="modal">
-                                         <c:if test="${member.memberId == room.ownerId}">
-                                         <span class="owner-badge">HOST</span>
-                                         </c:if>
-                                        <span class="member-item__status">
-                                            오프라인
-                                        </span>
-                                    </span>
-                                        <c:if test="${member.memberId != loginMemberId}">
-                                            <button type="button" class="report-member-btn" onclick="reportMember(${member.memberId})">신고</button>
-                                        </c:if>
-                                    </div>
-                                </c:if>
-                            </c:forEach>
-                        </div>
             </aside>
             <div id="edit-room-modal" class="modal" role="dialog" aria-modal="true" aria-label="채팅방 수정">
 
@@ -315,21 +288,7 @@
                         </div>
                      </div>
                 </div>
-                <div id="report-modal" class="modal">
-                        <c:forEach var="theme" items="${themeList}">
-                            <option value="${theme.themeId}"
-                                ${theme.themeId == room.themeId ? 'selected' : ''}>
-                                    ${theme.themeName}
-                            </option>
-                        </c:forEach>
-                    </select>
-                    <br><br>
-                    <div class="edit-room-buttons">
-                    <button type="button" id="edit-room-cancel">취소</button>
-                    <button type="button" id="edit-room-save">수정</button>
-                    </div>
-                 </div>
-            </div>
+
             <div id="report-modal" class="modal" role="dialog" aria-modal="true" aria-label="참여자 신고">
 
                 <div class="modal-content">
