@@ -45,7 +45,8 @@ public class SecurityConfig {
                                 "/index",
                                 "/chatroom",
                                 "/chatroom/**",
-                                "/chat/**"
+                                "/chat/**",
+                                "/board/**"
                         ).authenticated()
                         .anyRequest().permitAll()
                 )
