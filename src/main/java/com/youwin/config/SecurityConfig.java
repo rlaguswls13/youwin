@@ -1,13 +1,16 @@
 package com.youwin.config;
 
 import com.youwin.repository.AutoLoginRepository;
-import com.youwin.security.*;
+import com.youwin.security.AutoLoginFilter;
+import com.youwin.security.CustomAuthenticationProvider;
+import com.youwin.security.CustomLoginFailureHandler;
+import com.youwin.security.CustomLoginSuccessHandler;
 import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -29,7 +32,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.disable())
-                .authenticationProvider(customAuthenticationProvider)
+                // .authenticationProvider(customAuthenticationProvider)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/css/**", "/js/**", "/images/**", "/upload/**", "/error"
@@ -94,10 +97,10 @@ public class SecurityConfig {
         return http.build();
     }
 
+    // 기존의 config.getAuthenticationManager() 대신 ProviderManager를 직접 생성하여 1개만 지정
     @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
+    public AuthenticationManager authenticationManager() {
+        return new ProviderManager(customAuthenticationProvider);
     }
 
     @Bean

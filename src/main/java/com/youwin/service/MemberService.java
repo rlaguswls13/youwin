@@ -48,6 +48,7 @@ public class MemberService {
 
     @Transactional
     public void joinMember(MemberDto memberDto, MultipartFile profileFile) {
+        // 이메일 인증 완료 여부 확인
         validateEmailVerification(memberDto.getMemberEmail());
         memberDto.setMemberPassword(passwordEncoder.encode(memberDto.getMemberPassword()));
 
@@ -57,6 +58,7 @@ public class MemberService {
         }
 
         memberRepository.insertMember(memberDto);
+        // 이메일 완료된 인증 데이터 삭제
         emailVerificationService.removeVerification(memberDto.getMemberEmail());
     }
 

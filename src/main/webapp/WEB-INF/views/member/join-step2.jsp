@@ -45,6 +45,8 @@
 
 <script>
   let isNicknameChecked = false;
+
+  // 기본 프로필 경로 설정
   const DEFAULT_PROFILE_URL = "${ctx}/upload/profile/default-profile.svg";
 
   // 프로필 이미지 미리보기 함수 (완전 수정본)
@@ -65,7 +67,7 @@
 
       const reader = new FileReader();
 
-      // 파일 읽기가 완료된 '후'에 src를 교체하도록 안전하게 작성
+      // 파일 읽기가 완료된 후에 src를 교체하도록 안전하게 작성
       reader.onload = function(e) {
         if (previewImg && e.target && e.target.result) {
           previewImg.src = e.target.result;
