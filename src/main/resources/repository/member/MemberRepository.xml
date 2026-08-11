@@ -9,7 +9,8 @@
         INSERT INTO member (
             member_id, member_password, nickname, member_name, member_phone, member_email, profile_image
         ) VALUES (
-                     #{memberId}, #{memberPassword}, #{nickname}, #{memberName}, #{memberPhone}, #{memberEmail}, #{profileImage}
+                     #{memberId}, #{memberPassword}, #{nickname}, #{memberName},
+                     #{memberPhone}, #{memberEmail}, #{profileImage}
                  )
     </insert>
 
