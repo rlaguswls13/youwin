@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
@@ -61,13 +61,46 @@
 
             <div class="mypage-grid">
                 <section class="surface mypage-card" aria-labelledby="playlist-title">
-                    <div class="section-head"><div><h2 class="section-title" id="playlist-title">내 플레이리스트</h2><p class="section-copy">최근 저장한 음악을 이어서 들어보세요.</p></div><a class="text-link" href="#">전체 보기 →</a></div>
-                    <div class="player-bar"><button class="player-bar__button" type="button" aria-label="재생">▶</button><div class="player-progress" aria-label="재생 진행률 38%"><span></span></div><span class="player-bar__time">01:24 / 03:42</span></div>
-                    <div class="playlist">
-                        <div class="playlist-item"><span class="playlist-item__number">01</span><span class="playlist-item__cover"></span><div><strong class="playlist-item__title">Midnight Drive</strong><span class="playlist-item__artist">Neon City</span></div><span class="playlist-item__plays">32회 재생</span></div>
-                        <div class="playlist-item"><span class="playlist-item__number">02</span><span class="playlist-item__cover"></span><div><strong class="playlist-item__title">Paper Moon</strong><span class="playlist-item__artist">The Waves</span></div><span class="playlist-item__plays">21회 재생</span></div>
-                        <div class="playlist-item"><span class="playlist-item__number">03</span><span class="playlist-item__cover"></span><div><strong class="playlist-item__title">Slow Sunday</strong><span class="playlist-item__artist">Room 52</span></div><span class="playlist-item__plays">18회 재생</span></div>
-                        <div class="playlist-item"><span class="playlist-item__number">04</span><span class="playlist-item__cover"></span><div><strong class="playlist-item__title">Blue Hour</strong><span class="playlist-item__artist">Mellow Note</span></div><span class="playlist-item__plays">11회 재생</span></div>
+                    <div class="section-head">
+                    <div>
+                        <h2 class="section-title" id="playlist-title">내 채팅방</h2>
+                        <p class="section-copy">가입한 채팅방 목록입니다.</p>
+                    </div>
+                </div>
+
+                <div class="playlist">
+
+                    <c:forEach var="room" items="${myRooms}" varStatus="status">
+
+                        <a class="playlist-item" href="${pageContext.request.contextPath}/chatroom?roomId=${room.roomId}">
+
+                            <span class="playlist-item__number">${(currentPage-1)*10 + status.index + 1}</span>
+                            <span class="playlist-item__cover"></span>
+
+                            <div>
+                                <strong class="playlist-item__title">${room.roomName}</strong>
+                                <span class="playlist-item__artist">${room.roomDescription}</span>
+                            </div>
+                        </a>
+                    </c:forEach>
+                    <c:if test="${empty myRooms}"><div class="playlist-item">가입한 채팅방이 없습니다.</div></c:if>
+
+                    </div>
+
+                    <div class="pagination">
+
+                    <c:if test="${currentPage > 1}">
+                        <a href="${pageContext.request.contextPath}/member/mypage?page=${currentPage-1}">이전</a>
+                    </c:if>
+
+                    <c:forEach begin="1" end="${totalPage}" var="i">
+                    <a href="${pageContext.request.contextPath}/member/mypage?page=${i}" class="${i==currentPage?'active':''}">${i}</a>
+
+                    </c:forEach>
+
+                    <c:if test="${currentPage < totalPage}"><a href="${pageContext.request.contextPath}/member/mypage?page=${currentPage+1}">다음</a>
+                    </c:if>
+
                     </div>
                 </section>
 
@@ -106,22 +139,6 @@
                                     <p class="activity-item__title">최근 활동 내역이 없습니다.</p>
                                 </article>
                             </c:if>
-                        </div>
-                    </section>
-
-                    <section class="surface preference-card" aria-labelledby="preference-title">
-                        <div class="section-head">
-                            <div>
-                                <h2 class="section-title" id="preference-title">나의 취향</h2>
-                                <p class="section-copy">추천에 반영되는 관심 장르</p>
-                            </div>
-                        </div>
-                        <div class="preference-tags">
-                            <span class="chip">City Pop</span>
-                            <span class="chip">Indie</span>
-                            <span class="chip">Jazz</span>
-                            <span class="chip">Lo-Fi</span>
-                            <span class="chip">R&B</span>
                         </div>
                     </section>
                 </aside>
