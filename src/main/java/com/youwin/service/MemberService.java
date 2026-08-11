@@ -2,7 +2,6 @@ package com.youwin.service;
 
 import com.youwin.dto.MemberDto;
 import com.youwin.dto.MyActivityDto;
-import com.youwin.repository.AutoLoginRepository;
 import com.youwin.repository.MemberRepository;
 import com.youwin.security.CustomUserDetails;
 import com.youwin.util.FileUtil;
@@ -23,7 +22,6 @@ import java.util.List;
 public class MemberService {
 
     private final MemberRepository memberRepository;
-    private final AutoLoginRepository autoLoginRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailVerificationService emailVerificationService;
     private final FileUtil fileUtil; // 🎯 공통 파일 유틸 주입
@@ -50,11 +48,13 @@ public class MemberService {
     public void joinMember(MemberDto memberDto, MultipartFile profileFile) {
         // 이메일 인증 완료 여부 확인
         validateEmailVerification(memberDto.getMemberEmail());
-        memberDto.setMemberPassword(passwordEncoder.encode(memberDto.getMemberPassword()));
+        memberDto.setMemberPassword(
+                passwordEncoder.encode(memberDto.getMemberPassword()));
 
         // 신규 저장이므로 oldFilePath 자리에 null 전달
         if (profileFile != null && !profileFile.isEmpty()) {
-            memberDto.setProfileImage(fileUtil.saveFile(profileFile, "profile", null));
+            memberDto.setProfileImage(
+                    fileUtil.saveFile(profileFile, "profile", null));
         }
 
         memberRepository.insertMember(memberDto);

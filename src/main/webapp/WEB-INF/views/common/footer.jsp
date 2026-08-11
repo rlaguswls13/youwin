@@ -13,7 +13,6 @@
 
 <script src="${ctx}/app.js"></script>
 <script src="${ctx}/home.js"></script>
-<script src="${ctx}/mypage.js"></script>
 
 <c:if test="${not empty successMessage}">
     <script>alert("${successMessage}");</script>
