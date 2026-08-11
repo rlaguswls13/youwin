@@ -24,10 +24,6 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication)
             throws AuthenticationException {
 
-        // 💡 [호출 추적용 로그] 누군가 authenticate를 부를 때마다 실행 스택을 콘솔에 출력!
-        new Exception("🔍 CustomAuthenticationProvider 호출 위치 추적! (memberId: " + authentication.getName() + ")")
-                .printStackTrace();
-
         String memberId = authentication.getName();
         String password = authentication.getCredentials().toString();
 
