@@ -27,7 +27,28 @@ public class ChatroomController {
 
     // 내 메인 페이지 화면
     @GetMapping("/index")
-    public String index() {
+    public String index(
+
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(defaultValue = "1") Integer artistPage,
+            @RequestParam(defaultValue = "1") Integer songPage, Model model
+
+    ) {
+
+        Integer memberPk = null;
+
+        if (userDetails != null) {
+            memberPk = service.findMemberPkByLoginId(userDetails.getMemberDto().getMemberId());
+        }
+
+        model.addAttribute("artistRoomList", service.findArtistRoomPage(artistPage));
+        model.addAttribute("songRoomList", service.findSongRoomPage(songPage));
+        model.addAttribute("artistPage", artistPage);
+        model.addAttribute("songPage", songPage);
+        model.addAttribute("artistTotalPage", service.getArtistRoomTotalPage());
+        model.addAttribute("songTotalPage", service.getSongRoomTotalPage());
+        model.addAttribute("loginMemberId", memberPk);
+
         return "room/index";
     }
 

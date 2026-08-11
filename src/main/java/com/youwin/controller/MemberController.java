@@ -4,6 +4,7 @@ import com.youwin.dto.MemberDto;
 import com.youwin.dto.MyActivityDto;
 import com.youwin.security.CustomUserDetails;
 import com.youwin.service.AuthService;
+import com.youwin.service.ChatRoomService;
 import com.youwin.service.MemberService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,7 +19,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
+import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 
 @Controller
@@ -28,6 +29,7 @@ public class MemberController {
 
     private final MemberService memberService;
     private final AuthService authService;
+    private final ChatRoomService chatRoomService;
 
     /* ================= 1. 페이지 이동 (GET) ================= */
 
@@ -42,13 +44,25 @@ public class MemberController {
     }
 
     @GetMapping("/mypage")
-    public String mypageForm(@AuthenticationPrincipal CustomUserDetails user, Model model) {
+    public String mypageForm(@AuthenticationPrincipal CustomUserDetails user, @RequestParam(defaultValue = "1") Integer page,
+            Model model) {
         MemberDto memberDto = user.getMemberDto();
         Long pkId = (memberDto.getId() != null) ? memberDto.getId() : 0;
 
         List<MyActivityDto> recentActivities = memberService.getRecentActivities(pkId, 5);
         model.addAttribute("recentActivities", recentActivities);
         model.addAttribute("memberDto", memberDto);
+        model.addAttribute("myRooms", chatRoomService.findMyRooms(
+                pkId.intValue(),
+                page
+                )
+        );
+
+        model.addAttribute("currentPage", page);
+        model.addAttribute(
+                "totalPage",
+                chatRoomService.getMyRoomTotalPage(pkId.intValue())
+        );
 
         return "mypage/main"; // WEB-INF/views/mypage/main.jsp
     }

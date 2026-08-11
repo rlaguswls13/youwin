@@ -1,32 +1,12 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
-            <!DOCTYPE html>
-            <html lang="ko">
-            <head>
-                <meta charset="UTF-8">
-                <title>you win</title>
-
-                <link rel="stylesheet" href="/index.css">
-            </head>
 
 
-            <body>
+<%@ include file="/WEB-INF/views/common/header.jsp" %>
 
-            <div class="index-wrap">
+<link rel="stylesheet" href="${ctx}/index.css">
 
-                <!-- ================= Header ================= -->
-
-                <header class="index-header">
-
-                    <div class="logo-area">
-                        <h2>YOU WIN</h2>
-                        <p class="logo-description">좋아하는 음악을 함께 듣고 이야기하는 공간</p>
-                    </div>
-
-                    <button id="home-btn">🏠</button>
-
-                </header>
+<div class="index-wrap">
 
                 <!-- ================= Search ================= -->
 
@@ -161,6 +141,7 @@
                     </div>
 
                     <div id="artistList" class="room-grid"></div>
+                    <div id="artistPaging" class="pagination"></div>
 
                 </section>
 
@@ -175,6 +156,7 @@
                     </div>
 
                     <div id="songList" class="room-grid"></div>
+                    <div id="songPaging" class="pagination"></div>
 
                 </section>
 
@@ -182,6 +164,8 @@
 
     <script>
         let selectedRoomId = null;
+        let artistPage = 1;
+        let songPage = 1;
         const DEFAULT_FALLBACK_IMAGE = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'><rect width='100%' height='100%' fill='%23cccccc'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%23333333'>No Image</text></svg>";
 
         // 페이지 로드 시 기본 데이터 조회
@@ -428,8 +412,11 @@
             artistList.innerHTML = "";
 
             try {
-                const response = await fetch("/chat/room/type/artist");
-                const roomList = await response.json();
+                const response = await fetch("/chat/room/type/artist?page=" + artistPage);
+                const result = await response.json();
+                const roomList = result.list;
+                artistPage = result.currentPage;
+                const totalPage = result.totalPage;
 
                 if (roomList && roomList.length > 0) {
                     for (const room of roomList) {
@@ -478,6 +465,9 @@
 
                         artistList.appendChild(roomDiv);
                     }
+                    console.log("render", totalPage);
+                    renderArtistPaging(totalPage);
+
                 } else {
                     artistList.innerHTML = `
                 <div class="empty-room">
@@ -499,8 +489,11 @@
             songList.innerHTML = "";
 
             try {
-                const response = await fetch("/chat/room/type/song");
-                const roomList = await response.json();
+                const response = await fetch("/chat/room/type/song?page=" + songPage);
+                const result = await response.json();
+                const roomList = result.list;
+                songPage = result.currentPage;
+                const totalPage = result.totalPage;
 
                 if (roomList && roomList.length > 0) {
                     for (const room of roomList) {
@@ -546,6 +539,9 @@
 
                         songList.appendChild(roomDiv);
                     }
+
+                    renderSongPaging(totalPage);
+
                 } else {
                     songList.innerHTML = `
                 <div class="empty-room">
@@ -615,6 +611,7 @@
                     this.onerror = null;
                     this.src = DEFAULT_FALLBACK_IMAGE;
                 };
+
                 modalImg.src = room.roomImageUrl || DEFAULT_FALLBACK_IMAGE;
 
                 document.querySelector("#join-room-owner").textContent = room.ownerName || "방장 정보 없음";
@@ -622,8 +619,79 @@
             } catch (e) {
             }
         }
+
+        function renderArtistPaging(totalPage){
+
+            const paging = document.querySelector("#artistPaging");
+
+            paging.innerHTML = "";
+
+            let start = artistPage - 2;
+
+            if(start < 1){start = 1;}
+
+            let end = start + 4;
+
+            if(end > totalPage){end = totalPage;start = end - 4;
+                if(start < 1){start = 1;
+                }
+            }
+
+            if(artistPage > 1){
+                paging.innerHTML += '<button onclick="artistMove('+(artistPage-1)+')">이전</button>';
+            }
+
+            for(let i=start;i<=end;i++){
+
+                let cls="";
+
+                if(i==artistPage){cls="active";}
+                paging.innerHTML += '<button class="'+cls+'" onclick="artistMove('+i+')">'+i+'</button>';
+
+            }
+
+            if(artistPage<totalPage){
+                paging.innerHTML += '<button onclick="artistMove('+(artistPage+1)+')">다음</button>';
+
+            }
+
+        }
+
+        function renderSongPaging(totalPage){
+
+            const paging = document.querySelector("#songPaging");
+
+            paging.innerHTML = "";
+
+            let start = songPage - 2;
+
+            if(start < 1){start = 1;}
+
+            let end = start + 4;
+
+            if(end > totalPage){end = totalPage;start = end - 4;
+
+                if(start < 1){start = 1;}
+            }
+
+            if(songPage > 1){
+
+                paging.innerHTML += '<button onclick="songMove('+(songPage-1)+')">이전</button>';           }
+
+            for(let i=start;i<=end;i++){
+
+                let cls="";
+
+                if(i==songPage){cls="active";}
+
+                paging.innerHTML += '<button class="'+cls+'" onclick="songMove('+i+')">'+i+'</button>';            }
+
+            if(songPage<totalPage){
+                paging.innerHTML += '<button onclick="songMove('+(songPage+1)+')">다음</button>';            }
+
+        }
+
+        async function artistMove(page){artistPage = page;await findArtistList();}
+        async function songMove(page){songPage = page;await findSongList();}
     </script>
-
-</body>
-
-</html>
+<%@ include file="/WEB-INF/views/common/footer.jsp" %>
