@@ -11,7 +11,6 @@ import java.time.format.DateTimeFormatter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MemberDto {
-    // JSP input태그의 name 속성과 일치해야 자동으로 바인딩됩니다.
     private Long id;
     private String memberId;
     private String memberPassword;

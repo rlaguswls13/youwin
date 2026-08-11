@@ -50,7 +50,7 @@ public class EmailVerificationService {
 
     // 인증번호 검증 처리 (DB 관련 @Transactional 제거)
     public boolean verifyCode(String email, String inputCode) {
-        /* [수정] Caffeine Cache에서 해당 이메일의 인증번호 조회 */
+        /* Caffeine Cache에서 해당 이메일의 인증번호 조회 */
         String storedCode = verificationCodes.getIfPresent(email);
 
         if (storedCode == null) {
@@ -61,25 +61,21 @@ public class EmailVerificationService {
             return false; // 인증번호 불일치
         }
 
-        /* [수정] 인증 성공 시:
-         * 1. 사용한 인증번호는 캐시에서 즉시 삭제
-         * 2. 최종 회원가입/비밀번호 변경 시 검증을 위해 인증 완료 상태(true)를 10분간 캐시에 저장
-         */
+        // 인증번호 캐시 삭제
         verificationCodes.invalidate(email);
+        // 인증 완료 상태 저장
         verifiedEmails.put(email, true);
         return true;
     }
 
     // 인증 완료 여부 확인 (최종 회원가입/비밀번호 변경 직전에 확인용)
     public boolean isVerified(String email) {
-        /* [수정] DB 조회 대신 캐시 메모리에서 인증 완료 여부 확인 */
         Boolean isVerified = verifiedEmails.getIfPresent(email);
         return Boolean.TRUE.equals(isVerified);
     }
 
     // 사용 완료된 인증 데이터 삭제
     public void removeVerification(String email) {
-        /* [수정] DB 데이터 삭제 대신 캐시 메모리에서 인증 완료 상태 즉시 제거 */
         verifiedEmails.invalidate(email);
     }
 }

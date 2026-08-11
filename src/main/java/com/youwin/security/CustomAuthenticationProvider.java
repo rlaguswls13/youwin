@@ -38,13 +38,14 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         try {
             userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(memberId);
         } catch (Exception e) {
-            // 회원 정보가 없는 경우 아래 비밀번호 비교 단계로 넘어가지 않고 실패 처리 수행
-            return processFailedAttempt(memberId, null);
+            // 회원 정보가 없는 경우 실패 처리 메서드 실행 (내부에서 예외 던짐)
+            processFailedAttempt(memberId, null);
         }
 
         // 3. 비밀번호 검증
         if (!passwordEncoder.matches(password, userDetails.getPassword())) {
-            return processFailedAttempt(memberId, userDetails.getMemberDto());
+            // 비밀번호 불일치 시 실패 처리 메서드 실행 (내부에서 예외 던짐)
+            processFailedAttempt(memberId, userDetails.getMemberDto());
         }
 
         // 4. 회원 상태(member_status) 검증
@@ -77,7 +78,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     /**
      * 로그인 실패 통합 처리 메서드 (1회만 실패 카운트 증가)
      */
-    private Authentication processFailedAttempt(String memberId, MemberDto memberDto) throws AuthenticationException {
+    private void processFailedAttempt(String memberId, MemberDto memberDto) throws AuthenticationException {
         int failCount = loginAttemptService.loginFailed(memberId);
 
         // 1. 5회 실패 (30분 차단)

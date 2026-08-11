@@ -1,6 +1,5 @@
 package com.youwin.security;
 
-import com.youwin.repository.MemberSecurityRepository;
 import com.youwin.service.AuthService;
 import com.youwin.service.MemberService;
 import jakarta.servlet.ServletException;
@@ -21,7 +20,6 @@ public class CustomLoginSuccessHandler
 
     private final MemberService memberService;
     private final AuthService authService;
-    private final MemberSecurityRepository memberSecurityRepository;
 
     @Override
     public void onAuthenticationSuccess(
@@ -34,9 +32,6 @@ public class CustomLoginSuccessHandler
                 (CustomUserDetails) authentication.getPrincipal();
 
         String memberId = user.getUsername();
-
-        // 1. 로그인 성공했으므로 보안 테이블 전체 리셋 (실패/잠금 카운트 = 0)
-        //memberSecurityRepository.resetLoginFailCount(memberId);
 
         // 2. 마지막 로그인 시간 갱신
         memberService.updateLastLoginAt(memberId);
