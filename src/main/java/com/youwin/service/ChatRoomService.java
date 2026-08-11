@@ -38,8 +38,33 @@ public class ChatRoomService {
         return chatRoomRepository.findRoomsByArtist(artistId);
     }
 
+    public List<ChatRoomDto> findArtistRoomPage(Integer page){
+
+        int size = 10;
+        int offset = (page - 1) * size;
+        return chatRoomRepository.findArtistRoomPage(offset, size);
+    }
+
+    public int getArtistRoomTotalPage(){
+        int count = chatRoomRepository.countArtistRoom();
+        return (int)Math.ceil(count / 10.0);
+    }
+
     public List<ChatRoomDto> findRoomListBySong(Integer songId) {
         return chatRoomRepository.findRoomListBySong(songId);
+    }
+
+    public List<ChatRoomDto> findSongRoomPage(Integer page){
+
+        int size = 10;
+        int offset = (page - 1) * size;
+        return chatRoomRepository.findSongRoomPage(offset, size);
+    }
+
+    public int getSongRoomTotalPage(){
+
+        int count = chatRoomRepository.countSongRoom();
+        return (int)Math.ceil(count / 10.0);
     }
 
     public List<ChatRoomDto> searchChatRooms(String keyword) {
@@ -233,6 +258,20 @@ public class ChatRoomService {
             message.setUnreadCount(unread);
         }
         return list;
+    }
+
+    public List<ChatRoomDto> findMyRooms(Integer memberId, Integer page){
+
+        int size=10;
+        int offset=(page-1)*size;
+        return chatRoomRepository.findMyRooms(memberId, offset, size);
+    }
+
+    public int getMyRoomTotalPage(Integer memberId){
+
+        int count = chatRoomRepository.countMyRooms(memberId);
+
+        return (int)Math.ceil(count / 10.0);
     }
 
     public ChatMessageDto saveMessage(ChatMessageDto dto){

@@ -195,13 +195,13 @@
     <!-- 채팅방 목록 조회 -->
     <select id="findRoomList" parameterType="int" resultType="com.youwin.dto.ChatRoomDto">
         SELECT
-            cr.room_id,
-            cr.room_name,
-            cr.room_description,
-            cr.target_id,
-            cr.theme_id,
-            cr.room_image_url,
-            cr.created_at
+            cr.room_id AS roomId,
+            cr.room_name AS roomName,
+            cr.room_description AS roomDescription,
+            cr.target_id AS targetId,
+            cr.theme_id AS themeId,
+            cr.room_image_url AS roomImageUrl,
+            cr.created_at AS createdAt
         FROM chat_rooms cr
                  JOIN chat_room_members crm ON cr.room_id = crm.room_id
         WHERE crm.member_id = #{memberId}
@@ -224,6 +224,89 @@
         FROM chat_rooms cr
                  LEFT JOIN member m ON cr.owner_id = m.id
         WHERE cr.room_id = #{roomId}
+    </select>
+
+    <select id="findMyRooms" resultType="com.youwin.dto.ChatRoomDto">
+
+        SELECT
+            cr.room_id AS roomId,
+            cr.room_name AS roomName,
+            cr.room_description AS roomDescription,
+            cr.room_image_url AS roomImageUrl,
+            cr.created_at AS createdAt
+        FROM chat_rooms cr
+        JOIN chat_room_members crm
+        ON cr.room_id = crm.room_id
+        WHERE crm.member_id = #{memberId}
+        ORDER BY cr.created_at DESC
+            LIMIT #{size}
+        OFFSET #{offset}
+
+    </select>
+
+    <select id="countMyRooms" parameterType="int" resultType="int">
+
+        SELECT COUNT(*)
+        FROM chat_room_members
+        WHERE member_id = #{memberId}
+
+    </select>
+
+    <select id="findArtistRoomPage" resultType="com.youwin.dto.ChatRoomDto">
+
+        SELECT
+            room_id AS roomId,
+            room_name AS roomName,
+            room_description AS roomDescription,
+            room_type AS roomType,
+            target_id AS targetId,
+            theme_id AS themeId,
+            room_image_url AS roomImageUrl,
+            owner_id AS ownerId,
+            created_at AS createdAt
+        FROM chat_rooms
+        WHERE room_type='artist'
+        ORDER BY created_at DESC
+            LIMIT #{size}
+        OFFSET #{offset}
+
+    </select>
+
+    <select id="countArtistRoom" resultType="int">
+
+        SELECT COUNT(*)
+        FROM chat_rooms
+        WHERE room_type='artist'
+
+    </select>
+
+    <select id="findSongRoomPage" resultType="com.youwin.dto.ChatRoomDto">
+
+        SELECT
+            room_id AS roomId,
+            room_name AS roomName,
+            room_description AS roomDescription,
+            room_type AS roomType,
+            target_id AS targetId,
+            theme_id AS themeId,
+            room_image_url AS roomImageUrl,
+            owner_id AS ownerId,
+            created_at AS createdAt
+        FROM chat_rooms
+        WHERE room_type='song'
+        ORDER BY created_at DESC
+            LIMIT #{size}
+        OFFSET #{offset}
+
+    </select>
+
+    <select id="countSongRoom"
+            resultType="int">
+
+        SELECT COUNT(*)
+        FROM chat_rooms
+        WHERE room_type='song'
+
     </select>
 
     <select id="findMessages" parameterType="int" resultType="com.youwin.dto.ChatMessageDto">

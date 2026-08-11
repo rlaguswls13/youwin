@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import com.youwin.dto.PageDto;
 
 import java.util.List;
 
@@ -177,8 +178,18 @@ public class ChatroomApiController {
     }
 
     @GetMapping("/room/type/{roomType}")
-    public List<ChatRoomDto> findRoomsByType(@PathVariable String roomType) {
-        return chatRoomService.findRoomsByType(roomType);
+    public PageDto<ChatRoomDto> findRoomsByType(@PathVariable String roomType,
+                                                @RequestParam(defaultValue = "1") Integer page) {
+
+        if ("artist".equals(roomType)) {
+            return new PageDto<>(chatRoomService.findArtistRoomPage(page), page, chatRoomService.getArtistRoomTotalPage());
+        }
+
+        if ("song".equals(roomType)) {
+            return new PageDto<>(chatRoomService.findSongRoomPage(page), page, chatRoomService.getSongRoomTotalPage());
+        }
+
+        return new PageDto<>();
     }
 
     @PostMapping("/room/leave")

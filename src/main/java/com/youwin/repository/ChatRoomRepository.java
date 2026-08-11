@@ -43,6 +43,16 @@ public interface ChatRoomRepository {
 
     List<ChatRoomDto> findRoomsByArtist(Integer artistId);
 
+    List<ChatRoomDto> findArtistRoomPage(@Param("offset") Integer offset,
+                                         @Param("size") Integer size);
+
+    int countArtistRoom();
+
+    List<ChatRoomDto> findSongRoomPage(@Param("offset") Integer offset,
+                                       @Param("size") Integer size);
+
+    int countSongRoom();
+
     int countMember(Integer roomId);
 
     ChatRoomDto findRoom(Integer roomId);
@@ -64,6 +74,14 @@ public interface ChatRoomRepository {
     List<ChatRoomDto> findRoomsByType(@Param("roomType") String roomType);
 
     int updateRoom(ChatRoomDto dto);
+
+    int countMyRooms(Integer memberId);
+
+    List<ChatRoomDto> findMyRooms(
+            @Param("memberId") Integer memberId,
+            @Param("offset") Integer offset,
+            @Param("size") Integer size
+    );
 
     Integer findMemberPkByMemberId(String memberId);
 
