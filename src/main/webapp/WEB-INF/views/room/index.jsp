@@ -253,12 +253,6 @@
             artistList.appendChild(roomDiv);
         }
     }
-
-    //======================== 홈 버튼 ===============================
-    document.querySelector("#home-btn").addEventListener("click", () => {
-        location.href = "/";
-    });
-
     //  ========================== 채팅방 생성 모달  ==================================
     document.querySelector("#create-btn").addEventListener("click", openModal);
     document.querySelector("#close-btn").addEventListener("click", closeModal);
