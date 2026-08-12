@@ -21,8 +21,6 @@ import java.util.List;
 public class ChatroomApiController {
 
     private final ChatRoomService chatRoomService;
-    private final ChatMessageService chatMessageService;
-    private final MemberRepository memberRepository;
 
     // --------- 아티스트 목록 조회 --------------
     @GetMapping("/artist/list")
@@ -112,11 +110,7 @@ public class ChatroomApiController {
                 chatRoomService.findMemberPkByLoginId(loginId);
 
         Integer roomId =
-                chatRoomService.createRoom(
-                        dto,
-                        image,
-                        memberId
-                );
+                chatRoomService.createRoom(dto, image, memberId);
 
         return ResponseEntity.ok(roomId);
     }
@@ -126,6 +120,7 @@ public class ChatroomApiController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         String loginId = userDetails.getMemberDto().getMemberId();
+
         Integer memberId = chatRoomService.findMemberPkByLoginId(loginId);
 
         return chatRoomService.findRoomList(memberId);
@@ -143,9 +138,7 @@ public class ChatroomApiController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         if (userDetails == null) {
-            return ResponseEntity
-                    .status(401)
-                    .body("로그인이 필요합니다.");
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
         }
 
         // 로그인 아이디
@@ -170,6 +163,7 @@ public class ChatroomApiController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         String loginId = userDetails.getMemberDto().getMemberId();
+
         Integer memberId = chatRoomService.findMemberPkByLoginId(loginId);
 
         dto.setMemberId(memberId);
@@ -182,11 +176,13 @@ public class ChatroomApiController {
                                                 @RequestParam(defaultValue = "1") Integer page) {
 
         if ("artist".equals(roomType)) {
-            return new PageDto<>(chatRoomService.findArtistRoomPage(page), page, chatRoomService.getArtistRoomTotalPage());
+            return new PageDto<>(chatRoomService.findArtistRoomPage(page),
+                    page, chatRoomService.getArtistRoomTotalPage());
         }
 
         if ("song".equals(roomType)) {
-            return new PageDto<>(chatRoomService.findSongRoomPage(page), page, chatRoomService.getSongRoomTotalPage());
+            return new PageDto<>(chatRoomService.findSongRoomPage(page),
+                    page, chatRoomService.getSongRoomTotalPage());
         }
 
         return new PageDto<>();

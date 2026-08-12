@@ -103,6 +103,7 @@ public class ChatroomController {
         model.addAttribute("loginMemberId", memberPk);
         model.addAttribute("messageList", service.findMessages(roomId));
         model.addAttribute("memberList", service.findMembers(roomId));
+
         boolean isOwner = room != null && memberPk.equals(room.getOwnerId());
         model.addAttribute("isOwner", isOwner);
 
