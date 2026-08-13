@@ -14,7 +14,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
         String projectPath = System.getProperty("user.dir");
         String normalizedPath = projectPath.replace("\\", "/");
 
-        String uploadPath = "file:///" + normalizedPath + "/upload/";
+        String uploadPath = "file:///" + normalizedPath + "/src/main/resources/static/upload/";
 
         registry.addResourceHandler("/upload/**")
                 .addResourceLocations(uploadPath);
