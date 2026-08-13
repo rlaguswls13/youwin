@@ -202,7 +202,6 @@
 
         const response = await fetch("/chat/room/search?keyword=" + encodeURIComponent(keyword));
         const roomList = await response.json();
-
         const artistList = document.querySelector("#artistList");
         const songList = document.querySelector("#songList");
 
@@ -218,24 +217,14 @@
             const roomDiv = document.createElement("div");
 
             roomDiv.className = "room-card";
-
             roomDiv.innerHTML = `
-                <img src="\${room.roomImageUrl || DEFAULT_FALLBACK_IMAGE}"
-                     alt="\${room.roomName}">
-
+                <img src="\${room.roomImageUrl || DEFAULT_FALLBACK_IMAGE}" alt="\${room.roomName}">
                 <div class="room-card-body">
-
                     <h4 class="room-card-title">
                         \${room.roomName}
                     </h4>
-
-                    <p class="room-card-description">
-                        \${room.roomDescription || "채팅방 설명이 없습니다."}
-                    </p>
-
-                </div>
-            `;
-
+                    <p class="room-card-description">\${room.roomDescription || "채팅방 설명이 없습니다."}</p>
+                </div>`;
             roomDiv.addEventListener("click", async (e) => {
                 e.stopPropagation();
                 const res = await fetch("/chat/room/" + room.roomId + "/joined");
@@ -249,7 +238,6 @@
                     openJoinModal();
                 }
             });
-
             artistList.appendChild(roomDiv);
         }
     }

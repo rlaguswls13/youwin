@@ -17,7 +17,7 @@
         <div class="site-container site-header__inner">
             <a class="brand" href="${pageContext.request.contextPath}/" aria-label="Youwin 홈"><span class="brand__mark">YW</span><span>Youwin</span></a>
             <nav class="site-nav" data-site-nav aria-label="주요 메뉴">
-                <a href="${pageContext.request.contextPath}/">홈</a>
+                 <a href="${pageContext.request.contextPath}/">홈</a>
                 <a href="${pageContext.request.contextPath}/board">게시판</a>
                 <a class="is-active" href="${pageContext.request.contextPath}/index">채팅방</a>
                 <a href="${pageContext.request.contextPath}/member/mypage">마이페이지</a>
@@ -77,11 +77,15 @@
                 </div>
             </aside>
             <section class="chat-conversation" aria-labelledby="conversation-title">
+
                 <header class="conversation-head">
-                    <button class="icon-button mobile-panel-button" type="button" data-rooms-toggle aria-label="채팅방 목록 열기" aria-expanded="false">☰</button>
-                    <div class="room-item__art"><img src="${pageContext.request.contextPath}${room.roomImageUrl}" alt="${room.roomName}" class="room-image"></div>
+                    <button class="icon-button mobile-panel-button" type="button"
+                    data-rooms-toggle aria-label="채팅방 목록 열기" aria-expanded="false">☰</button>
+                    <div class="room-item__art"><img src="${pageContext.request.contextPath}${room.roomImageUrl}"
+                                                     alt="${room.roomName}" class="room-image"></div>
                     <div class="conversation-head__info"><h2 data-room-title>
                         <c:choose>
+
                             <c:when test="${not empty room}">
                                 ${room.roomName}
                             </c:when>
@@ -117,28 +121,21 @@
                     <div class="message-date">이전 채팅</div>
 
                     <c:forEach var="message" items="${messageList}">
-
                         <div class="message ${message.memberId == loginMemberId ? 'my-message' : 'other-message'}">
-
                             <c:if test="${message.memberId != loginMemberId}">
                                 <div class="message__avatar"></div>
                             </c:if>
 
                             <div class="message__body">
-
                                 <c:if test="${message.memberId != loginMemberId}">
                                     <div class="message__author">${message.nickname}</div>
                                 </c:if>
-
                                 <div class="message__row">
-
                                     <div class="message__bubble">${message.message}</div>
-
                                     <div class="message__time" data-time="${message.sentAt}"></div>
                                 </div>
                             </div>
                         </div>
-
                     </c:forEach>
                 </div>
 

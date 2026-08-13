@@ -48,10 +48,7 @@ public class ChatroomApiController {
 
         Integer memberId = chatRoomService.findMemberPkByLoginId(loginId);
 
-        return chatRoomService.isJoined(
-                roomId,
-                memberId
-        );
+        return chatRoomService.isJoined(roomId, memberId);
     }
 
     // ---------- 노래 검색 --------------
@@ -106,11 +103,8 @@ public class ChatroomApiController {
         String loginId = userDetails.getMemberDto().getMemberId();
 
         // 로그인 아이디 → 실제 member 테이블 PK
-        Integer memberId =
-                chatRoomService.findMemberPkByLoginId(loginId);
-
-        Integer roomId =
-                chatRoomService.createRoom(dto, image, memberId);
+        Integer memberId = chatRoomService.findMemberPkByLoginId(loginId);
+        Integer roomId = chatRoomService.createRoom(dto, image, memberId);
 
         return ResponseEntity.ok(roomId);
     }
@@ -140,7 +134,6 @@ public class ChatroomApiController {
         if (userDetails == null) {
             return ResponseEntity.status(401).body("로그인이 필요합니다.");
         }
-
         // 로그인 아이디
         String loginId = userDetails.getMemberDto().getMemberId();
 
@@ -148,15 +141,12 @@ public class ChatroomApiController {
         Integer memberId = chatRoomService.findMemberPkByLoginId(loginId);
 
         if (memberId == null) {
-            return ResponseEntity
-                    .status(401)
-                    .body("회원 정보를 찾을 수 없습니다.");
+            return ResponseEntity.status(401).body("회원 정보를 찾을 수 없습니다.");
         }
-
         chatRoomService.updateRoom(dto, image, memberId);
-
         return ResponseEntity.ok().build();
     }
+
     @PostMapping("/room/join")
     public Boolean joinRoom(
             @RequestBody ChatRoomMemberDto dto,
@@ -177,13 +167,11 @@ public class ChatroomApiController {
 
         if ("artist".equals(roomType)) {
             return new PageDto<>(chatRoomService.findArtistRoomPage(page),
-                    page, chatRoomService.getArtistRoomTotalPage());
-        }
+            page, chatRoomService.getArtistRoomTotalPage());}
 
         if ("song".equals(roomType)) {
             return new PageDto<>(chatRoomService.findSongRoomPage(page),
-                    page, chatRoomService.getSongRoomTotalPage());
-        }
+            page, chatRoomService.getSongRoomTotalPage());}
 
         return new PageDto<>();
     }
@@ -195,9 +183,7 @@ public class ChatroomApiController {
 
         String loginId = userDetails.getMemberDto().getMemberId();
         Integer memberId = chatRoomService.findMemberPkByLoginId(loginId);
-
         dto.setMemberId(memberId);
-
         chatRoomService.leaveRoom(dto);
     }
 
@@ -217,15 +203,12 @@ public class ChatroomApiController {
     }
 
     @PostMapping("/message/send")
-    public void saveMessage(
-            @RequestBody ChatMessageDto dto,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public void saveMessage(@RequestBody ChatMessageDto dto,
+                            @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         String loginId = userDetails.getMemberDto().getMemberId();
         Integer memberId = chatRoomService.findMemberPkByLoginId(loginId);
-
         dto.setMemberId(memberId);
-
         chatRoomService.saveMessage(dto);
     }
 
@@ -244,13 +227,8 @@ public class ChatroomApiController {
             @AuthenticationPrincipal CustomUserDetails userDetails){
 
         String loginId = userDetails.getMemberDto().getMemberId();
-
         Integer memberId = chatRoomService.findMemberPkByLoginId(loginId);
-
-        chatRoomService.updateLastReadMessage(
-                roomId,
-                memberId,
-                messageId
+        chatRoomService.updateLastReadMessage(roomId, memberId, messageId
         );
     }
 
@@ -263,10 +241,7 @@ public class ChatroomApiController {
         String loginId = userDetails.getMemberDto().getMemberId();
         Integer memberId = chatRoomService.findMemberPkByLoginId(loginId);
 
-        chatRoomService.saveReport(
-                dto,
-                memberId
-        );
+        chatRoomService.saveReport(dto, memberId);
     }
 
 }

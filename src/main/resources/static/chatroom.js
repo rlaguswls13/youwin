@@ -129,48 +129,70 @@
 
         messageList.appendChild(message);
         messageList.scrollTop = messageList.scrollHeight;
-
-        if (data.memberId !== currentMemberId) {
-            updateReadMessage();
         }
-    }
-
     function connectSocket() {
         stompClient = new StompJs.Client({
             webSocketFactory: () => new SockJS("/chat"),
             reconnectDelay: 5000,
             onConnect: function () {
+
                 isConnected = true;
 
-                stompClient.subscribe("/topic/chat/" + roomId, function (message) {
-                    const data = JSON.parse(message.body);
-                    addMessage(data);
-                });
+                // 채팅 메시지 수신
+                stompClient.subscribe(
+                    "/topic/chat/" + roomId,
+                    function (message) {
 
-                stompClient.subscribe("/topic/read/" + roomId, function (message) {
-                    const list = JSON.parse(message.body);
-                    updateReadCount(list);
-                });
+                        const data = JSON.parse(message.body);
 
-                stompClient.subscribe("/topic/member/" + roomId, function (message) {
-                    const members = JSON.parse(message.body);
-                    renderMembers(members);
-                });
+                        addMessage(data);
+                    }
+                );
 
-                stompClient.subscribe("/topic/room/delete/" + roomId, function (message) {
-                    alert("채팅방이 삭제되었습니다.");
-                    location.replace("/index");
-                });
+                // 읽음 상태 실시간 수신
+                stompClient.subscribe(
+                    "/topic/read/" + roomId,
+                    function (message) {
 
+                        const list = JSON.parse(message.body);
+
+                        updateReadCount(list);
+                    }
+                );
+
+                // 접속자 상태 실시간 수신
+                stompClient.subscribe(
+                    "/topic/member/" + roomId,
+                    function (message) {
+
+                        const members = JSON.parse(message.body);
+
+                        renderMembers(members);
+                    }
+                );
+
+                // 채팅방 삭제 실시간 처리
+                stompClient.subscribe(
+                    "/topic/room/delete/" + roomId,
+                    function (message) {
+
+                        alert("채팅방이 삭제되었습니다.");
+
+                        location.replace("/index");
+                    }
+                );
+
+                // 채팅방 입장 알림
                 stompClient.publish({
                     destination: "/app/member/join",
-                    body: JSON.stringify({ roomId: Number(roomId) })
+
+                    body: JSON.stringify({
+                        roomId: Number(roomId)
+                    })
                 });
 
-                // 접속하자마자 현재 마지막 메시지 읽음 처리 전송
-                setTimeout(function () {
-                    updateReadMessage();
-                }, 200);
+                // 현재 화면에 표시된 마지막 메시지를 읽음 처리
+                updateReadMessage();
             },
             onStompError: function (frame) {
                 console.error("STOMP ERROR", frame);
@@ -265,13 +287,6 @@
             if(!response.ok){
                 alert("채팅방 나가기에 실패했습니다.");
                 return;
-            }
-
-            if (stompClient && isConnected) {
-                stompClient.publish({
-                    destination: "/app/member/leave",
-                    body: JSON.stringify({ roomId: targetRoomId })
-                });
             }
 
             const roomItem = button.closest(".room-item-wrapper");

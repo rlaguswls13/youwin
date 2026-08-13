@@ -114,10 +114,7 @@ public class ChatRoomService {
     }
 
     @Transactional
-    public Integer createRoom(
-            ChatRoomDto dto,
-            MultipartFile image,
-            Integer loginMemberId) {
+    public Integer createRoom(ChatRoomDto dto, MultipartFile image, Integer loginMemberId) {
 
         if (image != null && !image.isEmpty()) {
             String fileName = UUID.randomUUID() + "_" + image.getOriginalFilename();
@@ -135,20 +132,19 @@ public class ChatRoomService {
                 throw new RuntimeException(e);
             }
         } else {
-            String defaultImage = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'><rect width='100%' height='100%' fill='%23cccccc'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%23333333'>No Image</text></svg>";
+            String defaultImage = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' " +
+           "width='150' height='150' viewBox='0 0 150 150'><rect width='100%' height='100%' fill='%23cccccc'/>" +
+           "<text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' " +
+           "font-size='14' fill='%23333333'>No Image</text></svg>";
             dto.setRoomImageUrl(defaultImage);
         }
 
         dto.setOwnerId(loginMemberId);
-
         dto.setTargetId(null);
-
         chatRoomRepository.createRoom(dto);
-
         ChatRoomMemberDto memberDto = new ChatRoomMemberDto();
         memberDto.setRoomId(dto.getRoomId());
         memberDto.setMemberId(loginMemberId);
-
         chatRoomRepository.joinRoom(memberDto);
 
         return dto.getRoomId();
@@ -167,8 +163,6 @@ public class ChatRoomService {
     public void leaveRoom(ChatRoomMemberDto dto){
 
         sessiongManager.leave(dto.getRoomId(), dto.getMemberId());
-
-
         chatRoomRepository.leaveRoom(dto);
 
         int count = chatRoomRepository.countMember(dto.getRoomId());
@@ -275,6 +269,7 @@ public class ChatRoomService {
     }
 
     public ChatMessageDto saveMessage(ChatMessageDto dto){
+
         // 1. DB 저장
         chatRoomRepository.saveMessage(dto);
 
@@ -290,11 +285,11 @@ public class ChatRoomService {
 
         // 4. 읽지 않은 사람 수 계산
         Integer unread = chatRoomRepository.countUnreadMember(
-                result.getRoomId(),
-                result.getMessageId()
-        );
+                        result.getRoomId(),
+                        result.getMessageId());
 
         result.setUnreadCount(unread);
+
         return result;
     }
 
